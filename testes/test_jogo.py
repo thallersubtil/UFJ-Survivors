@@ -154,6 +154,8 @@ def test_partida_de_um_minuto_com_jogador_automatico():
     passos = 60 * 60
     for i in range(passos):
         jogo.entrada.direcao = pygame.Vector2(1, 0).rotate(i * 0.5)
+        alvo = jogo.inimigo_mais_proximo(jogo.jogador.posicao, 600)
+        jogo.entrada.mira = pygame.Vector2(alvo.posicao) if alvo is not None else None
         jogo.atualizar(1 / 60)
         if i % 60 == 0:
             jogo.desenhar(tela)
