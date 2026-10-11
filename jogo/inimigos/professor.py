@@ -14,7 +14,7 @@ class Professor(Chefe):
     IMAGEM = "sprites/professor.png"
     ALTURA = 112
     RAIO = 40
-    VIDA = 9000
+    VIDA = 5500
     VELOCIDADE = 75
     DANO = 18
     PONTOS = 5000

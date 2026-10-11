@@ -41,7 +41,7 @@ class Fase(ABC):
         return 1 + self.tempo / 300
 
     def alvo_de_inimigos(self):
-        alvo = 18 + self.tempo * 0.26
+        alvo = 10 + self.tempo * 0.27
         if self.chefe_apareceu:
             alvo *= 0.5
         return min(MAX_INIMIGOS, int(alvo))

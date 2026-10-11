@@ -12,7 +12,7 @@ class Bug(Inimigo):
     RAIO = 12
     VIDA = 6
     VELOCIDADE = 125
-    DANO = 4
+    DANO = 3
     PONTOS = 5
     TAMANHO_GRUPO = 6
 
