@@ -4,7 +4,7 @@
 
 **Integrantes:**
 
-**Repositório:** https://github.com/thallersubtil/ufj-survivors
+**Repositório:** https://github.com/thallersubtil/UFJ-Survivors
 
 ## 1. O jogo
 
