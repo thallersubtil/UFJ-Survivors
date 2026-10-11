@@ -145,3 +145,25 @@ class RaioZoltraak(Efeito):
             espessura = max(1, int(largura * fator))
             pygame.draw.line(tela, cor, inicio, fim, espessura)
             pygame.draw.circle(tela, cor, inicio, espessura // 2 + 4)
+
+
+class GolpeClaude(Efeito):
+    """Estrela laranja que explode onde o Claude bateu."""
+
+    def __init__(self, posicao, raio):
+        super().__init__(posicao, 0.35, raio)
+
+    def desenhar(self, tela, camera):
+        c = camera.para_tela(self.posicao)
+        r = self.raio * (0.5 + 0.7 * self.fracao)
+        alfa = int(255 * (1 - self.fracao))
+        lado = int(self.raio * 3)
+        sup = pygame.Surface((lado, lado), pygame.SRCALPHA)
+        meio = pygame.Vector2(lado / 2, lado / 2)
+        pontas = []
+        for i in range(8):
+            distancia = r if i % 2 == 0 else r * 0.35
+            pontas.append(meio + pygame.Vector2(distancia, 0).rotate(i * 45 + 22.5))
+        pygame.draw.polygon(sup, (240, 130, 60, alfa), pontas)
+        pygame.draw.circle(sup, (255, 230, 200, alfa), meio, int(r * 0.25))
+        tela.blit(sup, sup.get_rect(center=(round(c.x), round(c.y))))

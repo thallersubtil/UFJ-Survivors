@@ -122,3 +122,31 @@ class FolhaDeProva(ProjetilInimigo):
 
     def angulo_desenho(self):
         return self.tempo * 360
+
+
+class TiroChatGPT(ProjetilDoHeroi):
+    """Bolinha de energia do mascote. Quando alucinado, é rosa e com '?'."""
+
+    DURACAO = 1.4
+
+    def __init__(self, posicao, velocidade, dano, alucinado=False):
+        super().__init__(posicao, velocidade, dano, raio=8)
+        self.alucinado = alucinado
+
+    def desenhar(self, tela, camera):
+        c = camera.para_tela(self.posicao)
+        cor = (255, 110, 200) if self.alucinado else (120, 240, 200)
+        pygame.draw.circle(tela, (*cor, 255), (round(c.x), round(c.y)), 8)
+        pygame.draw.circle(tela, (255, 255, 255), (round(c.x), round(c.y)), 4)
+        if self.alucinado:
+            marca = Recursos.fonte(14).render("?", True, (255, 255, 255))
+            tela.blit(marca, marca.get_rect(center=(round(c.x), round(c.y - 14))))
+
+
+class EstrelaGemini(ProjetilDivisivel):
+    IMAGEM = "sprites/estrela_gemini.png"
+    ALTURA = 26
+    DURACAO = 1.8
+
+    def angulo_desenho(self):
+        return self.tempo * 540
