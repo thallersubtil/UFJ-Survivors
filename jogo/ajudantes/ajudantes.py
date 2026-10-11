@@ -118,3 +118,45 @@ class FuscaVeiculo(Ajudante):
         imagem = Recursos.imagem(self.IMAGEM, self.ALTURA)
         desenhar_sprite(tela, camera, imagem, self.posicao, espelhar=self.sentido < 0,
                         deslocamento_y=abs(math.sin(self.tempo * 30)) * 2)
+
+
+class FuscaCircular(Ajudante):
+    """O Caramelo dirigindo o fusca em volta do herói, atropelando e possuindo inimigos."""
+
+    IMAGEM = "sprites/caramelo_no_fusca.png"
+    ALTURA = 64
+    RAIO_VOLTA = 230
+    VELOCIDADE_ANGULAR = 1.8
+    ESPERA_ATROPELO = 1.0
+
+    def __init__(self, dono, arma):
+        super().__init__(dono.posicao, 36)
+        self.dono = dono
+        self.arma = arma
+        self.angulo = 0.0
+        self.tempo = 0.0
+        self.olhando_esquerda = False
+        self._atropelados = {}
+
+    def atualizar(self, dt, jogo):
+        self.tempo += dt
+        self.angulo += self.VELOCIDADE_ANGULAR * dt
+        nova = self.dono.posicao + pygame.Vector2(math.cos(self.angulo), math.sin(self.angulo)) * self.RAIO_VOLTA
+        self.olhando_esquerda = nova.x < self.posicao.x
+        self.posicao = nova
+        for chave in list(self._atropelados):
+            self._atropelados[chave] -= dt
+            if self._atropelados[chave] <= 0:
+                del self._atropelados[chave]
+        for inimigo in jogo.inimigos_proximos(self.posicao, self.raio):
+            if id(inimigo) in self._atropelados:
+                continue
+            self._atropelados[id(inimigo)] = self.ESPERA_ATROPELO
+            inimigo.possuir(self.arma.valor("possessao"))
+            jogo.causar_dano(inimigo, self.arma.valor("dano") * self.dono.multiplicador_dano,
+                             inimigo.posicao - self.dono.posicao)
+
+    def desenhar(self, tela, camera):
+        imagem = Recursos.imagem(self.IMAGEM, self.ALTURA)
+        desenhar_sprite(tela, camera, imagem, self.posicao, espelhar=self.olhando_esquerda,
+                        deslocamento_y=abs(math.sin(self.tempo * 30)) * 2)

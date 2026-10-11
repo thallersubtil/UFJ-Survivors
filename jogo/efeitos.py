@@ -167,3 +167,25 @@ class GolpeClaude(Efeito):
         pygame.draw.polygon(sup, (240, 130, 60, alfa), pontas)
         pygame.draw.circle(sup, (255, 230, 200, alfa), meio, int(r * 0.25))
         tela.blit(sup, sup.get_rect(center=(round(c.x), round(c.y))))
+
+
+class RaioDebate(Efeito):
+    """Raio entre os dois mascotes do Debate das IAs. Dura enquanto a colab existir."""
+
+    camada = 2
+
+    def __init__(self, mascote_a, mascote_b):
+        super().__init__(mascote_a.posicao, float("inf"))
+        self.a = mascote_a
+        self.b = mascote_b
+
+    def ao_atualizar(self, dt, jogo):
+        self.posicao = (self.a.posicao + self.b.posicao) / 2
+
+    def desenhar(self, tela, camera):
+        inicio = camera.para_tela(self.a.posicao)
+        fim = camera.para_tela(self.b.posicao)
+        tremor = 2 + 2 * math.sin(self.tempo * 50)
+        pygame.draw.line(tela, (240, 130, 60), inicio, fim, int(8 + tremor))
+        pygame.draw.line(tela, (120, 240, 200), inicio, fim, 4)
+        pygame.draw.line(tela, (255, 255, 255), inicio, fim, 2)

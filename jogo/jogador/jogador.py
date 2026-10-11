@@ -100,6 +100,14 @@ class Jogador(SerVivo, ABC):
         arma.ao_remover(jogo)
         self.armas.remove(arma)
 
+    def aplicar_colab(self, receita, jogo):
+        """Troca as duas armas da receita pela colab."""
+        from jogo.armas.colabs import Colab
+        for arma in Colab.ingredientes_em(receita, self.armas):
+            self.armas_em_colab.add(type(arma))
+            self.remover_arma(arma, jogo)
+        self.armas.append(receita())
+
     def adicionar_item(self, item):
         if len(self.itens) >= self.MAX_ITENS:
             raise ValueError("o herói já carrega o máximo de itens")

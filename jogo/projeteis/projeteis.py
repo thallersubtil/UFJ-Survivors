@@ -150,3 +150,9 @@ class EstrelaGemini(ProjetilDivisivel):
 
     def angulo_desenho(self):
         return self.tempo * 540
+
+
+class CobraGemea(MovimentoSerpente, ProjetilDivisivel):
+    IMAGEM = "sprites/cobra.png"
+    ALTURA = 22
+    DURACAO = 1.6
