@@ -56,7 +56,7 @@ class Ranking:
             if not isinstance(dados, list):
                 return []
             registros = [RegistroRanking.de_dict(d) for d in dados]
-        except (OSError, ValueError, KeyError, TypeError):
+        except (OSError, ValueError, KeyError, TypeError, OverflowError):
             return []
         return sorted(registros, reverse=True)[: self.LIMITE]
 
@@ -70,6 +70,10 @@ class Ranking:
         return None
 
     def salvar(self):
-        self.caminho.parent.mkdir(parents=True, exist_ok=True)
-        self.caminho.write_text(json.dumps([r.para_dict() for r in self.registros], ensure_ascii=False, indent=2),
-                                encoding="utf-8")
+        """Grava o ranking. Sem permissão de escrita, o ranking vale só até fechar o jogo."""
+        try:
+            self.caminho.parent.mkdir(parents=True, exist_ok=True)
+            self.caminho.write_text(json.dumps([r.para_dict() for r in self.registros], ensure_ascii=False, indent=2),
+                                    encoding="utf-8")
+        except OSError:
+            pass

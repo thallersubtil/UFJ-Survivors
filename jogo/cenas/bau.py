@@ -1,7 +1,7 @@
 import pygame
 
 from jogo.cenas.cena import Cena
-from jogo.cenas.widgets import TECLAS_CONFIRMAR, desenhar_texto, escurecer
+from jogo.cenas.widgets import TECLAS_ENTER, desenhar_texto, escurecer
 from jogo.config import ALTURA, LARGURA, Cor
 from jogo.nucleo.recursos import Recursos
 from jogo.progressao import Progressao
@@ -21,7 +21,7 @@ class CenaBau(Cena):
     def tratar_evento(self, evento):
         if not self.aberto:
             return
-        confirmou = evento.type == pygame.KEYDOWN and evento.key in TECLAS_CONFIRMAR
+        confirmou = evento.type == pygame.KEYDOWN and evento.key in TECLAS_ENTER
         clicou = evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1
         if confirmou or clicou:
             self.jogo.baus_pendentes = max(0, self.jogo.baus_pendentes - 1)

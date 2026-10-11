@@ -1,7 +1,7 @@
 import pygame
 
 from jogo.cenas.cena import Cena
-from jogo.cenas.widgets import TECLAS_CONFIRMAR, desenhar_painel, desenhar_texto, escurecer, quebrar_linhas
+from jogo.cenas.widgets import TECLAS_ENTER, desenhar_painel, desenhar_texto, escurecer, quebrar_linhas
 from jogo.config import ALTURA, CURA_AO_PULAR, LARGURA, Cor
 from jogo.nucleo.recursos import Recursos
 from jogo.progressao import Progressao
@@ -52,7 +52,7 @@ class CenaNivel(Cena):
                 self.indice = (self.indice - 1) % len(self.opcoes)
             elif evento.key in (pygame.K_RIGHT, pygame.K_d):
                 self.indice = (self.indice + 1) % len(self.opcoes)
-            elif evento.key in TECLAS_CONFIRMAR:
+            elif evento.key in TECLAS_ENTER:
                 self.escolher(self.indice)
             elif evento.key == pygame.K_r:
                 self.sortear_de_novo()

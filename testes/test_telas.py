@@ -122,3 +122,20 @@ def test_fim_de_jogo_grava_nome_no_ranking(app):
     assert isinstance(app.cena_atual, CenaRanking)
     assert app.ranking.registros[0].nome == "Ana"
     assert Ranking(app.ranking.caminho).registros[0].nome == "Ana"
+
+
+def test_espaco_nao_escolhe_carta_nem_fecha_bau(app):
+    partida = CenaPartida(app, AlunoAgil)
+    app.trocar(partida)
+    partida.jogo.niveis_pendentes = 1
+    app.passo(1 / 60, [])
+    app.passo(1 / 60, [tecla(pygame.K_SPACE)])
+    assert isinstance(app.cena_atual, CenaNivel)
+    assert partida.jogo.niveis_pendentes == 1
+    app.passo(1 / 60, [tecla(pygame.K_p)])
+    partida.jogo.baus_pendentes = 1
+    app.passo(1 / 60, [])
+    for _ in range(80):
+        app.passo(1 / 60, [])
+    app.passo(1 / 60, [tecla(pygame.K_SPACE)])
+    assert isinstance(app.cena_atual, CenaBau)

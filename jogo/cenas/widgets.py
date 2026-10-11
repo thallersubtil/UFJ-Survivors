@@ -5,6 +5,7 @@ from jogo.config import Cor
 from jogo.nucleo.recursos import Recursos
 
 TECLAS_CONFIRMAR = (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE)
+TECLAS_ENTER = (pygame.K_RETURN, pygame.K_KP_ENTER)   # telas que abrem no meio da partida: Espaço é o especial
 
 
 def desenhar_texto(tela, texto, tamanho, cor, *, centro=None, topo_esquerda=None, topo_direita=None, sombra=True):

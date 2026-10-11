@@ -98,3 +98,17 @@ def test_ranking_cria_pasta_ao_salvar(tmp_path):
     r.adicionar(RegistroRanking("Ana", "Aluno 1", 10, 10))
     dados = json.loads(arquivo.read_text(encoding="utf-8"))
     assert dados[0]["nome"] == "Ana"
+
+
+def test_ranking_com_numero_gigante_comeca_vazio(tmp_path):
+    arquivo = tmp_path / "ranking.json"
+    arquivo.write_text('[{"nome": "x", "heroi": "Aluno 1", "pontos": 1e999, "tempo": 1}]', encoding="utf-8")
+    assert Ranking(arquivo).registros == []
+
+
+def test_ranking_em_pasta_sem_permissao_nao_derruba_o_jogo(tmp_path):
+    bloqueio = tmp_path / "bloqueio"
+    bloqueio.write_text("isto é um arquivo, não uma pasta", encoding="utf-8")
+    r = Ranking(bloqueio / "ranking.json")
+    assert r.adicionar(RegistroRanking("Ana", "Aluno 1", 10, 10)) == 1
+    assert r.registros[0].nome == "Ana"
