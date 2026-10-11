@@ -108,7 +108,28 @@ class Fase(ABC):
 class SemanaDeProvas(Fase):
     NOME = "Semana de Provas"
     DURACAO = 900
-    APRESENTACOES = ((0, "bug"),)
+    APRESENTACOES = (
+        (0, "bug"),
+        (90, "calculadora"),
+        (180, "mouse"),
+        (270, "caixinha"),
+        (360, "pi"),
+        (450, "ponteiro"),
+        (540, "pilha"),
+        (630, "pente_ram"),
+    )
+    FORMACOES = ("bug", "calculadora", "mouse", "caixinha", "ponteiro", "pi", "bug")
 
     def criar_eventos(self):
-        return []
+        eventos = [
+            EventoDaFase(300, lambda jogo: self.chamar_mini_chefe(jogo, "calculadora"), "Calculadora Gigante"),
+            EventoDaFase(600, lambda jogo: self.chamar_mini_chefe(jogo, "pente_ram"), "Pente de RAM Gigante"),
+            EventoDaFase(900, lambda jogo: self.chamar_chefe(jogo, "professor"), "Professor"),
+        ]
+        for i, nome in enumerate(self.FORMACOES):
+            if i % 2 == 0:
+                acao = lambda jogo, n=nome: self.formacao_circulo(jogo, n, 24)
+            else:
+                acao = lambda jogo, n=nome: self.formacao_parede(jogo, n, 20)
+            eventos.append(EventoDaFase(120 * (i + 1), acao, f"Formação de {nome}"))
+        return eventos
