@@ -104,3 +104,16 @@ class MenuDeBotoes:
     def desenhar(self, tela):
         for i, botao in enumerate(self.botoes):
             botao.desenhar(tela, i == self.indice)
+
+
+def desenhar_fundo(tela, caminho, escuro=0):
+    """Fundo de tela cheia; sem o arquivo, pinta a cor de fundo do jogo."""
+    if (Recursos.pasta / caminho).exists():
+        fundo = Recursos.imagem(caminho)
+        if fundo.get_size() != tela.get_size():
+            fundo = pygame.transform.smoothscale(fundo, tela.get_size())
+        tela.blit(fundo, (0, 0))
+    else:
+        tela.fill(Cor.FUNDO)
+    if escuro:
+        escurecer(tela, escuro)

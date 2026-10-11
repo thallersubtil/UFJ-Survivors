@@ -1,12 +1,11 @@
 """UFJ Survivors. Rode com: python main.py"""
 from jogo.aplicacao import Aplicacao
-from jogo.cenas.partida import CenaPartida
-from jogo.jogador.alunos import AlunoAgil
+from jogo.cenas.titulo import CenaTitulo
 
 
 def main():
     app = Aplicacao()
-    app.executar(CenaPartida(app, AlunoAgil))
+    app.executar(CenaTitulo(app))
 
 
 if __name__ == "__main__":

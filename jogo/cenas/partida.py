@@ -1,7 +1,11 @@
 import pygame
 
+from jogo.cenas.bau import CenaBau
 from jogo.cenas.cena import Cena
+from jogo.cenas.fim import CenaFimDeJogo
 from jogo.cenas.hud import Hud
+from jogo.cenas.nivel import CenaNivel
+from jogo.cenas.pausa import CenaPausa
 from jogo.jogo import Jogo
 
 
@@ -18,13 +22,9 @@ class CenaPartida(Cena):
         if evento.type != pygame.KEYDOWN:
             return
         if evento.key == pygame.K_ESCAPE:
-            self._pausar()
+            self.app.empilhar(CenaPausa(self.app, self))
         elif evento.key == pygame.K_SPACE:
             self.jogo.jogador.usar_especial(self.jogo)
-
-    def _pausar(self):
-        from jogo.cenas.pausa import CenaPausa
-        self.app.empilhar(CenaPausa(self.app, self))
 
     def _ler_entrada(self):
         teclas = pygame.key.get_pressed()
@@ -37,32 +37,14 @@ class CenaPartida(Cena):
         if self.jogo.terminou:
             self._espera_fim -= dt
             if self._espera_fim <= 0:
-                self._encerrar()
+                self.app.trocar(CenaFimDeJogo(self.app, self.jogo))
             return
         self._ler_entrada()
         self.jogo.atualizar(dt)
         if self.jogo.niveis_pendentes > 0:
-            self._abrir("jogo.cenas.nivel", "CenaNivel")
+            self.app.empilhar(CenaNivel(self.app, self.jogo))
         elif self.jogo.baus_pendentes > 0:
-            self._abrir("jogo.cenas.bau", "CenaBau")
-
-    def _abrir(self, modulo, nome):
-        import importlib
-        try:
-            classe = getattr(importlib.import_module(modulo), nome)
-        except (ImportError, AttributeError):
-            self.jogo.niveis_pendentes = 0
-            self.jogo.baus_pendentes = 0
-            return
-        self.app.empilhar(classe(self.app, self.jogo))
-
-    def _encerrar(self):
-        try:
-            from jogo.cenas.fim import CenaFimDeJogo
-        except ImportError:
-            self.app.sair()
-            return
-        self.app.trocar(CenaFimDeJogo(self.app, self.jogo))
+            self.app.empilhar(CenaBau(self.app, self.jogo))
 
     def desenhar(self, tela):
         self.jogo.desenhar(tela)
