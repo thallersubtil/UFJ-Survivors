@@ -137,7 +137,7 @@ class RaioZoltraak(Efeito):
                 jogo.causar_dano(inimigo, self.dano, self.direcao)
 
     def desenhar(self, tela, camera):
-        inicio = camera.para_tela(self.posicao)
+        inicio = camera.para_tela(self.posicao) + self.direcao * 28   # começa fora do herói
         fim = inicio + self.direcao * self.COMPRIMENTO
         sumindo = 1.0 if self.fracao < 0.85 else (1 - self.fracao) / 0.15
         largura = self.LARGURA * (1 + 0.12 * math.sin(self.tempo * 40)) * sumindo
