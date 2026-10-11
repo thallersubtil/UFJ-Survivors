@@ -1,0 +1,165 @@
+classDiagram
+    direction TB
+    class Entidade {
+        <<abstract>>
+        +posicao: Vector2
+        +raio: float
+        +ativo: bool
+        +atualizar(dt, jogo)*
+        +desenhar(tela, camera)*
+        +remover()
+    }
+    class SerVivo {
+        <<abstract>>
+        -_vida: float
+        +vida: float «property»
+        +vida_maxima: float «property»
+        +receber_dano(q) bool
+        +curar(q)
+    }
+    class Jogador {
+        <<abstract>>
+        +armas: list~Arma~
+        +itens: list~Item~
+        +especial: Especial
+        +criar_arma_inicial()* Arma
+        +criar_especial()* Especial
+        +ganhar_experiencia(q) int
+        +aplicar_colab(receita, jogo)
+    }
+    class AlunoAgil
+    class AlunoResistente
+    class Inimigo {
+        <<abstract>>
+        +mover(dt, jogo)*
+        +ao_morrer(jogo)
+        +possuir(duracao)
+        +tornar_gigante()
+    }
+    class Bug
+    class CalculadoraBrava
+    class MouseDeBolinha
+    class Caixinha
+    class CaixinhaPequena
+    class PiCambaleante
+    class Ponteiro
+    class PilhaAA
+    class PenteDeRAM
+    class Chefe {
+        <<abstract>>
+        +ataques()* list
+    }
+    class Professor
+    class Projetil {
+        <<abstract>>
+        +verificar_colisao(jogo)*
+    }
+    class ProjetilDoHeroi
+    class ProjetilInimigo
+    class Ajudante {
+        <<abstract>>
+    }
+    class Coletavel {
+        <<abstract>>
+        +ao_coletar(jogo)*
+    }
+    class Efeito {
+        <<abstract>>
+    }
+    class Arma {
+        <<abstract>>
+        -_nivel: int
+        +nivel: int «property»
+        +atualizar(dt, jogo, dono)*
+        +#95;#95;str#95;#95;()
+    }
+    class ArmaDeDisparo {
+        <<abstract>>
+        -_municao: float
+        +municao: float «property»
+        +disparar(jogo, dono)* bool
+    }
+    class ArmaDeContato {
+        <<abstract>>
+    }
+    class Colab {
+        <<abstract>>
+        +colabs_disponiveis(armas)$ list
+    }
+    class Item {
+        <<abstract>>
+        +aplicar(jogador)*
+    }
+    class Especial {
+        <<abstract>>
+        +ativar(dono, jogo)*
+    }
+    class Jogo {
+        +entidades: list~Entidade~
+        +atualizar(dt)
+        +causar_dano(inimigo, dano)
+    }
+    class Fase {
+        <<abstract>>
+        +criar_eventos()* list
+        +posicao_de_nascimento(jogo)$
+    }
+    class SemanaDeProvas
+    class Placar {
+        -_pontos: int
+        +pontos: int «property»
+        +registrar_eliminacao(p) bool
+        +#95;#95;str#95;#95;()
+    }
+    class RegistroRanking {
+        +#95;#95;lt#95;#95;(outro)
+        +#95;#95;eq#95;#95;(outro)
+        +#95;#95;str#95;#95;()
+    }
+    class FabricaDeInimigos {
+        +registrar(nome)$
+        +criar(nome, posicao, escala)$ Inimigo
+    }
+    class Colisao {
+        +circulos_colidem(a, b)$ bool
+        +segmento_acerta_circulo(...)$ bool
+    }
+
+    Entidade <|-- SerVivo
+    Entidade <|-- Projetil
+    Entidade <|-- Ajudante
+    Entidade <|-- Coletavel
+    Entidade <|-- Efeito
+    SerVivo <|-- Jogador
+    SerVivo <|-- Inimigo
+    Jogador <|-- AlunoAgil
+    Jogador <|-- AlunoResistente
+    Inimigo <|-- Bug
+    Inimigo <|-- CalculadoraBrava
+    Inimigo <|-- MouseDeBolinha
+    Inimigo <|-- Caixinha
+    Caixinha <|-- CaixinhaPequena
+    Inimigo <|-- PiCambaleante
+    Inimigo <|-- Ponteiro
+    Inimigo <|-- PilhaAA
+    Inimigo <|-- PenteDeRAM
+    Inimigo <|-- Chefe
+    Chefe <|-- Professor
+    Projetil <|-- ProjetilDoHeroi
+    Projetil <|-- ProjetilInimigo
+    Arma <|-- ArmaDeDisparo
+    Arma <|-- ArmaDeContato
+    Arma <|-- Colab
+    Fase <|-- SemanaDeProvas
+
+    Jogo *-- Jogador
+    Jogo *-- Fase
+    Jogo *-- Placar
+    Jogo o-- Entidade
+    Jogador *-- Arma
+    Jogador *-- Item
+    Jogador *-- Especial
+    Fase ..> FabricaDeInimigos : usa
+    FabricaDeInimigos ..> Inimigo : cria
+    Jogo ..> Colisao : usa
+    Placar ..> RegistroRanking : vira
