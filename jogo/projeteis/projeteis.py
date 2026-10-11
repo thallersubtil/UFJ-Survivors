@@ -113,3 +113,12 @@ class CobraProjetil(MovimentoSerpente, ProjetilDoHeroi):
     IMAGEM = "sprites/cobra.png"
     ALTURA = 22
     DURACAO = 1.6
+
+
+class FolhaDeProva(ProjetilInimigo):
+    IMAGEM = "sprites/folha_prova.png"
+    ALTURA = 26
+    DURACAO = 4.0
+
+    def angulo_desenho(self):
+        return self.tempo * 360
