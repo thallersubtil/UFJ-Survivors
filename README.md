@@ -4,6 +4,8 @@ Sobreviva à Semana de Provas da UFJ. Jogo 2D em Pygame no estilo "survivors", f
 
 ![Captura de tela](docs/entregas/captura_combate.png)
 
+> **Vai trabalhar no projeto (você ou sua IA)?** Leia primeiro o [AGENTS.md](AGENTS.md) e a lista de [pendências](docs/PENDENCIAS.md).
+
 ## Como rodar
 
 Requer Python 3.12.
