@@ -80,3 +80,68 @@ class FaiscaExplosao(Efeito):
             pygame.draw.line(sup, (255, 240, 120, alfa), centro + direcao * r * 0.5, centro + direcao * r * 1.15, 3)
         c = camera.para_tela(self.posicao)
         tela.blit(sup, sup.get_rect(center=(round(c.x), round(c.y))))
+
+
+class AuraSSJ(Efeito):
+    """Aura dourada do Super Saiyajin, desenhada logo atrás do herói."""
+
+    camada = 1
+
+    def __init__(self, dono, duracao):
+        super().__init__(dono.posicao, duracao)
+        self.dono = dono
+
+    def ao_atualizar(self, dt, jogo):
+        self.posicao = self.dono.posicao - pygame.Vector2(0, 0.5)
+
+    def desenhar(self, tela, camera):
+        c = camera.para_tela(self.dono.posicao)
+        largura, altura = 70, 96
+        sup = pygame.Surface((largura + 20, altura + 30), pygame.SRCALPHA)
+        base = pygame.Vector2(sup.get_width() / 2, sup.get_height() - 6)
+        brilho = 0.85 + 0.15 * math.sin(self.tempo * 25)
+        pygame.draw.ellipse(sup, (255, 210, 60, int(70 * brilho)), (10, 20, largura, altura))
+        for i in range(7):
+            x = 14 + i * (largura - 8) / 6
+            topo = 8 + 10 * (1 + math.sin(self.tempo * 18 + i * 1.7))
+            pygame.draw.polygon(sup, (255, 236, 120, int(110 * brilho)),
+                                [(x - 7, base.y - 20), (x, topo), (x + 7, base.y - 20)])
+        tela.blit(sup, sup.get_rect(midbottom=(round(c.x), round(c.y + 34))))
+
+
+class RaioZoltraak(Efeito):
+    """Raio mágico que sai do herói na direção da mira e atravessa tudo."""
+
+    COMPRIMENTO = 950
+    LARGURA = 70
+    INTERVALO = 0.1
+
+    def __init__(self, dono, dano, duracao=1.5):
+        super().__init__(dono.posicao, duracao)
+        self.dono = dono
+        self.dano = dano
+        self.direcao = pygame.Vector2(dono.direcao_mira)
+        self._espera = 0.0
+
+    def ao_atualizar(self, dt, jogo):
+        self.posicao = pygame.Vector2(self.dono.posicao)
+        self.direcao = pygame.Vector2(self.dono.direcao_mira)
+        self._espera -= dt
+        if self._espera > 0:
+            return
+        self._espera = self.INTERVALO
+        fim = self.posicao + self.direcao * self.COMPRIMENTO
+        meio = (self.posicao + fim) / 2
+        for inimigo in jogo.inimigos_proximos(meio, self.COMPRIMENTO / 2 + self.LARGURA):
+            if Colisao.segmento_acerta_circulo(self.posicao, fim, self.LARGURA, inimigo.posicao, inimigo.raio):
+                jogo.causar_dano(inimigo, self.dano, self.direcao)
+
+    def desenhar(self, tela, camera):
+        inicio = camera.para_tela(self.posicao)
+        fim = inicio + self.direcao * self.COMPRIMENTO
+        sumindo = 1.0 if self.fracao < 0.85 else (1 - self.fracao) / 0.15
+        largura = self.LARGURA * (1 + 0.12 * math.sin(self.tempo * 40)) * sumindo
+        for cor, fator in (((140, 80, 255), 1.0), ((210, 190, 255), 0.55), ((255, 255, 255), 0.25)):
+            espessura = max(1, int(largura * fator))
+            pygame.draw.line(tela, cor, inicio, fim, espessura)
+            pygame.draw.circle(tela, cor, inicio, espessura // 2 + 4)
