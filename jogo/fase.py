@@ -6,7 +6,7 @@ from typing import Callable
 
 import pygame
 
-from jogo.config import ALTURA, LARGURA, MAX_INIMIGOS
+from jogo.config import ALTURA, DURACAO_FASE, LARGURA, MAX_INIMIGOS
 from jogo.inimigos.fabrica import FabricaDeInimigos
 
 
@@ -20,7 +20,7 @@ class EventoDaFase:
 
 class Fase(ABC):
     NOME = "Fase"
-    DURACAO = 900
+    DURACAO = DURACAO_FASE
     APRESENTACOES = ()
     INTERVALO_NASCIMENTO = 0.5
 
@@ -38,10 +38,10 @@ class Fase(ABC):
 
     @property
     def escala_dificuldade(self):
-        return 1 + self.tempo / 300
+        return 1 + self.tempo / 160
 
     def alvo_de_inimigos(self):
-        alvo = 10 + self.tempo * 0.27
+        alvo = 10 + self.tempo * 0.5
         if self.chefe_apareceu:
             alvo *= 0.5
         return min(MAX_INIMIGOS, int(alvo))
@@ -107,29 +107,29 @@ class Fase(ABC):
 
 class SemanaDeProvas(Fase):
     NOME = "Semana de Provas"
-    DURACAO = 900
+    DURACAO = DURACAO_FASE
     APRESENTACOES = (
         (0, "bug"),
-        (90, "calculadora"),
-        (180, "mouse"),
-        (270, "caixinha"),
-        (360, "pi"),
-        (450, "ponteiro"),
-        (540, "pilha"),
-        (630, "pente_ram"),
+        (40, "calculadora"),
+        (80, "mouse"),
+        (120, "caixinha"),
+        (160, "pi"),
+        (200, "ponteiro"),
+        (240, "pilha"),
+        (280, "pente_ram"),
     )
     FORMACOES = ("bug", "calculadora", "mouse", "caixinha", "ponteiro", "pi", "bug")
 
     def criar_eventos(self):
         eventos = [
-            EventoDaFase(300, lambda jogo: self.chamar_mini_chefe(jogo, "calculadora"), "Calculadora Gigante"),
-            EventoDaFase(600, lambda jogo: self.chamar_mini_chefe(jogo, "pente_ram"), "Pente de RAM Gigante"),
-            EventoDaFase(900, lambda jogo: self.chamar_chefe(jogo, "professor"), "Professor"),
+            EventoDaFase(160, lambda jogo: self.chamar_mini_chefe(jogo, "calculadora"), "Calculadora Gigante"),
+            EventoDaFase(320, lambda jogo: self.chamar_mini_chefe(jogo, "pente_ram"), "Pente de RAM Gigante"),
+            EventoDaFase(self.DURACAO, lambda jogo: self.chamar_chefe(jogo, "professor"), "Professor"),
         ]
         for i, nome in enumerate(self.FORMACOES):
             if i % 2 == 0:
                 acao = lambda jogo, n=nome: self.formacao_circulo(jogo, n, 24)
             else:
                 acao = lambda jogo, n=nome: self.formacao_parede(jogo, n, 20)
-            eventos.append(EventoDaFase(120 * (i + 1), acao, f"Formação de {nome}"))
+            eventos.append(EventoDaFase(60 * (i + 1), acao, f"Formação de {nome}"))
         return eventos

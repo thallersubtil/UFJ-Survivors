@@ -12,7 +12,7 @@ FPS = 60
 ESCALA_PIXEL = 2          # a arte do mundo é pixel art ampliada 2x, sem suavizar
 
 ARENA_LARGURA, ARENA_ALTURA = 3200, 1800
-DURACAO_FASE = 15 * 60
+DURACAO_FASE = 8 * 60
 MAX_INIMIGOS = 300
 DISTANCIA_REPOSICIONAR = 1400   # inimigo mais longe que isso do herói renasce perto dele
 INVENCIBILIDADE_APOS_DANO = 0.5
