@@ -91,7 +91,10 @@ class Recursos:
         chave = ("altura", id(imagem), altura)
         if chave not in cls._derivadas:
             largura = max(1, round(imagem.get_width() * altura / imagem.get_height()))
-            cls._derivadas[chave] = cls._redimensionar(imagem, (largura, altura))
+            try:
+                cls._derivadas[chave] = pygame.transform.smoothscale(imagem, (largura, altura))
+            except ValueError:
+                cls._derivadas[chave] = pygame.transform.scale(imagem, (largura, altura))
         return cls._derivadas[chave]
 
     FPS_PADRAO = {"parado": 5, "andar": 8, "mover": 10, "atacar": 10}

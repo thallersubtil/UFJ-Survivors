@@ -109,3 +109,36 @@ def test_jogo_sem_mapa_ufj_usa_patio_generico(monkeypatch):
     monkeypatch.setattr(MapaUFJ, "carregar", classmethod(lambda cls, rng: None))
     jogo = Jogo(AlunoAgil, fase=FaseVazia(), semente=1)
     assert isinstance(jogo.mapa, Cenario)
+
+
+def test_escala_do_mapa_vem_do_arquivo():
+    dados = dados_de_teste()
+    dados["escala"] = 3
+    mapa = MapaUFJ(dados, random.Random(1))
+    assert mapa.escala == 3
+    predio = next(e for e in mapa.entidades() if isinstance(e, Predio))
+    assert predio.escala == 3
+    jogo = Jogo(AlunoAgil, fase=FaseVazia(), semente=1, mapa=mapa)
+    jogo.desenhar(pygame.Surface((1280, 720)))
+
+
+def test_chao_suave_desenha_por_blocos_em_cache(tmp_path, monkeypatch):
+    from jogo.nucleo.recursos import Recursos
+    (tmp_path / "cenario").mkdir()
+    chao = pygame.Surface((400, 400))
+    chao.fill((10, 200, 10))
+    pygame.image.save(chao, str(tmp_path / "cenario" / "chao.png"))
+    monkeypatch.setattr(Recursos, "pasta", tmp_path)
+    Recursos.limpar()
+    dados = dados_de_teste()
+    dados.update({"largura": 1200, "altura": 1200, "chao": "cenario/chao.png", "escala": 3, "escala_predios": 1})
+    mapa = MapaUFJ(dados, random.Random(1))
+    assert all(p.escala == 1 for p in mapa.entidades() if isinstance(p, Predio))
+    jogo = Jogo(AlunoAgil, fase=FaseVazia(), semente=1, mapa=mapa)
+    tela = pygame.Surface((1280, 720))
+    mapa.desenhar_chao(tela, jogo.camera)
+    assert tela.get_at((640, 360))[:3] == (10, 200, 10)
+    blocos = len(mapa._blocos)
+    mapa.desenhar_chao(tela, jogo.camera)
+    assert len(mapa._blocos) == blocos > 0
+    Recursos.limpar()

@@ -24,16 +24,16 @@ from pathlib import Path
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 import numpy as np  # noqa: E402
 import pygame  # noqa: E402
-from PIL import Image  # noqa: E402
+from PIL import Image, ImageDraw, ImageFilter  # noqa: E402
 
 RAIZ = Path(__file__).resolve().parent.parent
 ENTRADA = RAIZ / "arte_bruta" / "mapa"
 SAIDA = RAIZ / "assets" / "cenario"
 FONTE = RAIZ / "assets" / "fontes" / "pixelify-sans-latin-700-normal.woff2"
 
-ESCALA_PIXEL = 2                 # o chão e os prédios são pixel art ampliada 2x no jogo
-UNIDADES_POR_METRO = 5.0
-ALTURA_ANDAR = 7                 # pixels nativos de parede por andar
+ESCALA_CHAO = 3                  # o chão é guardado em 1/3 da resolução; o jogo amplia suavizando
+UNIDADES_POR_METRO = 10.0         # herói de ~76 px; prédios bem maiores que ele
+ALTURA_ANDAR = 64                # pixels de parede por andar
 INICIO_SATELITE = (745, 690)     # meio do gramado oval central, em pixels do satélite
 
 
@@ -108,7 +108,7 @@ class Recorte:
         return self.latlon_satelite(x / self.mundo_por_pixel + self.x0, y / self.mundo_por_pixel + self.y0)
 
 
-RECORTE = Recorte(tile_x0=46704, tile_y0=72169, zoom=17, x0=430, y0=160, x1=1060, y1=1150)
+RECORTE = Recorte(tile_x0=46704, tile_y0=72169, zoom=17, x0=470, y0=240, x1=1010, y1=1140)
 
 NOMES_CURTOS = {
     "restaurante universitario": "RU",
@@ -167,75 +167,121 @@ def _tom(cor, delta):
     return tuple(max(0, min(255, v + delta)) for v in cor)
 
 
+CONTORNO = (26, 22, 34)
+GROSSURA = 4                      # contorno grosso, como o dos personagens
+
+
+def _poligono_grosso(sup, cor, pontos, largura):
+    pygame.draw.polygon(sup, cor, pontos, 0)
+    pygame.draw.lines(sup, CONTORNO, True, pontos, largura)
+    for q in pontos:
+        pygame.draw.circle(sup, CONTORNO, q, largura / 2)
+
+
 def desenhar_predio(poligono, telhado, andares=2, nome=""):
-    """Sprite 3/4 de um prédio em resolução nativa. Devolve (superfície, canto superior esquerdo)."""
+    """Sprite 3/4 de um prédio em resolução cheia, no estilo ilustrado. Devolve (superfície, canto)."""
     altura_parede = max(1, andares) * ALTURA_ANDAR
     xs = [p[0] for p in poligono]
     ys = [p[1] for p in poligono]
-    esquerda, topo = int(min(xs)) - 2, int(min(ys)) - altura_parede - 2
-    largura = int(max(xs)) - esquerda + 3
-    altura = int(max(ys)) - topo + 3
-    local = [(x - esquerda, y - topo) for x, y in poligono]
+    m = GROSSURA + 2
+    esquerda, topo = int(min(xs)) - m, int(min(ys)) - altura_parede - m
+    largura = int(max(xs)) - esquerda + m + 1
+    altura = int(max(ys)) - topo + m + 1
+    base = [(x - esquerda, y - topo) for x, y in poligono]
     nome_parede = next(k for k, v in TELHADOS.items() if v == telhado)
     parede = PAREDES[nome_parede]
+    sombra_parede = _tom(parede, -46)
+    vidro = (64, 112, 168) if nome_parede != "escuro" else (150, 196, 230)
+    brilho_vidro = _tom(vidro, 70)
+    sprite = pygame.Surface((largura, altura), pygame.SRCALPHA)
+    teto = [(x, y - altura_parede) for x, y in base]
 
-    base = pygame.Surface((largura, altura), pygame.SRCALPHA)
-    for t in range(altura_parede + 1):
-        pygame.draw.polygon(base, (*_tom(parede, -18 if t < 2 else 0), 255), [(x, y - t) for x, y in local])
-    telhado_pts = [(x, y - altura_parede) for x, y in local]
-    sprite = base.copy()
-    # janelas na faixa de parede que fica visível (abaixo do telhado)
-    mascara_telhado = pygame.Surface((largura, altura), pygame.SRCALPHA)
-    pygame.draw.polygon(mascara_telhado, (255, 255, 255, 255), telhado_pts)
-    vidro = (66, 92, 124) if nome_parede != "escuro" else (150, 186, 214)
-    for y in range(altura):
-        for x in range(largura):
-            if sprite.get_at((x, y)).a == 0 or mascara_telhado.get_at((x, y)).a:
-                continue
-            if x % 6 in (1, 2, 3) and (y + 2) % ALTURA_ANDAR in (2, 3, 4):
-                sprite.set_at((x, y), (*vidro, 255))
-    pygame.draw.polygon(sprite, (*telhado, 255), telhado_pts)
-    pygame.draw.polygon(sprite, (*_tom(telhado, -40), 255), telhado_pts, 1)
-    for i in range(len(telhado_pts)):   # beiral mais claro nas arestas de cima
-        a, b = telhado_pts[i], telhado_pts[(i + 1) % len(telhado_pts)]
-        if a[1] + b[1] < 2 * (sum(p[1] for p in telhado_pts) / len(telhado_pts)):
-            pygame.draw.line(sprite, (*_tom(telhado, 28), 255), a, b)
+    # paredes: cada aresta virada para baixo (visível) vira uma face com janelas
+    n = len(base)
+    sentido = sum(base[i][0] * base[(i + 1) % n][1] - base[(i + 1) % n][0] * base[i][1] for i in range(n))
+    faces = []
+    for i in range(n):
+        a, b = base[i], base[(i + 1) % n]
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        normal_y = dx if sentido > 0 else -dx
+        if normal_y > 0:
+            faces.append((max(a[1], b[1]), a, b, dx, dy))
+    for _, a, b, dx, dy in sorted(faces):
+        face = [a, b, (b[0], b[1] - altura_parede), (a[0], a[1] - altura_parede)]
+        clara = abs(dx) > abs(dy)
+        cor = parede if clara else sombra_parede
+        _poligono_grosso(sprite, cor, face, GROSSURA)
+        comprimento = (dx * dx + dy * dy) ** 0.5
+        colunas = int(comprimento // 34)
+        for c in range(colunas):
+            f0 = (c + 0.25) / max(colunas, 1)
+            f1 = (c + 0.75) / max(colunas, 1)
+            for andar in range(max(1, andares)):
+                y0 = altura_parede - andar * ALTURA_ANDAR - ALTURA_ANDAR * 0.78
+                y1 = altura_parede - andar * ALTURA_ANDAR - ALTURA_ANDAR * 0.3
+                q = [(a[0] + dx * f0, a[1] + dy * f0 - y1 + 0), (a[0] + dx * f1, a[1] + dy * f1 - y1),
+                     (a[0] + dx * f1, a[1] + dy * f1 - y0), (a[0] + dx * f0, a[1] + dy * f0 - y0)]
+                q = [(x, y) for x, y in q]
+                pygame.draw.polygon(sprite, vidro if clara else _tom(vidro, -30), q)
+                pygame.draw.line(sprite, brilho_vidro, q[3], (q[3][0] + (q[2][0] - q[3][0]) * 0.5, q[3][1] + (q[2][1] - q[3][1]) * 0.5), 3)
+                pygame.draw.polygon(sprite, CONTORNO, q, 2)
+        pygame.draw.line(sprite, _tom(cor, -70), a, b, 6)   # rodapé
+    # telhado
+    _poligono_grosso(sprite, telhado, teto, GROSSURA)
+    meio = (sum(q[0] for q in teto) / n, sum(q[1] for q in teto) / n)
+    interno = [(meio[0] + (x - meio[0]) * 0.86, meio[1] + (y - meio[1]) * 0.86) for x, y in teto]
+    pygame.draw.polygon(sprite, _tom(telhado, 22), interno, 0)
+    pygame.draw.lines(sprite, _tom(telhado, -30), True, interno, 2)
     if nome:
-        fonte = pygame.font.Font(str(FONTE), 9) if FONTE.exists() else pygame.font.Font(None, 11)
-        texto = fonte.render(nome, False, (250, 246, 230))
-        centro = (sum(p[0] for p in telhado_pts) / len(telhado_pts), sum(p[1] for p in telhado_pts) / len(telhado_pts))
-        placa = pygame.Rect(0, 0, texto.get_width() + 4, texto.get_height() + 1)
-        placa.center = (round(centro[0]), round(centro[1]))
-        pygame.draw.rect(sprite, (40, 34, 48, 255), placa)
-        pygame.draw.rect(sprite, (214, 168, 74, 255), placa, 1)
-        sprite.blit(texto, (placa.x + 2, placa.y))
-    contorno = pygame.mask.from_surface(sprite).outline()
-    if len(contorno) > 2:
-        pygame.draw.lines(sprite, (28, 24, 34, 255), True, contorno, 1)
+        fonte = pygame.font.Font(None, 30)   # fonte comum em negrito: legível na placa
+        fonte.set_bold(True)
+        texto = fonte.render(nome, True, (255, 248, 230))
+        placa = pygame.Rect(0, 0, texto.get_width() + 18, texto.get_height() + 6)
+        placa.center = (round(meio[0]), round(meio[1]))
+        pygame.draw.rect(sprite, CONTORNO, placa.inflate(6, 6), border_radius=8)
+        pygame.draw.rect(sprite, (64, 52, 92), placa, border_radius=6)
+        pygame.draw.rect(sprite, (240, 196, 90), placa, 2, border_radius=6)
+        sprite.blit(texto, texto.get_rect(center=placa.center))
     return sprite, (esquerda, topo)
 
 
+def _ruido_suave(rng, h, w, passo):
+    """Ruído macio: valores aleatórios numa grade grossa, interpolados (bilinear)."""
+    gy, gx = h // passo + 2, w // passo + 2
+    grade = rng.random((gy, gx)).astype(np.float32)
+    img = Image.fromarray((grade * 255).astype(np.uint8)).resize((gx * passo, gy * passo), Image.BICUBIC)
+    return np.array(img)[:h, :w].astype(np.float32) / 255
+
+
 def _textura(classe_mapa, rng):
-    """Pinta cada classe com uma textura de pixel art: manchas grandes + pontinhos."""
+    """Pinta cada classe com tons macios (estilo ilustrado) e bordas suaves entre elas."""
     h, w = classe_mapa.shape
-    manchas = rng.random((h // 4 + 2, w // 4 + 2))
-    manchas = np.kron(manchas, np.ones((4, 4)))[:h, :w]
-    pontos = rng.random((h, w))
+    ruido = 0.6 * _ruido_suave(rng, h, w, 24) + 0.4 * _ruido_suave(rng, h, w, 6)
     paletas = {
-        Classe.GRAMA: [(86, 142, 56), (98, 156, 62), (110, 168, 70)],
-        Classe.MATA: [(38, 80, 40), (48, 96, 46), (60, 112, 52)],
-        Classe.TERRA: [(156, 72, 46), (172, 84, 52), (186, 100, 62)],
-        Classe.CONCRETO: [(176, 172, 162), (190, 186, 176), (202, 198, 188)],
+        Classe.GRAMA: ((92, 156, 60), (126, 190, 76)),
+        Classe.MATA: ((40, 92, 46), (66, 128, 58)),
+        Classe.TERRA: ((168, 82, 50), (204, 120, 70)),
+        Classe.CONCRETO: ((182, 178, 168), (214, 210, 200)),
     }
-    rgb = np.zeros((h, w, 3), np.uint8)
-    for classe, paleta in paletas.items():
-        mascara = classe_mapa == classe
-        indice = np.clip((manchas * 2.2 + (pontos > 0.93) * 1.0 - (pontos < 0.05) * 1.0).astype(int), 0, 2)
-        for i, cor in enumerate(paleta):
-            rgb[mascara & (indice == i)] = cor
-    flores = (classe_mapa == Classe.GRAMA) & (pontos > 0.998)
-    rgb[flores] = (236, 214, 90)
+    rgb = np.zeros((h, w, 3), np.float32)
+    for classe, (escura, clara) in paletas.items():
+        m = classe_mapa == classe
+        e, c = np.array(escura, np.float32), np.array(clara, np.float32)
+        rgb[m] = e + (c - e) * ruido[m][:, None]
+    imagem = Image.fromarray(rgb.clip(0, 255).astype(np.uint8))
+    from PIL import ImageFilter
+    imagem = imagem.filter(ImageFilter.GaussianBlur(1.2))
+    rgb = np.array(imagem)
+    flores = (classe_mapa == Classe.GRAMA) & (rng.random((h, w)) > 0.9993)
+    rgb[flores] = (246, 222, 96)
     return rgb
+
+
+def _suavizar_classes(classes, raio=3):
+    """Desfoca cada classe e escolhe a mais forte: tira a escadinha herdada dos pixels do satélite."""
+    pesos = [np.array(Image.fromarray(((classes == c) * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(raio)))
+             for c in range(len(Classe))]
+    return np.argmax(np.stack(pesos), axis=0).astype(np.uint8)
 
 
 def _moda_3x3(classes):
@@ -256,115 +302,121 @@ def gerar():
     satelite = np.array(Image.open(ENTRADA / "satelite_z17.jpg").convert("RGB"))
     osm = json.loads((ENTRADA / "osm.json").read_text(encoding="utf-8"))["elements"]
     W, H = rec.largura_mundo, rec.altura_mundo
-    w, h = W // ESCALA_PIXEL, H // ESCALA_PIXEL
+    E = ESCALA_CHAO
+    w, h = W // E, H // E
 
-    # 1. chão pelo satélite
-    ys = (np.arange(h) * ESCALA_PIXEL / rec.mundo_por_pixel + rec.y0).astype(int).clip(0, satelite.shape[0] - 1)
-    xs = (np.arange(w) * ESCALA_PIXEL / rec.mundo_por_pixel + rec.x0).astype(int).clip(0, satelite.shape[1] - 1)
-    amostra = satelite[ys][:, xs]
-    classes = _moda_3x3(_moda_3x3(_moda_3x3(classificar(amostra))))
-    chao = pygame.surfarray.make_surface(_textura(classes, rng).swapaxes(0, 1))
+    # 1. chão pelo satélite (resolução reduzida; o jogo amplia com suavização)
+    ys = (np.arange(h) * E / rec.mundo_por_pixel + rec.y0).astype(int).clip(0, satelite.shape[0] - 1)
+    xs = (np.arange(w) * E / rec.mundo_por_pixel + rec.x0).astype(int).clip(0, satelite.shape[1] - 1)
+    classes = classificar(satelite[ys][:, xs])
+    for _ in range(2):
+        classes = _moda_3x3(classes)
+    classes = _suavizar_classes(classes)
+    textura = _textura(classes, rng)
 
-    def nativo(lat, lon):
-        x, y = rec.mundo(lat, lon)
-        return x / ESCALA_PIXEL, y / ESCALA_PIXEL
+    def pontos(elemento, escala=1.0):
+        return [(x / escala, y / escala) for x, y in (rec.mundo(g["lat"], g["lon"]) for g in elemento.get("geometry", []))]
 
-    def pontos(elemento):
-        return [nativo(g["lat"], g["lon"]) for g in elemento.get("geometry", [])]
-
-    # 2. áreas especiais e vias
+    # 2. áreas especiais e vias, desenhadas numa camada com o dobro da resolução e reduzidas (bordas lisas)
+    S = 2
+    camada = Image.new("RGBA", (w * S, h * S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(camada)
     for e in osm:
-        t = e["tags"]
-        p = pontos(e)
-        if len(p) < 3:
+        tg = e["tags"]
+        q = [(x * S, y * S) for x, y in pontos(e, E)]
+        if len(q) < 3:
             continue
-        if t.get("amenity") == "parking":
-            pygame.draw.polygon(chao, (82, 82, 88), p)
-            for x in range(int(min(q[0] for q in p)), int(max(q[0] for q in p)), 5):
-                pygame.draw.line(chao, (220, 220, 210), (x, min(q[1] for q in p) + 1), (x, min(q[1] for q in p) + 4))
-        elif t.get("leisure") == "swimming_pool":
-            pygame.draw.polygon(chao, (232, 232, 226), p)
-            pygame.draw.polygon(chao, (64, 150, 222), p, 0)
-            pygame.draw.polygon(chao, (232, 232, 226), p, 2)
-        elif t.get("leisure") == "pitch":
-            pygame.draw.polygon(chao, (58, 132, 96), p)
-            pygame.draw.polygon(chao, (236, 236, 230), p, 1)
-    larguras = {"motorway": 20, "motorway_link": 12, "service": 12, "residential": 10, "unclassified": 10,
-                "footway": 4}
-    for camada in ("borda", "miolo"):
+        if tg.get("amenity") == "parking":
+            d.polygon(q, fill=(88, 88, 96, 255), outline=(226, 226, 216, 255), width=3)
+        elif tg.get("leisure") == "swimming_pool":
+            d.polygon(q, fill=(236, 236, 228, 255))
+            cx, cy = sum(v[0] for v in q) / len(q), sum(v[1] for v in q) / len(q)
+            d.polygon([(cx + (x - cx) * 0.8, cy + (y - cy) * 0.8) for x, y in q], fill=(70, 160, 228, 255))
+        elif tg.get("leisure") == "pitch":
+            d.polygon(q, fill=(60, 140, 100, 255), outline=(240, 240, 232, 255), width=3)
+    larguras = {"motorway": 90, "motorway_link": 60, "service": 64, "residential": 52, "unclassified": 52,
+                "footway": 22}
+    for etapa in ("borda", "miolo", "faixa"):
         for e in osm:
             via = e["tags"].get("highway")
             if via not in larguras or "building" in e["tags"]:
                 continue
-            p = pontos(e)
-            if len(p) < 2:
+            q = [(x * S, y * S) for x, y in pontos(e, E)]
+            if len(q) < 2:
                 continue
-            largura = larguras[via] + (2 if camada == "borda" else 0)
-            if via == "footway":
-                cor = (150, 140, 120) if camada == "borda" else (212, 198, 166)
+            largura = larguras[via] / E * S
+            if etapa == "borda":
+                cor, largura = ((150, 136, 112) if via == "footway" else (196, 192, 184)), largura + 6
+            elif etapa == "miolo":
+                cor = (222, 208, 176) if via == "footway" else (78, 80, 90)
             else:
-                cor = (150, 150, 150) if camada == "borda" else (74, 74, 80)
-            pygame.draw.lines(chao, cor, False, p, largura)
-            for q in p:
-                pygame.draw.circle(chao, cor, q, largura / 2)
+                if via == "footway":
+                    continue
+                cor, largura = (236, 220, 120), 2
+            d.line(q, fill=(*cor, 255), width=max(1, round(largura)), joint="curve")
+            if etapa != "faixa":
+                r = largura / 2
+                for x, y in (q[0], q[-1]):
+                    d.ellipse((x - r, y - r, x + r, y + r), fill=(*cor, 255))
+    base = Image.fromarray(textura).convert("RGBA")
+    base.alpha_composite(camada.resize((w, h), Image.LANCZOS))
+    chao = pygame.image.frombytes(base.convert("RGB").tobytes(), (w, h), "RGB")
 
-    # 3. prédios
+    # 3. prédios em resolução cheia
     (SAIDA / "predios").mkdir(parents=True, exist_ok=True)
     for antigo in (SAIDA / "predios").glob("*.png"):
         antigo.unlink()
     predios = []
     for e in osm:
-        t = e["tags"]
-        if "building" not in t:
+        tg = e["tags"]
+        if "building" not in tg:
             continue
         p = pontos(e)
-        if len(p) < 3 or max(q[0] for q in p) < 0 or min(q[0] for q in p) > w or max(q[1] for q in p) < 0 \
-                or min(q[1] for q in p) > h:
+        if len(p) < 3 or max(q[0] for q in p) < 0 or min(q[0] for q in p) > W or max(q[1] for q in p) < 0 \
+                or min(q[1] for q in p) > H:
             continue
         sx = [rec.satelite(g["lat"], g["lon"]) for g in e["geometry"]]
         mascara = Image.new("L", (satelite.shape[1], satelite.shape[0]), 0)
-        from PIL import ImageDraw
         ImageDraw.Draw(mascara).polygon(sx, fill=255)
         dentro = satelite[np.array(mascara) > 0]
         media = dentro.mean(axis=0) if len(dentro) else (200, 200, 200)
-        andares = int(re.sub(r"\D", "", t.get("building:levels", "2")) or 2)
-        nome = nome_curto(t.get("name"))
+        andares = int(re.sub(r"\D", "", tg.get("building:levels", "2")) or 2)
+        nome = nome_curto(tg.get("name"))
         telhado = TELHADOS[TELHADO_CONHECIDO[nome]] if nome in TELHADO_CONHECIDO else cor_de_telhado(media)
         sprite, (esquerda, topo) = desenhar_predio(p, telhado, andares, nome)
         ident = f"predio_{e['id']}"
         pygame.image.save(sprite, str(SAIDA / "predios" / f"{ident}.png"))
         predios.append({"id": ident, "nome": nome or "PREDIO",
-                        "poligono": [[round(x * ESCALA_PIXEL), round(y * ESCALA_PIXEL)] for x, y in p],
-                        "sprite": f"cenario/predios/{ident}.png",
-                        "canto": [esquerda * ESCALA_PIXEL, topo * ESCALA_PIXEL]})
+                        "poligono": [[round(x), round(y)] for x, y in p],
+                        "sprite": f"cenario/predios/{ident}.png", "canto": [esquerda, topo]})
     pygame.image.save(chao, str(SAIDA / "mapa_ufj.png"))
 
     # 4. decorações
     poligonos = [[tuple(q) for q in pr["poligono"]] for pr in predios]
+    from jogo.nucleo.colisao import Colisao
 
-    def livre(x, y, folga=30):
-        if not (60 < x < W - 60 and 60 < y < H - 60):
+    def livre(x, y, folga=60):
+        if not (100 < x < W - 100 and 100 < y < H - 100):
             return False
-        from jogo.nucleo.colisao import Colisao
         return not any(Colisao.circulo_poligono((x, y), folga, pol) for pol in poligonos)
 
     decoracoes = []
-    mata = np.argwhere(classes == Classe.MATA)
-    aleatorio.shuffle(mata := [tuple(v) for v in mata])
+    mata = [tuple(v) for v in np.argwhere(classes == Classe.MATA)]
+    aleatorio.shuffle(mata)
     usados = []
     for ny, nx in mata:
-        x, y = int(nx) * ESCALA_PIXEL, int(ny) * ESCALA_PIXEL
-        if len(usados) >= 200:
+        x, y = int(nx) * E, int(ny) * E
+        if len(usados) >= 320:
             break
-        if all((x - ux) ** 2 + (y - uy) ** 2 > 160 ** 2 for ux, uy in usados) and livre(x, y):
+        if all((x - ux) ** 2 + (y - uy) ** 2 > 230 ** 2 for ux, uy in usados) and livre(x, y):
             usados.append((x, y))
-            decoracoes.append({"tipo": "ipe" if aleatorio.random() < 0.15 else "arvore", "x": x, "y": y})
+            decoracoes.append({"tipo": "ipe" if aleatorio.random() < 0.18 else "arvore", "x": x, "y": y})
     for e in osm:
         via = e["tags"].get("highway")
-        p = [(x * ESCALA_PIXEL, y * ESCALA_PIXEL) for x, y in pontos(e)]
+        p = pontos(e)
         if via not in ("service", "footway") or len(p) < 2:
             continue
-        passo, tipo, afastamento = (300, "palmeira", 44) if via == "service" else (300, "poste", 16)
+        passo, tipo, afastamento = (520, "palmeira", 70) if via == "service" else (560, "poste", 26)
         andado, lado = 0.0, 1
         for a, b in zip(p, p[1:]):
             trecho = pygame.Vector2(b) - pygame.Vector2(a)
@@ -375,7 +427,7 @@ def gerar():
             d = (passo - andado % passo) % passo
             while d < comprimento:
                 q = pygame.Vector2(a) + trecho * (d / comprimento) + normal * afastamento * lado
-                if livre(q.x, q.y, 20):
+                if livre(q.x, q.y, 40):
                     decoracoes.append({"tipo": tipo, "x": round(q.x), "y": round(q.y)})
                 lado = -lado
                 d += passo
@@ -383,21 +435,22 @@ def gerar():
     for pr in predios:
         if pr["nome"] in ("RU", "BIBLIOTECA", "CANTINA", "CONVIVENCIA", "CENTRO DE AULAS I", "CENTRO DE AULAS II"):
             base = max(pr["poligono"], key=lambda q: q[1])
-            if livre(base[0], base[1] + 40, 16):
-                decoracoes.append({"tipo": "banco", "x": base[0], "y": base[1] + 40})
+            for desvio in (-90, 90):
+                if livre(base[0] + desvio, base[1] + 80, 30):
+                    decoracoes.append({"tipo": "banco", "x": base[0] + desvio, "y": base[1] + 80})
     acesso = next((e for e in osm if e["tags"].get("name") == "Acesso UFJ - Campus Jatobá"), None)
     if acesso:
-        p = [(x * ESCALA_PIXEL, y * ESCALA_PIXEL) for x, y in pontos(acesso)]
-        dentro = [q for q in p if 0 < q[0] < W and 0 < q[1] < H]
+        p = pontos(acesso)
+        dentro = [q for q in p if 200 < q[0] < W - 200 and 200 < q[1] < H - 200]
         if dentro:
-            px, py = min(dentro, key=lambda q: (q[0] - W / 2) ** 2 + (q[1] - H / 2) ** 2)
+            px, py = min(dentro, key=lambda q: q[1])
             decoracoes.append({"tipo": "portal", "x": round(px), "y": round(py)})
-            decoracoes.append({"tipo": "bandeira", "x": round(px) - 110, "y": round(py) + 40})
+            decoracoes.append({"tipo": "bandeira", "x": round(px) - 230, "y": round(py) + 80})
 
     inicio = [round((INICIO_SATELITE[0] - rec.x0) * rec.mundo_por_pixel),
               round((INICIO_SATELITE[1] - rec.y0) * rec.mundo_por_pixel)]
-    dados = {"largura": W, "altura": H, "chao": "cenario/mapa_ufj.png", "inicio": inicio,
-             "predios": predios, "decoracoes": decoracoes,
+    dados = {"largura": W, "altura": H, "chao": "cenario/mapa_ufj.png", "escala": E, "escala_predios": 1,
+             "inicio": inicio, "predios": predios, "decoracoes": decoracoes,
              "fonte": "Esri World Imagery (satélite) e OpenStreetMap (ODbL), Campus Jatobá da UFJ"}
     (SAIDA / "mapa_ufj.json").write_text(json.dumps(dados, ensure_ascii=False), encoding="utf-8")
     print(f"arena {W}x{H}, chão {w}x{h}, {len(predios)} prédios, {len(decoracoes)} decorações, início {inicio}")

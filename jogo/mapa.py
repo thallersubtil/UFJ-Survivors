@@ -5,6 +5,7 @@ OpenStreetMap (ferramentas/gerar_mapa.py), e `Cenario` (jogo/cenario.py) é o
 pátio genérico usado quando o mapa da UFJ não está disponível.
 """
 import json
+from collections import OrderedDict
 from abc import ABC, abstractmethod
 
 import pygame
@@ -33,7 +34,8 @@ class Decoracao(Entidade):
         self.animador.atualizar(dt)
 
     def desenhar(self, tela, camera):
-        desenhar_sprite(tela, camera, self.animador.quadro_atual, self.posicao)
+        imagem = self.animador.quadro_atual
+        desenhar_sprite(tela, camera, imagem, self.posicao, sombra=imagem.get_width() < 200)
 
 
 class Predio(Entidade):
@@ -46,7 +48,7 @@ class Predio(Entidade):
     grupo = "predio"
     camada = 1
 
-    def __init__(self, nome, poligono, sprite, canto):
+    def __init__(self, nome, poligono, sprite, canto, escala=ESCALA_PIXEL):
         pontos = [pygame.Vector2(p) for p in poligono]
         base_y = max(p.y for p in pontos)
         meio_x = sum(p.x for p in pontos) / len(pontos)
@@ -55,13 +57,14 @@ class Predio(Entidade):
         self.poligono = [tuple(p) for p in pontos]
         self.sprite = sprite
         self.canto = pygame.Vector2(canto)
+        self.escala = escala
         xs = [p.x for p in pontos]
         ys = [p.y for p in pontos]
         self.contorno = pygame.Rect(min(xs), min(ys), max(xs) - min(xs) + 1, max(ys) - min(ys) + 1)
 
     @property
     def imagem(self):
-        return Recursos.imagem_pixel(self.sprite)
+        return Recursos.imagem_pixel(self.sprite, self.escala)
 
     def atualizar(self, dt, jogo):
         pass
@@ -121,7 +124,11 @@ class MapaUFJ(Mapa):
     def __init__(self, dados, rng=None):
         super().__init__(pygame.Rect(0, 0, dados["largura"], dados["altura"]), dados["inicio"])
         self.chao = dados["chao"]
-        self.predios = [Predio(p["nome"], p["poligono"], p["sprite"], p["canto"]) for p in dados["predios"]]
+        self.escala = dados.get("escala", ESCALA_PIXEL)
+        escala_predios = dados.get("escala_predios", self.escala)
+        self.predios = [Predio(p["nome"], p["poligono"], p["sprite"], p["canto"], escala_predios)
+                        for p in dados["predios"]]
+        self._blocos = OrderedDict()
         self.decoracoes = [Decoracao((d["x"], d["y"]), pasta=self.DECORACOES.get(d["tipo"], d["tipo"]))
                            for d in dados["decoracoes"]]
         self._celulas = {}
@@ -153,18 +160,39 @@ class MapaUFJ(Mapa):
                         achados.append(predio)
         return achados
 
-    def desenhar_chao(self, tela, camera):
-        """O chão é pixel art em metade da resolução; desenha só o pedaço visível, ampliado."""
-        tela.fill((40, 70, 40))
+    BLOCO = 128            # lado do bloco do chão, em pixels da imagem reduzida
+    MAX_BLOCOS = 80
+
+    def _bloco(self, bx, by):
+        """Bloco do chão já ampliado (com suavização), guardado nos mais usados recentemente."""
+        chave = (bx, by)
+        if chave in self._blocos:
+            self._blocos.move_to_end(chave)
+            return self._blocos[chave]
         chao = Recursos.imagem(self.chao)
+        area = pygame.Rect(bx * self.BLOCO, by * self.BLOCO, self.BLOCO + 1, self.BLOCO + 1).clip(chao.get_rect())
+        if area.width <= 0 or area.height <= 0:
+            return None
+        pedaco = chao.subsurface(area)
+        tamanho = (area.width * self.escala, area.height * self.escala)
+        try:
+            ampliado = pygame.transform.smoothscale(pedaco, tamanho)
+        except ValueError:
+            ampliado = pygame.transform.scale(pedaco, tamanho)
+        self._blocos[chave] = ampliado
+        if len(self._blocos) > self.MAX_BLOCOS:
+            self._blocos.popitem(last=False)
+        return ampliado
+
+    def desenhar_chao(self, tela, camera):
+        """O chão fica guardado em resolução reduzida e é desenhado em blocos ampliados com suavização."""
+        tela.fill((40, 70, 40))
         visivel = camera.retangulo.clip(self.arena)
         if visivel.width <= 0 or visivel.height <= 0:
             return
-        origem = pygame.Rect(visivel.left // ESCALA_PIXEL, visivel.top // ESCALA_PIXEL,
-                             visivel.width // ESCALA_PIXEL + 2, visivel.height // ESCALA_PIXEL + 2)
-        origem = origem.clip(chao.get_rect())
-        if origem.width <= 0 or origem.height <= 0:
-            return
-        pedaco = pygame.transform.scale(chao.subsurface(origem),
-                                        (origem.width * ESCALA_PIXEL, origem.height * ESCALA_PIXEL))
-        tela.blit(pedaco, camera.para_tela((origem.left * ESCALA_PIXEL, origem.top * ESCALA_PIXEL)))
+        lado = self.BLOCO * self.escala
+        for by in range(visivel.top // lado, (visivel.bottom - 1) // lado + 1):
+            for bx in range(visivel.left // lado, (visivel.right - 1) // lado + 1):
+                bloco = self._bloco(bx, by)
+                if bloco is not None:
+                    tela.blit(bloco, camera.para_tela((bx * lado, by * lado)))

@@ -1,6 +1,6 @@
 # UFJ Survivors
 
-Sobreviva à Semana de Provas da UFJ. Jogo 2D em Pygame no estilo "survivors", feito para o trabalho prático de Programação Orientada a Objetos: 8 minutos no Campus Jatobá (mapa gerado de satélite e OpenStreetMap), pixel art animada no estilo HoloCure/Disgaea, inimigos que são objetos das matérias do semestre, o Professor como chefe e poderes que misturam memes, IAs e anime.
+Sobreviva à Semana de Provas da UFJ. Jogo 2D em Pygame no estilo "survivors", feito para o trabalho prático de Programação Orientada a Objetos: 8 minutos no Campus Jatobá (mapa gerado de satélite e OpenStreetMap), personagens ilustrados e animados no estilo Disgaea, inimigos que são objetos das matérias do semestre, o Professor como chefe e poderes que misturam memes, IAs e anime.
 
 ![Captura de tela](docs/entregas/captura_combate.png)
 

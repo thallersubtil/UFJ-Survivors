@@ -48,3 +48,34 @@ def test_alinha_pela_cabeca_e_tronco_e_nao_pela_largura():
     quadros = pixelizar.reduzir([boneco_andando(p) for p in (0, 30, 60)], altura=100, cores=8)
     centros = [np.nonzero(np.array(q)[..., 3][:25] > 0)[1].mean() for q in quadros]
     assert max(centros) - min(centros) <= 1.0
+
+
+def test_reduzir_suave_mantem_bordas_macias_e_alinha_pelo_corpo():
+    quadros = pixelizar.reduzir_suave([boneco_andando(p) for p in (0, 30, 60)], altura=60)
+    assert len({q.size for q in quadros}) == 1 and quadros[0].height == 60
+    alfas = set(np.unique(np.concatenate([np.array(q)[..., 3].ravel() for q in quadros])))
+    assert len(alfas) > 3                      # borda suave, não binária
+    assert min(a for a in alfas if a > 0) >= 24   # sem véu quase invisível em volta
+    centros = [np.nonzero(np.array(q)[..., 3][:15] > 128)[1].mean() for q in quadros]
+    assert max(centros) - min(centros) <= 1.0
+
+
+def test_linhas_separa_folha_em_faixas_horizontais():
+    folha = Image.new("RGBA", (300, 300), (0, 0, 0, 0))
+    d = ImageDraw.Draw(folha)
+    d.rectangle((10, 10, 290, 80), fill=(200, 0, 0, 255))
+    d.rectangle((10, 150, 290, 260), fill=(0, 200, 0, 255))
+    faixas = pixelizar.linhas(folha, 2)
+    assert len(faixas) == 2 and faixas[0].height < faixas[1].height
+
+
+def test_alinhar_pela_esquerda_mantem_o_mastro_parado():
+    quadros = []
+    for largura in (60, 100, 80):
+        q = Image.new("RGBA", (120, 100), (0, 0, 0, 0))
+        ImageDraw.Draw(q).rectangle((5, 0, 10, 99), fill=(255, 255, 255, 255))
+        ImageDraw.Draw(q).rectangle((10, 0, largura, 40), fill=(0, 150, 0, 255))
+        quadros.append(q.crop(q.getbbox()))
+    alinhados = pixelizar.reduzir_suave(quadros, 50, ancora="esquerda")
+    mastros = [np.nonzero(np.array(q)[..., 3][-5:] > 128)[1].min() for q in alinhados]
+    assert max(mastros) - min(mastros) <= 1

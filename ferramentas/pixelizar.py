@@ -152,9 +152,12 @@ def _ancora_x(quadro):
     return xs.mean() if len(xs) else quadro.width / 2
 
 
-def alinhar(quadros):
-    """Põe todos os quadros na mesma tela, com a âncora do corpo na mesma coluna e os pés na base."""
-    ancoras = [_ancora_x(q) for q in quadros]
+def alinhar(quadros, ancora="corpo"):
+    """Põe todos os quadros na mesma tela, com a âncora na mesma coluna e os pés na base.
+
+    ancora="corpo": centro da cabeça e do tronco (personagens); "esquerda": borda esquerda (mastros).
+    """
+    ancoras = [_ancora_x(q) if ancora == "corpo" else 0 for q in quadros]
     esquerda = max(int(np.ceil(a)) for a in ancoras)
     direita = max(int(np.ceil(q.width - a)) for q, a in zip(quadros, ancoras))
     altura = max(q.height for q in quadros)
@@ -189,3 +192,23 @@ def reduzir(quadros, altura, cores=48):
         saida.append(Image.fromarray(bloco, "RGBA"))
         x += q.width
     return alinhar(saida)
+
+
+def reduzir_suave(quadros, altura, ancora="corpo"):
+    """Para arte ilustrada (não pixel art): reduz com LANCZOS mantendo a borda macia, alinhando pelo corpo."""
+    maior = max(q.height for q in quadros)
+    fator = altura / maior
+    saida = []
+    for q in quadros:
+        r = q.resize((max(1, round(q.width * fator)), max(1, round(q.height * fator))), Image.LANCZOS)
+        a = np.array(r)
+        a[a[..., 3] < 24] = 0
+        saida.append(Image.fromarray(a, "RGBA"))
+    return alinhar(saida, ancora)
+
+
+def linhas(folha, n):
+    """Separa uma folha com várias linhas de quadros em n faixas horizontais (pelas linhas vazias)."""
+    rotada = folha.transpose(Image.Transpose.ROTATE_90)
+    faixas = dividir(rotada, n)
+    return [f.transpose(Image.Transpose.ROTATE_270) for f in faixas]
