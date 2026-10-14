@@ -5,7 +5,8 @@ from abc import ABC, abstractmethod
 import pygame
 
 from jogo.coletaveis.coletaveis import Bau, CopoDeCafe, PocaoDeVida
-from jogo.config import DISTANCIA_REPOSICIONAR, Cor
+from jogo.config import DISTANCIA_REPOSICIONAR, ESCALA_PIXEL, Cor
+from jogo.nucleo.animacao import Animador
 from jogo.efeitos import TextoFlutuante
 from jogo.nucleo.colisao import Colisao
 from jogo.nucleo.desenho import desenhar_sprite
@@ -20,6 +21,7 @@ class Inimigo(SerVivo, ABC):
     NOME = "Inimigo"
     IMAGEM = ""
     ALTURA = 40
+    PASTA_SPRITE = None   # pasta em assets/sprites/ com as animações; <pasta>_gigante para o mini-chefe
     RAIO = 16
     VIDA = 10
     VELOCIDADE = 80
@@ -47,16 +49,26 @@ class Inimigo(SerVivo, ABC):
         self.gigante = False
         self.solta_bau = False
         self.reposiciona = True
-        self.altura_sprite = self.ALTURA
+        self.animador = Animador(Recursos.animacoes_ou_imagem(self.PASTA_SPRITE, self.IMAGEM, self.ALTURA))
 
     def tornar_gigante(self):
         self.gigante = True
         self.solta_bau = True
         self.reposiciona = False
         self.raio = self.RAIO * self.ESCALA_GIGANTE
-        self.altura_sprite = self.ALTURA * self.ESCALA_GIGANTE
+        proprias = Recursos.animacoes(f"{self.PASTA_SPRITE}_gigante") if self.PASTA_SPRITE else {}
+        self.animador = Animador(proprias or Recursos.animacoes_ou_imagem(
+            self.PASTA_SPRITE, self.IMAGEM, self.ALTURA * self.ESCALA_GIGANTE, ESCALA_PIXEL * self.ESCALA_GIGANTE))
         self.vida_maxima = self.vida_maxima * self.VIDA_GIGANTE
         self.vida = self.vida_maxima
+
+    @property
+    def altura_sprite(self):
+        return self.animador.quadro_atual.get_height()
+
+    def escolher_animacao(self):
+        """Nome da animação que o inimigo quer agora. Sobrescreva para variar."""
+        return "andar"
 
     @property
     def valor_em_pontos(self):
@@ -69,6 +81,8 @@ class Inimigo(SerVivo, ABC):
     def atualizar(self, dt, jogo):
         self.tempo += dt
         self.piscar = max(0.0, self.piscar - dt)
+        self.animador.tocar(self.escolher_animacao())
+        self.animador.atualizar(dt)
         if self.reposiciona and \
                 self.posicao.distance_squared_to(jogo.jogador.posicao) > DISTANCIA_REPOSICIONAR ** 2:
             self.posicao = jogo.fase.posicao_de_nascimento(jogo)
@@ -143,8 +157,13 @@ class Inimigo(SerVivo, ABC):
         if self.solta_bau:
             jogo.adicionar(Bau(self.posicao))
 
+    @property
+    def animado(self):
+        return len(self.animador.animacao.quadros) > 1
+
     def balanco(self):
-        return abs(math.sin(self.tempo * 9)) * 3
+        """Balanço de quem não tem animação de verdade (arte estática)."""
+        return 0 if self.animado else abs(math.sin(self.tempo * 9)) * 3
 
     def desenhar(self, tela, camera):
         self.desenhar_corpo(tela, camera)
@@ -153,7 +172,7 @@ class Inimigo(SerVivo, ABC):
 
     def desenhar_corpo(self, tela, camera):
         """Desenha o sprite. Inimigos com visual especial sobrescrevem só isto."""
-        imagem = Recursos.imagem(self.IMAGEM, int(self.altura_sprite))
+        imagem = self.animador.quadro_atual
         desenhar_sprite(tela, camera, imagem, self.posicao, espelhar=self.olhando_esquerda,
                         piscar=self.piscar > 0, deslocamento_y=self.balanco())
 

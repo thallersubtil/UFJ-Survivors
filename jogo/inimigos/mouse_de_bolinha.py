@@ -42,5 +42,8 @@ class MouseDeBolinha(Inimigo):
             self.correndo = True
             self._timer = self.TEMPO_CORRENDO
 
+    def escolher_animacao(self):
+        return "andar" if self.correndo else "parado"
+
     def balanco(self):
         return abs(math.sin(self.tempo * 22)) * 2 if self.correndo else 0

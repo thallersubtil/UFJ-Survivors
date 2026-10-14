@@ -38,6 +38,6 @@ class Ponteiro(Inimigo):
         self.posicao += self.direcao * self.velocidade * dt
 
     def desenhar_corpo(self, tela, camera):
-        imagem = Recursos.imagem(self.IMAGEM, int(self.altura_sprite))
+        imagem = self.animador.quadro_atual
         angulo = math.degrees(math.atan2(-self.direcao.y, self.direcao.x)) - self.ANGULO_DA_PONTA
         desenhar_sprite(tela, camera, imagem, self.posicao, piscar=self.piscar > 0, angulo=angulo or 0.01)

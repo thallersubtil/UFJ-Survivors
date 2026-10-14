@@ -9,6 +9,7 @@ ARQUIVO_RANKING = PASTA_DADOS / "ranking.json"
 TITULO = "UFJ Survivors"
 LARGURA, ALTURA = 1280, 720
 FPS = 60
+ESCALA_PIXEL = 2          # a arte do mundo é pixel art ampliada 2x, sem suavizar
 
 ARENA_LARGURA, ARENA_ALTURA = 3200, 1800
 DURACAO_FASE = 15 * 60

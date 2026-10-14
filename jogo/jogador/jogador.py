@@ -4,7 +4,8 @@ from abc import ABC, abstractmethod
 
 import pygame
 
-from jogo.config import INVENCIBILIDADE_APOS_DANO
+from jogo.config import ESCALA_PIXEL, INVENCIBILIDADE_APOS_DANO
+from jogo.nucleo.animacao import Animador
 from jogo.nucleo.desenho import desenhar_sprite
 from jogo.nucleo.recursos import Recursos
 from jogo.nucleo.ser_vivo import SerVivo
@@ -20,6 +21,8 @@ class Jogador(SerVivo, ABC):
     VELOCIDADE = 200
     IMAGEM = ""
     IMAGEM_TRANSFORMADO = None
+    PASTA_SPRITE = None          # pasta em assets/sprites/ com as animações (parado, andar)
+    PASTA_TRANSFORMADO = None    # animações da forma transformada (Super Saiyajin)
     ALTURA = 64
     RAIO = 18
     MAX_ARMAS = 6
@@ -37,6 +40,8 @@ class Jogador(SerVivo, ABC):
         self.olhando_esquerda = False
         self.invencivel = 0.0
         self.tempo = 0.0
+        self.transformado = False
+        self.animador = Animador(self._animacoes(), inicial="parado")
         self.nivel = 1
         self.experiencia = 0
         self._redefinir_atributos()
@@ -147,6 +152,23 @@ class Jogador(SerVivo, ABC):
         self.invencivel = INVENCIBILIDADE_APOS_DANO
         return morreu
 
+    def _animacoes(self):
+        if self.transformado:
+            return Recursos.animacoes_ou_imagem(self.PASTA_TRANSFORMADO, self.IMAGEM_TRANSFORMADO, self.ALTURA)
+        return Recursos.animacoes_ou_imagem(self.PASTA_SPRITE, self.IMAGEM, self.ALTURA)
+
+    @property
+    def animado(self):
+        return len(self.animador.animacoes) > 1
+
+    def _atualizar_animacao(self, dt):
+        transformado = bool(self.PASTA_TRANSFORMADO or self.IMAGEM_TRANSFORMADO) and self.tem_bonus("ssj")
+        if transformado != self.transformado:
+            self.transformado = transformado
+            self.animador.trocar_conjunto(self._animacoes())
+        self.animador.tocar("andar" if self.movendo else "parado")
+        self.animador.atualizar(dt)
+
     def usar_especial(self, jogo):
         return self.especial.usar(self, jogo)
 
@@ -175,14 +197,17 @@ class Jogador(SerVivo, ABC):
         for b in self.bonus:
             b.atualizar(dt)
         self.bonus = [b for b in self.bonus if b.ativo]
+        self._atualizar_animacao(dt)
         self.especial.atualizar(dt, self.mult_recarga)
         for arma in list(self.armas):
             arma.atualizar(dt, jogo, self)
 
     def desenhar(self, tela, camera):
-        caminho = self.IMAGEM_TRANSFORMADO if self.IMAGEM_TRANSFORMADO and self.tem_bonus("ssj") else self.IMAGEM
-        imagem = Recursos.imagem(caminho, self.ALTURA)
-        pulo = abs(math.sin(self.tempo * 10)) * 4 if self.movendo else (1 + math.sin(self.tempo * 2)) * 0.8
+        imagem = self.animador.quadro_atual
+        if self.animado:
+            pulo = 0
+        else:
+            pulo = abs(math.sin(self.tempo * 10)) * 4 if self.movendo else (1 + math.sin(self.tempo * 2)) * 0.8
         alfa = 130 if self.invencivel > 0 and int(self.invencivel * 20) % 2 else 255
         desenhar_sprite(tela, camera, imagem, self.posicao, espelhar=self.olhando_esquerda,
                         piscar=self.piscar > 0, deslocamento_y=pulo, alfa=alfa)

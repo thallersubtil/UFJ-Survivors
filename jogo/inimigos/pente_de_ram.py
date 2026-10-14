@@ -28,7 +28,7 @@ class PenteDeRAM(Inimigo):
 
     def desenhar_corpo(self, tela, camera):
         """Desenha o pente em fatias que ondulam, como as patas de uma centopeia."""
-        imagem = Recursos.imagem(self.IMAGEM, int(self.altura_sprite))
+        imagem = self.animador.quadro_atual
         if self.piscar > 0:
             imagem = Recursos.silhueta_branca(imagem)
         if self.olhando_esquerda:

@@ -1,10 +1,12 @@
 """Carrega imagens, fontes e sons uma vez só, com substitutos quando falta arquivo."""
+import re
 import zlib
 from pathlib import Path
 
 import pygame
 
-from jogo.config import FONTE, PASTA_ASSETS
+from jogo.config import ESCALA_PIXEL, FONTE, PASTA_ASSETS
+from jogo.nucleo.animacao import Animacao
 
 
 class SomMudo:
@@ -56,10 +58,51 @@ class Recursos:
 
     @staticmethod
     def _redimensionar(img, tamanho):
+        """Ampliar é sempre com vizinho mais próximo (pixel nítido); só reduzir suaviza."""
+        if tamanho[0] >= img.get_width() or tamanho[1] >= img.get_height():
+            return pygame.transform.scale(img, tamanho)
         try:
             return pygame.transform.smoothscale(img, tamanho)
         except ValueError:
             return pygame.transform.scale(img, tamanho)
+
+    @staticmethod
+    def ampliar(img, fator):
+        """Amplia por um fator inteiro sem suavizar: cada pixel vira um bloco fator x fator."""
+        if fator == 1:
+            return img
+        return pygame.transform.scale(img, (img.get_width() * fator, img.get_height() * fator))
+
+    FPS_PADRAO = {"parado": 5, "andar": 10, "mover": 10, "atacar": 10}
+    NAO_REPETE = {"atacar"}
+
+    @classmethod
+    def animacoes(cls, pasta, escala=ESCALA_PIXEL):
+        """Lê as tiras assets/sprites/<pasta>/<nome>-<n>.png (n quadros de mesma largura)."""
+        chave = ("animacoes", pasta, escala)
+        if chave not in cls._derivadas:
+            resultado = {}
+            diretorio = cls.pasta / "sprites" / pasta
+            for arquivo in sorted(diretorio.glob("*-*.png")) if diretorio.is_dir() else ():
+                achado = re.fullmatch(r"(.+)-(\d+)", arquivo.stem)
+                if not achado:
+                    continue
+                nome, n = achado.group(1), int(achado.group(2))
+                tira = pygame.image.load(str(arquivo))
+                if pygame.display.get_surface() is not None:
+                    tira = tira.convert_alpha()
+                largura = tira.get_width() // n
+                quadros = [cls.ampliar(tira.subsurface((i * largura, 0, largura, tira.get_height())).copy(), escala)
+                           for i in range(n)]
+                resultado[nome] = Animacao(quadros, cls.FPS_PADRAO.get(nome, 8), nome not in cls.NAO_REPETE)
+            cls._derivadas[chave] = resultado
+        return cls._derivadas[chave]
+
+    @classmethod
+    def animacoes_ou_imagem(cls, pasta, imagem, altura, escala=ESCALA_PIXEL):
+        """Animações da pasta; sem elas, uma animação 'parado' com a imagem estática (ou o substituto)."""
+        animacoes = cls.animacoes(pasta, escala) if pasta else {}
+        return animacoes or {"parado": Animacao([cls.imagem(imagem, altura)])}
 
     @classmethod
     def silhueta_branca(cls, imagem):
