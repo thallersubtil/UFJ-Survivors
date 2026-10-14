@@ -38,7 +38,7 @@ def main():
         circulo = pygame.Vector2(1, 0).rotate(quadro * 0.3)
         centro = pygame.Vector2(jogo.arena.center) - jogo.jogador.posicao
         fuga += centro * 0.15   # foge sem se encurralar nas bordas
-        if jogo.chefe is not None and jogo.chefe.ativo and jogo.chefe.posicao.distance_to(jogo.jogador.posicao) > 350:
+        if jogo.chefe is not None and jogo.chefe.ativo and jogo.chefe.posicao.distance_to(jogo.jogador.posicao) > 120:
             fuga = jogo.chefe.posicao - jogo.jogador.posicao
         jogo.entrada.direcao = fuga.normalize() if fuga.length_squared() > 0 else circulo
         alvo = jogo.inimigo_mais_proximo(jogo.jogador.posicao, 700)

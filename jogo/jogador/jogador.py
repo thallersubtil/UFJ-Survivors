@@ -129,7 +129,7 @@ class Jogador(SerVivo, ABC):
 
     @property
     def experiencia_necessaria(self):
-        return 8 + (self.nivel - 1) * 5
+        return 6 + (self.nivel - 1) * 3
 
     def ganhar_experiencia(self, quantidade):
         """Soma experiência e retorna quantos níveis o herói subiu."""

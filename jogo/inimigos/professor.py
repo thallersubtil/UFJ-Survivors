@@ -15,7 +15,7 @@ class Professor(Chefe):
     PASTA_SPRITE = "professor"
     ALTURA = 112
     RAIO = 46
-    VIDA = 5500
+    VIDA = 3200
     VELOCIDADE = 75
     DANO = 18
     PONTOS = 5000
