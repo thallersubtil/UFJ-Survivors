@@ -9,7 +9,7 @@ Saídas:
   assets/cenario/predios/<id>.png      um sprite 3/4 por prédio
   assets/cenario/mapa_ufj.json         arena, ponto inicial, prédios (colisão) e decorações
 
-Uso: python ferramentas/gerar_mapa.py
+Uso: python ferramentas/gerar_mapa.py [--baixar]   (baixa as fontes se ainda não existirem)
 """
 import json
 import math
@@ -403,7 +403,38 @@ def gerar():
     print(f"arena {W}x{H}, chão {w}x{h}, {len(predios)} prédios, {len(decoracoes)} decorações, início {inicio}")
 
 
+def baixar_fontes():
+    """Baixa o mosaico de satélite (Esri World Imagery) e os dados do OpenStreetMap (Overpass).
+
+    O satélite serve só de referência para pintar o chão e não vai para o repositório.
+    """
+    import io
+    import urllib.parse
+    import urllib.request
+    ENTRADA.mkdir(parents=True, exist_ok=True)
+    cabecalho = {"User-Agent": "ufj-survivors-trabalho-poo/1.0"}
+    rec = RECORTE
+    colunas, linhas = 5, 6
+    mosaico = Image.new("RGB", (colunas * 256, linhas * 256))
+    for dx in range(colunas):
+        for dy in range(linhas):
+            url = ("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/"
+                   f"{rec.zoom}/{rec.tile_y0 + dy}/{rec.tile_x0 + dx}")
+            dados = urllib.request.urlopen(urllib.request.Request(url, headers=cabecalho), timeout=30).read()
+            mosaico.paste(Image.open(io.BytesIO(dados)), (dx * 256, dy * 256))
+    mosaico.save(ENTRADA / "satelite_z17.jpg", quality=92)
+    caixa = "-17.9330,-51.7230,-17.9200,-51.7100"
+    consulta = (f'[out:json][timeout:60];(way["building"]({caixa});way["highway"]({caixa});'
+                f'way["leisure"]({caixa});way["landuse"]({caixa});way["amenity"]({caixa}););out geom tags;')
+    pedido = urllib.request.Request("https://overpass-api.de/api/interpreter",
+                                    data=urllib.parse.urlencode({"data": consulta}).encode(), headers=cabecalho)
+    (ENTRADA / "osm.json").write_bytes(urllib.request.urlopen(pedido, timeout=90).read())
+    print(f"fontes gravadas em {ENTRADA}")
+
+
 if __name__ == "__main__":
     import sys
     sys.path.insert(0, str(RAIZ))
+    if "--baixar" in sys.argv or not (ENTRADA / "osm.json").exists():
+        baixar_fontes()
     gerar()

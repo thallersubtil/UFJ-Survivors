@@ -123,6 +123,34 @@ classDiagram
     class Colisao {
         +circulos_colidem(a, b)$ bool
         +segmento_acerta_circulo(...)$ bool
+        +empurrar_para_fora(c, r, poligono)$ Vector2
+    }
+
+    class Mapa {
+        <<abstract>>
+        +arena: Rect
+        +inicio: Vector2
+        +entidades()* list
+        +desenhar_chao(tela, camera)*
+        +empurrar(posicao, raio) Vector2
+    }
+    class MapaUFJ {
+        +carregar(rng)$ MapaUFJ
+    }
+    class Cenario
+    class Predio {
+        +poligono: list
+        +esta_visivel(camera) bool
+    }
+    class Decoracao
+    class Animador {
+        +atual: str
+        +tocar(nome)
+        +quadro_atual
+    }
+    class Animacao {
+        +quadros: list
+        +quadro(tempo)
     }
 
     Entidade <|-- SerVivo
@@ -155,6 +183,15 @@ classDiagram
     Jogo *-- Jogador
     Jogo *-- Fase
     Jogo *-- Placar
+    Jogo *-- Mapa
+    Mapa <|-- MapaUFJ
+    Mapa <|-- Cenario
+    Entidade <|-- Predio
+    Entidade <|-- Decoracao
+    MapaUFJ *-- Predio
+    Jogador *-- Animador
+    Inimigo *-- Animador
+    Animador o-- Animacao
     Jogo o-- Entidade
     Jogador *-- Arma
     Jogador *-- Item

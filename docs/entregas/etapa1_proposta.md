@@ -8,12 +8,13 @@
 
 ## 1. O jogo
 
-**UFJ Survivors** é um jogo 2D em Pygame no estilo "survivors" (Vampire Survivors, HoloCure). O jogador controla um aluno da UFJ que precisa sobreviver à **Semana de Provas**: 15 minutos de ondas cada vez maiores de lacaios das matérias do semestre, objetos do dia a dia que ganharam vida, até a chegada do chefe final, o **Professor**.
+**UFJ Survivors** é um jogo 2D em Pygame no estilo "survivors" (Vampire Survivors, HoloCure). O jogador controla um aluno da UFJ que precisa sobreviver à **Semana de Provas** no próprio Campus Jatobá da UFJ: 8 minutos de ondas cada vez maiores de lacaios das matérias do semestre, objetos do dia a dia que ganharam vida, até a chegada do chefe final, o **Professor**. O mapa reproduz o campus real (avenida, rotatórias, gramado central, RU, Biblioteca, Centro de Aulas, portal de entrada) e toda a arte é pixel art animada, no estilo de HoloCure e Disgaea.
 
 O herói só anda; as armas atacam sozinhas. Os inimigos derrotados soltam **notas** (fichinhas de "10") que dão experiência. A cada nível o jogo pausa e oferece três cartas: uma arma nova, a melhoria de uma arma ou um item passivo. As armas misturam memes, IAs e anime: cachorro caramelo, cobra do Python, mascotes do ChatGPT e do Claude, a estrela do Gemini, o fusca azul, o Zoltraak da Frieren e o Super Saiyajin.
 
 Regras principais:
-- **Duração:** 15 minutos. Um lacaio novo aparece a cada 1,5 minuto; mini-chefes aos 5 e aos 10 minutos (soltam um baú); o Professor aos 15.
+- **Duração:** 8 minutos. Um lacaio novo aparece a cada 40 segundos; mini-chefes aos 2:40 e aos 5:20 (soltam um baú); o Professor aos 8:00.
+- **Mapa:** o Campus Jatobá, gerado a partir de imagem de satélite e do OpenStreetMap; os prédios reais são obstáculos e dá para se esconder atrás deles.
 - **Vitória:** derrotar o Professor ("APROVADO!"). **Derrota:** a vida do herói chegar a zero ("REPROVADO!").
 - **Café é a munição:** as armas de disparo gastam café, que recarrega sozinho; sem café elas atiram bem mais devagar. Copinhos de café caídos enchem o estoque.
 - **Combo 67:** 67 eliminações seguidas sem levar dano tocam o áudio "six seven" e dão +50% de velocidade por 6 segundos.
@@ -71,7 +72,9 @@ Principais decisões de design:
 - **`Entidade` é abstrata** e define `atualizar()` e `desenhar()`. Tudo que existe na arena herda dela: heróis, inimigos, projéteis, ajudantes (cachorro, fusca, mascotes), coletáveis e efeitos. Por isso o `Jogo` atualiza tudo num único laço sem saber o tipo de cada coisa.
 - **`SerVivo`** concentra a vida (com `@property` e validação) e é a base comum de `Jogador` e `Inimigo`, que têm vida mas se comportam de jeitos diferentes.
 - **`Inimigo` é abstrata** com o método abstrato `mover()`. Cada lacaio só implementa o próprio jeito de andar e, quando precisa, sobrescreve `ao_morrer()` (a Caixinha se divide, a Pilha explode, o Pi mostra "3,14..."). O `Chefe` é um inimigo com uma lista de ataques; o `Professor` é um chefe.
-- **Composição:** o `Jogo` contém o `Jogador`, a `Fase` e o `Placar`. O `Jogador` contém suas `Arma`s, seus `Item`s e um `Especial`. As armas não são entidades: elas criam entidades (projéteis e ajudantes) na arena.
+- **`Mapa` é abstrata**, com duas implementações: `MapaUFJ` (o campus, lido de um arquivo gerado) e `Cenario` (um pátio genérico). O `Jogo` não sabe qual está usando. Os prédios são `Predio`, entidades com o contorno real como polígono de colisão.
+- **Animação por composição:** heróis, inimigos e ajudantes contêm um `Animador`, que guarda as `Animacao`s (parado, andar) e sabe qual quadro desenhar; cada classe só diz qual animação quer.
+- **Composição:** o `Jogo` contém o `Jogador`, a `Fase`, o `Placar` e o `Mapa`. O `Jogador` contém suas `Arma`s, seus `Item`s e um `Especial`. As armas não são entidades: elas criam entidades (projéteis e ajudantes) na arena.
 - **`Arma`** tem duas famílias: `ArmaDeDisparo` (com munição de café) e `ArmaDeContato`. `Colab` é uma arma criada a partir de duas outras.
 - **`FabricaDeInimigos`** cria qualquer inimigo pelo nome (`@classmethod`). Cada classe de inimigo se registra com um decorador; criar um inimigo novo exige só um arquivo novo, sem alterar nenhuma classe existente.
 - **`Colisao`** reúne testes de colisão como `@staticmethod` (círculo com círculo, segmento com círculo).
@@ -96,6 +99,6 @@ As classes concretas de armas, itens, projéteis e ajudantes ficam fora do diagr
 |---|---|---|
 | 1 | 22/10 | Esta proposta e o diagrama de classes |
 | 2 | 05/11 | Protótipo: janela, herói se movendo e um inimigo na tela, com arte |
-| 3 | 26/11 | Hierarquia completa e polimorfismo: todos os inimigos, armas, itens e a fase de 15 minutos |
+| 3 | 26/11 | Hierarquia completa e polimorfismo: todos os inimigos, armas, itens e a fase de 8 minutos |
 | Mostra | 03/12 | Jogo completo e polido para a turma jogar |
 | 4 | 10/12 ou 14/12 | Versão final, defesa oral e requisito surpresa |

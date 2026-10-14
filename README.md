@@ -1,6 +1,6 @@
 # UFJ Survivors
 
-Sobreviva à Semana de Provas da UFJ. Jogo 2D em Pygame no estilo "survivors", feito para o trabalho prático de Programação Orientada a Objetos: os inimigos são objetos das matérias do semestre que ganharam vida, o chefe é o Professor e os poderes misturam memes, IAs e anime.
+Sobreviva à Semana de Provas da UFJ. Jogo 2D em Pygame no estilo "survivors", feito para o trabalho prático de Programação Orientada a Objetos: 8 minutos no Campus Jatobá (mapa gerado de satélite e OpenStreetMap), pixel art animada no estilo HoloCure/Disgaea, inimigos que são objetos das matérias do semestre, o Professor como chefe e poderes que misturam memes, IAs e anime.
 
 ![Captura de tela](docs/entregas/captura_combate.png)
 
@@ -45,6 +45,14 @@ Para simular uma partida inteira sem janela (útil para balancear):
 .venv/bin/python ferramentas/simular_partida.py --heroi 1 --imortal
 ```
 
+## Ferramentas de arte
+
+```bash
+.venv/bin/python ferramentas/gerar_mapa.py        # mapa do Campus Jatobá (baixa satélite e OpenStreetMap se faltar)
+.venv/bin/python ferramentas/montar_sprites.py    # folhas de animação -> pixel art (precisa das folhas em arte_bruta/)
+.venv/bin/python ferramentas/gerar_sons.py        # efeitos sonoros
+```
+
 ## Onde está cada requisito de POO
 
 | Requisito | Arquivo | Classe / método |
@@ -64,14 +72,15 @@ Diagrama de classes: [docs/entregas/diagrama_classes.png](docs/entregas/diagrama
 ```
 main.py            ponto de entrada
 jogo/
-  nucleo/          Entidade, SerVivo, Colisao, câmera, grade espacial, carregamento de arte e som
+  nucleo/          Entidade, SerVivo, Colisao, Animacao/Animador, câmera, grade espacial, arte e som
   jogador/         Jogador, os dois alunos, especiais, bônus temporários
   inimigos/        Inimigo, fábrica, um arquivo por inimigo, Chefe e Professor
   armas/           Arma e suas famílias, uma arma por arquivo, colabs
   itens/           itens passivos
   projeteis/  ajudantes/  coletaveis/
   cenas/           telas (título, seleção, partida, nível, baú, pausa, fim, ranking) e HUD
-  jogo.py fase.py placar.py ranking.py progressao.py efeitos.py cenario.py
+  jogo.py fase.py placar.py ranking.py progressao.py efeitos.py
+  mapa.py cenario.py  Mapa (abstrata), MapaUFJ, Predio, Decoracao e o pátio genérico
 assets/            sprites, ícones, cenário, sons, fontes e a arte reaproveitada (legado/)
 ferramentas/       preparo da arte, geração dos sons, simulador de partida
 testes/            testes automáticos (pytest)

@@ -18,6 +18,8 @@ Segue o formato pedido no enunciado: uma tabela por etapa, com onde a IA foi usa
 |---|---|---|
 | 2 | Arte dos personagens, inimigos e cenário com a ferramenta de imagens do ChatGPT | Ajustamos tamanhos (o chão e o Pente de RAM saíram desproporcionais) e geramos o Aluno 2 e o Super Saiyajin editando o Aluno 1, para manter o mesmo estilo. |
 | 2 | Código do núcleo, do jogador e do primeiro inimigo (Claude Code, com testes automáticos) | |
+| 2 e 3 | Animação por quadros e pixel art: folhas de animação geradas pelo ChatGPT e convertidas por script (Claude Code) | A primeira conversão borrou rostos; pedimos arte já em baixa resolução com olhos grandes e uma redução que preserva contorno e brilho |
+| 2 e 3 | Mapa do Campus Jatobá a partir de satélite e OpenStreetMap (Claude Code) | Conferir com fotos reais; corrigir cor de telhado da Biblioteca e a densidade de palmeiras |
 
 ## Etapa 3: hierarquia completa e polimorfismo
 

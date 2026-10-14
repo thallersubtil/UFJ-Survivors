@@ -4,10 +4,11 @@ Leia este arquivo inteiro antes de mexer no projeto. Ele vale para qualquer pess
 
 ## O que é este projeto
 
-**UFJ Survivors** é o trabalho prático de Programação Orientada a Objetos da UFJ (Profª Emília Alves Nogueira). É um jogo 2D em Pygame no estilo "survivors" (Vampire Survivors, HoloCure): o herói anda pela arena, as armas atacam sozinhas, as ondas de inimigos crescem e o Professor aparece aos 15 minutos como chefe final. Os inimigos são objetos das matérias do semestre que ganharam vida; as armas misturam memes, IAs e anime.
+**UFJ Survivors** é o trabalho prático de Programação Orientada a Objetos da UFJ (Profª Emília Alves Nogueira). É um jogo 2D em Pygame no estilo "survivors" (Vampire Survivors, HoloCure): o herói anda pelo Campus Jatobá da UFJ (mapa gerado a partir de satélite e OpenStreetMap), as armas atacam sozinhas, as ondas de inimigos crescem e o Professor aparece aos 8 minutos como chefe final. Toda a arte do mundo é pixel art animada (estilo HoloCure/Disgaea). Os inimigos são objetos das matérias do semestre que ganharam vida; as armas misturam memes, IAs e anime.
 
 - O enunciado do trabalho está resumido em `docs/superpowers/specs/2026-10-10-ufj-survivors-design.md` (seções 1 e 12). **A especificação é a referência**: se algo aqui ou no código contradizer a especificação, siga a especificação ou converse com o grupo.
 - O plano de implementação que gerou o código está em `docs/superpowers/plans/2026-10-10-ufj-survivors.md`.
+- Animação, pixel art, mapa da UFJ e partida de 8 minutos: `docs/superpowers/specs/2026-10-14-animacao-mapa-ufj-design.md` (vale sobre a especificação original onde divergirem).
 - O que ainda falta fazer está em `docs/PENDENCIAS.md`. **Comece por lá.**
 
 ## Como rodar e testar
@@ -47,7 +48,9 @@ Regras que decorrem disso:
 main.py                ponto de entrada (abre a CenaTitulo)
 jogo/config.py         tamanhos, cores e números gerais
 jogo/jogo.py           Jogo: a partida; o laço polimórfico; regras de dano, morte, combo 67, notas
-jogo/fase.py           Fase (abstrata) e SemanaDeProvas: linha do tempo dos 15 minutos
+jogo/fase.py           Fase (abstrata) e SemanaDeProvas: linha do tempo dos 8 minutos
+jogo/mapa.py           Mapa (abstrata), MapaUFJ, Predio (obstáculo), Decoracao; jogo/cenario.py: pátio genérico
+jogo/nucleo/animacao.py  Animacao e Animador (composição: personagens contêm um Animador)
 jogo/nucleo/           Entidade, SerVivo, Colisao, Camera, GradeEspacial, Recursos (arte/som com substitutos), desenho
 jogo/jogador/          Jogador (abstrata), AlunoAgil, AlunoResistente, especiais, BonusTemporario
 jogo/inimigos/         Inimigo (abstrata), FabricaDeInimigos, um arquivo por lacaio, Chefe, Professor
@@ -57,7 +60,8 @@ jogo/projeteis/  jogo/ajudantes/  jogo/coletaveis/  jogo/efeitos.py   o que as a
 jogo/progressao.py     cartas de nível e prêmio do baú
 jogo/cenas/            telas (Cena abstrata) e o HUD
 assets/                sprites/, icones/, cenario/, sons/, fontes/, legado/ (arte reaproveitada de outro jogo)
-ferramentas/           preparar_arte.py, gerar_sons.py, simular_partida.py
+ferramentas/           pixelizar.py e montar_sprites.py (folhas de animação), gerar_mapa.py (mapa da UFJ),
+                       gerar_sons.py, simular_partida.py, preparar_arte.py (imagens soltas, ex.: título)
 testes/                pytest, um arquivo por assunto; fixture `jogo_limpo` em conftest.py
 docs/                  entregas, diagrama, registro de uso de IA, especificação, plano, pendências
 ```
@@ -70,13 +74,15 @@ docs/                  entregas, diagrama, registro de uso de IA, especificaçã
 
 **Item novo**: herde de `Item`, implemente `aplicar(jogador)` somando ao modificador do jogador conforme `self.nivel`, e acrescente em `ITENS` (`jogo/itens/itens.py`).
 
-**Arte nova**: gere a imagem (o grupo usou a ferramenta de imagens do ChatGPT com o estilo "cute chibi pixel art, 16-bit SNES style, three-quarter top-down view like Stardew Valley, thick dark outline, saturated colors, simple cel shading, transparent background"), salve a original em `arte_bruta/` (ignorada pelo git) e reduza com:
-```bash
-.venv/bin/python ferramentas/preparar_arte.py arte_bruta/x.png assets/sprites/x.png --altura 46
-```
-Se um arquivo de arte faltar, o jogo desenha um círculo colorido no lugar; nada quebra.
+**Arte animada (pixel art)**: toda a arte do mundo é pixel art em resolução baixa, desenhada ampliada 2x sem suavizar (`ESCALA_PIXEL` em `jogo/config.py`). Cada personagem tem uma pasta `assets/sprites/<nome>/` com tiras de quadros `<animacao>-<n>.png` (`parado`, `andar`, `mover`...); a classe aponta para a pasta em `PASTA_SPRITE` e contém um `Animador` que escolhe a animação. Mini-chefes usam `<nome>_gigante/`, em resolução própria. Para criar ou trocar uma animação:
+1. Gere a folha com a ferramenta de imagens do ChatGPT (`edit_image`), passando uma folha existente como referência de estilo e o personagem como referência de design. O prompt que funcionou: "low-resolution pixel art sprite sheet for a HoloCure / Disgaea style game ... exactly N frames in ONE horizontal row, equal cells, clear empty space between frames, same size and same baseline ... true low-resolution pixel art with big crisp square pixels, about 16 colors, solid 1-pixel dark outline, no anti-aliasing ... transparent background". Para piscar: "frame 3 eyes closed".
+2. Salve a folha em `arte_bruta/folhas/` (fora do git) e acrescente uma linha em `RECEITA` de `ferramentas/montar_sprites.py` (folha, pasta, animação, número de quadros, altura nativa, e `gigante` se for mini-chefe).
+3. Rode `.venv/bin/python ferramentas/montar_sprites.py`. As folhas brutas do grupo estão com o Thaller; peça a ele se precisar refazer algum sprite antigo.
+Se a pasta não existir, o jogo usa a imagem estática `IMAGEM` ou um círculo colorido; nada quebra.
 
-**Trocar a arte provisória dos alunos e do professor pelas caricaturas do grupo**: basta substituir `assets/sprites/aluno1.png`, `aluno2.png`, `aluno2_ssj.png` e `professor.png` (mantendo fundo transparente e o personagem virado para a direita) e os nomes `NOME` em `jogo/jogador/alunos.py` e `jogo/inimigos/professor.py`.
+**Trocar a arte provisória dos alunos e do professor pelas caricaturas do grupo**: gere folhas `parado` (4 quadros, o 3º piscando) e `andar` (6 quadros) para cada um, como acima, mantendo as pastas `aluno1`, `aluno2`, `aluno2_ssj` e `professor`, e troque os nomes `NOME` em `jogo/jogador/alunos.py` e `jogo/inimigos/professor.py`.
+
+**Mapa da UFJ**: `.venv/bin/python ferramentas/gerar_mapa.py` (baixa sozinho as fontes de satélite e OpenStreetMap se faltarem, com `--baixar` para atualizar) gera `assets/cenario/mapa_ufj.png`, os sprites dos prédios e `mapa_ufj.json`. Para mudar escala, recorte, cores, nomes curtos dos prédios ou densidade de árvores, edite as constantes no topo do script. Prédios são `Predio` (obstáculos com o contorno real); herói e inimigos são empurrados para fora por `Colisao.empurrar_para_fora`.
 
 ## Convenções
 
@@ -96,7 +102,7 @@ Se um arquivo de arte faltar, o jogo desenha um círculo colorido no lugar; nada
 | Etapa | Data | Entrega |
 |---|---|---|
 | 1 | 22/10 | Proposta e diagrama de classes (`docs/entregas/etapa1_proposta.md`, `diagrama_classes.png`) |
-| 2 | 05/11 | Protótipo (tag `etapa-2-prototipo`) |
+| 2 | 05/11 | Protótipo (tag `etapa-2-prototipo`; a versão atual já é bem mais completa) |
 | 3 | 26/11 | Hierarquia completa e polimorfismo funcionando |
 | Mostra | 03/12 | A turma joga os jogos e vota em "mais criativo" e "melhor arquitetura" |
 | 4 | 10/12 ou 14/12 | Versão final, defesa oral individual e requisito surpresa (ex.: "crie um inimigo novo em 10 minutos sem alterar as classes existentes") |

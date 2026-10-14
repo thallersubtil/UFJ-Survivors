@@ -1,6 +1,6 @@
 # UFJ Survivors: especificação do jogo
 
-Data: 2026-10-10. Trabalho prático de Programação Orientada a Objetos (UFJ, Profª Emília Alves Nogueira).
+Data: 2026-10-10. **Atualizada por `2026-10-14-animacao-mapa-ufj-design.md`**: partida de 8 minutos, mapa do Campus Jatobá e pixel art animada. Trabalho prático de Programação Orientada a Objetos (UFJ, Profª Emília Alves Nogueira).
 
 ## 1. Objetivo
 
