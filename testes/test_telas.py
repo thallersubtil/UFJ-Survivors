@@ -103,8 +103,9 @@ def test_pausa_alterna_mira_e_volta(app):
     app.passo(1 / 60, [tecla(pygame.K_ESCAPE)])
     assert isinstance(app.cena_atual, CenaPausa)
     tempo = partida.jogo.placar.tempo
+    assert app.modo_mira == "mouse"
     app.passo(1 / 60, [tecla(pygame.K_DOWN), tecla(pygame.K_RETURN)])
-    assert app.mira_mouse
+    assert app.modo_mira == "automatica"
     assert partida.jogo.placar.tempo == tempo
     app.passo(1 / 60, [tecla(pygame.K_ESCAPE)])
     assert app.cena_atual is partida
@@ -139,3 +140,36 @@ def test_espaco_nao_escolhe_carta_nem_fecha_bau(app):
         app.passo(1 / 60, [])
     app.passo(1 / 60, [tecla(pygame.K_SPACE)])
     assert isinstance(app.cena_atual, CenaBau)
+
+
+def clique(pos=(640, 360)):
+    return pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=pos)
+
+
+def test_clique_alterna_entre_mira_no_mouse_e_automatica(app):
+    partida = CenaPartida(app, AlunoAgil)
+    app.trocar(partida)
+    assert app.modo_mira == "mouse"
+    app.passo(1 / 60, [])
+    assert partida.jogo.entrada.mira is not None
+    app.passo(1 / 60, [clique()])
+    assert app.modo_mira == "automatica"
+    app.passo(1 / 60, [clique()])
+    assert app.modo_mira == "mouse"
+
+
+def test_mira_automatica_aponta_para_o_inimigo_mais_proximo(app):
+    from jogo.inimigos.bug import Bug
+    partida = CenaPartida(app, AlunoAgil)
+    app.trocar(partida)
+    app.modo_mira = "automatica"
+    jogo = partida.jogo
+    perto = Bug(jogo.jogador.posicao + (150, -40))
+    longe = Bug(jogo.jogador.posicao + (-500, 0))
+    perto.velocidade = longe.velocidade = 0
+    jogo.adicionar(perto)
+    jogo.adicionar(longe)
+    jogo._incorporar_novas()
+    jogo.grade.reconstruir(jogo.inimigos)
+    partida._ler_entrada()
+    assert jogo.entrada.mira == perto.posicao

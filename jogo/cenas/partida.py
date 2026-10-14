@@ -6,11 +6,14 @@ from jogo.cenas.fim import CenaFimDeJogo
 from jogo.cenas.hud import Hud
 from jogo.cenas.nivel import CenaNivel
 from jogo.cenas.pausa import CenaPausa
+from jogo.cenas.widgets import desenhar_texto
+from jogo.config import Cor
 from jogo.jogo import Jogo
 
 
 class CenaPartida(Cena):
     ESPERA_FIM = 1.5
+    ALCANCE_MIRA_AUTOMATICA = 700
 
     def __init__(self, app, classe_jogador):
         super().__init__(app)
@@ -19,6 +22,10 @@ class CenaPartida(Cena):
         self._espera_fim = self.ESPERA_FIM
 
     def tratar_evento(self, evento):
+        if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
+            modo = self.app.alternar_mira()
+            self.jogo.anunciar("Mira automática" if modo == "automatica" else "Mira no mouse", 1.2)
+            return
         if evento.type != pygame.KEYDOWN:
             return
         if evento.key == pygame.K_ESCAPE:
@@ -31,7 +38,11 @@ class CenaPartida(Cena):
         x = (teclas[pygame.K_d] or teclas[pygame.K_RIGHT]) - (teclas[pygame.K_a] or teclas[pygame.K_LEFT])
         y = (teclas[pygame.K_s] or teclas[pygame.K_DOWN]) - (teclas[pygame.K_w] or teclas[pygame.K_UP])
         self.jogo.entrada.direcao = pygame.Vector2(x, y)
-        self.jogo.entrada.mira = self.jogo.camera.para_mundo(pygame.mouse.get_pos()) if self.app.mira_mouse else None
+        if self.app.modo_mira == "automatica":
+            alvo = self.jogo.inimigo_mais_proximo(self.jogo.jogador.posicao, self.ALCANCE_MIRA_AUTOMATICA)
+            self.jogo.entrada.mira = pygame.Vector2(alvo.posicao) if alvo is not None else None
+        else:
+            self.jogo.entrada.mira = self.jogo.camera.para_mundo(pygame.mouse.get_pos())
 
     def atualizar(self, dt):
         if self.jogo.terminou:
@@ -49,3 +60,20 @@ class CenaPartida(Cena):
     def desenhar(self, tela):
         self.jogo.desenhar(tela)
         self.hud.desenhar(tela, self.jogo)
+        self._desenhar_mira(tela)
+
+    def _desenhar_mira(self, tela):
+        mira_propria = self.app.modo_mira == "mouse" and self.app.cenas and self.app.cena_atual is self
+        if pygame.display.get_init():
+            pygame.mouse.set_visible(not mira_propria)
+        if mira_propria:
+            x, y = pygame.mouse.get_pos()
+            pygame.draw.circle(tela, (20, 16, 30), (x, y), 9, 3)
+            pygame.draw.circle(tela, (255, 236, 160), (x, y), 9, 1)
+            pygame.draw.line(tela, (255, 236, 160), (x - 13, y), (x - 5, y))
+            pygame.draw.line(tela, (255, 236, 160), (x + 5, y), (x + 13, y))
+            pygame.draw.line(tela, (255, 236, 160), (x, y - 13), (x, y - 5))
+            pygame.draw.line(tela, (255, 236, 160), (x, y + 5), (x, y + 13))
+        texto = "MIRA: MOUSE  (clique: automática)" if self.app.modo_mira == "mouse" \
+            else "MIRA: AUTOMÁTICA  (clique: mouse)"
+        desenhar_texto(tela, texto, 14, Cor.TEXTO_FRACO, topo_esquerda=(14, tela.get_height() - 24))

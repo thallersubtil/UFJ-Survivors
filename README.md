@@ -29,8 +29,10 @@ py -3.12 -m venv .venv
 | Tecla | Ação |
 |---|---|
 | WASD ou setas | Andar (as armas atacam sozinhas) |
+| Mouse | Mirar as armas de disparo e o especial |
+| Clique esquerdo | Alterna entre mira no mouse e mira automática (inimigo mais próximo) |
 | Espaço | Especial |
-| Esc | Pausar (na pausa dá para mirar com o mouse) |
+| Esc | Pausar |
 | 1, 2, 3 ou Enter | Escolher carta ao subir de nível |
 | R / P | Sortear as cartas de novo / pular a escolha |
 

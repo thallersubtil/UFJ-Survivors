@@ -17,10 +17,10 @@ class CenaPausa(Cena):
         ])
 
     def _texto_mira(self):
-        return "MIRA: MOUSE" if self.app.mira_mouse else "MIRA: TECLADO"
+        return "MIRA: MOUSE" if self.app.modo_mira == "mouse" else "MIRA: AUTOMÁTICA"
 
     def _alternar_mira(self):
-        self.app.mira_mouse = not self.app.mira_mouse
+        self.app.alternar_mira()
         self.menu.botoes[1].texto = self._texto_mira()
 
     def _continuar(self):
@@ -43,5 +43,5 @@ class CenaPausa(Cena):
         escurecer(tela, 160)
         desenhar_texto(tela, "PAUSADO", 56, Cor.DESTAQUE, centro=(LARGURA // 2, 180))
         self.menu.desenhar(tela)
-        desenhar_texto(tela, "WASD ou setas: andar    Espaço: especial    Esc: pausar", 16, Cor.TEXTO_FRACO,
+        desenhar_texto(tela, "WASD ou setas: andar    Mouse: mirar (clique alterna mira automática)    Espaço: especial    Esc: pausar", 16, Cor.TEXTO_FRACO,
                        centro=(LARGURA // 2, ALTURA - 40))

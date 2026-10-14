@@ -50,7 +50,7 @@ class Aplicacao:
         self.tela = tela
         self.relogio = pygame.time.Clock()
         self.ranking = Ranking(ARQUIVO_RANKING)
-        self.mira_mouse = False
+        self.modo_mira = "mouse"     # "mouse": mira no cursor; "automatica": no inimigo mais próximo
         self.cenas = []
         self.rodando = True
 
@@ -66,6 +66,10 @@ class Aplicacao:
 
     def trocar(self, cena):
         self.cenas = [cena]
+
+    def alternar_mira(self):
+        self.modo_mira = "automatica" if self.modo_mira == "mouse" else "mouse"
+        return self.modo_mira
 
     def sair(self):
         self.rodando = False
