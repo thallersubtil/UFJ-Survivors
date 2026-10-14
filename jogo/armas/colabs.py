@@ -95,8 +95,8 @@ class DebateDasIAs(ArmaDeContato, Colab):
 
     def atualizar(self, dt, jogo, dono):
         if self.mascotes is None:
-            self.mascotes = (MascoteFlutuante(dono, MascoteChatGPT.ICONE, 34, (0, 0)),
-                             MascoteFlutuante(dono, MascoteClaude.ICONE, 34, (0, 0)))
+            self.mascotes = (MascoteFlutuante(dono, MascoteChatGPT.ICONE, 34, (0, 0), pasta="chatgpt"),
+                             MascoteFlutuante(dono, MascoteClaude.ICONE, 34, (0, 0), pasta="claude"))
             self.raio_visual = RaioDebate(*self.mascotes)
             for e in (*self.mascotes, self.raio_visual):
                 jogo.adicionar(e)

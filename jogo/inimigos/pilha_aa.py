@@ -11,6 +11,7 @@ class PilhaAA(Inimigo):
 
     NOME = "Pilha AA"
     IMAGEM = "sprites/pilha.png"
+    PASTA_SPRITE = "pilha"
     ALTURA = 44
     RAIO = 15
     VIDA = 20

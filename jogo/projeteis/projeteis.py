@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 import pygame
 
 from jogo.nucleo.colisao import Colisao
+from jogo.nucleo.animacao import Animador
 from jogo.nucleo.desenho import desenhar_sprite
 from jogo.nucleo.entidade import Entidade
 from jogo.nucleo.recursos import Recursos
@@ -16,15 +17,18 @@ class Projetil(Entidade, ABC):
     IMAGEM = ""
     ALTURA = 24
     DURACAO = 2.0
+    PASTA_SPRITE = None
 
     def __init__(self, posicao, velocidade, dano, raio=10):
         super().__init__(posicao, raio)
         self.velocidade = pygame.Vector2(velocidade)
         self.dano = dano
         self.tempo = 0.0
+        self.animador = Animador(Recursos.animacoes_ou_imagem(self.PASTA_SPRITE, self.IMAGEM, self.ALTURA))
 
     def atualizar(self, dt, jogo):
         self.tempo += dt
+        self.animador.atualizar(dt)
         if self.tempo >= self.DURACAO or not jogo.arena.collidepoint(self.posicao):
             self.remover()
             return
@@ -42,7 +46,7 @@ class Projetil(Entidade, ABC):
         return -math.degrees(math.atan2(self.velocidade.y, self.velocidade.x))
 
     def desenhar(self, tela, camera):
-        imagem = Recursos.imagem(self.IMAGEM, self.ALTURA)
+        imagem = self.animador.quadro_atual
         desenhar_sprite(tela, camera, imagem, self.posicao, angulo=self.angulo_desenho(), sombra=False)
 
 
@@ -111,6 +115,7 @@ class MovimentoSerpente:
 
 class CobraProjetil(MovimentoSerpente, ProjetilDoHeroi):
     IMAGEM = "sprites/cobra.png"
+    PASTA_SPRITE = "cobra"
     ALTURA = 22
     DURACAO = 1.6
 
@@ -154,5 +159,6 @@ class EstrelaGemini(ProjetilDivisivel):
 
 class CobraGemea(MovimentoSerpente, ProjetilDivisivel):
     IMAGEM = "sprites/cobra.png"
+    PASTA_SPRITE = "cobra"
     ALTURA = 22
     DURACAO = 1.6

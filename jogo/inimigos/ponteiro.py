@@ -14,6 +14,7 @@ class Ponteiro(Inimigo):
 
     NOME = "Ponteiro"
     IMAGEM = "sprites/ponteiro.png"
+    PASTA_SPRITE = "ponteiro"
     ALTURA = 34
     RAIO = 13
     VIDA = 9

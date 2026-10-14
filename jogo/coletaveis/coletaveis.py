@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from jogo.config import Cor
 from jogo.efeitos import TextoFlutuante
 from jogo.nucleo.colisao import Colisao
+from jogo.nucleo.animacao import Animador
 from jogo.nucleo.desenho import desenhar_sprite
 from jogo.nucleo.entidade import Entidade
 from jogo.nucleo.recursos import Recursos
@@ -16,15 +17,18 @@ class Coletavel(Entidade, ABC):
     IMAGEM = ""
     ALTURA = 24
     MAGNETICO = True
+    PASTA_SPRITE = None
     VELOCIDADE_ATRACAO = 520
 
     def __init__(self, posicao, raio=12):
         super().__init__(posicao, raio)
         self.tempo = 0.0
+        self.animador = Animador(Recursos.animacoes_ou_imagem(self.PASTA_SPRITE, self.IMAGEM, self.ALTURA))
         self.atraido = False
 
     def atualizar(self, dt, jogo):
         self.tempo += dt
+        self.animador.atualizar(dt)
         jogador = jogo.jogador
         if self.MAGNETICO and not self.atraido and \
                 self.posicao.distance_to(jogador.posicao) <= jogador.alcance_coleta:
@@ -45,12 +49,16 @@ class Coletavel(Entidade, ABC):
         return self.ALTURA
 
     def desenhar(self, tela, camera):
-        imagem = Recursos.imagem(self.IMAGEM, self.altura_desenho())
+        if len(self.animador.animacao.quadros) > 1:
+            imagem = self.animador.quadro_atual
+        else:
+            imagem = Recursos.imagem(self.IMAGEM, self.altura_desenho())
         desenhar_sprite(tela, camera, imagem, self.posicao, deslocamento_y=3 + math.sin(self.tempo * 4) * 2)
 
 
 class Nota(Coletavel):
     IMAGEM = "sprites/nota.png"
+    PASTA_SPRITE = "nota"
     ALTURA = 20
 
     def __init__(self, posicao, valor=1):

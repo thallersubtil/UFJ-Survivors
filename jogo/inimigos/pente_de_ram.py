@@ -14,6 +14,7 @@ class PenteDeRAM(Inimigo):
 
     NOME = "Pente de RAM"
     IMAGEM = "sprites/pente_ram.png"
+    PASTA_SPRITE = "pente_ram"
     ALTURA = 26
     RAIO = 22
     VIDA = 60

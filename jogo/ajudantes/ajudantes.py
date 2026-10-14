@@ -4,6 +4,7 @@ from abc import ABC
 
 import pygame
 
+from jogo.nucleo.animacao import Animador
 from jogo.nucleo.desenho import desenhar_sprite
 from jogo.nucleo.entidade import Entidade
 from jogo.nucleo.recursos import Recursos
@@ -12,12 +13,20 @@ from jogo.nucleo.recursos import Recursos
 class Ajudante(Entidade, ABC):
     grupo = "ajudante"
     camada = 2
+    PASTA_SPRITE = None
+    IMAGEM = ""
+    ALTURA = 24
+
+    def criar_animador(self, pasta=None, imagem=None, altura=None):
+        return Animador(Recursos.animacoes_ou_imagem(pasta or self.PASTA_SPRITE, imagem or self.IMAGEM,
+                                                     altura or self.ALTURA))
 
 
 class CachorroCaramelo(Ajudante):
     """Vira-lata caramelo que corre em volta do herói e morde quem encosta."""
 
     IMAGEM = "sprites/caramelo.png"
+    PASTA_SPRITE = "caramelo"
     ALTURA = 40
     ESPERA_MORDIDA = 0.5
 
@@ -27,11 +36,13 @@ class CachorroCaramelo(Ajudante):
         self.angulo = angulo
         self.arma = arma
         self.tempo = 0.0
+        self.animador = self.criar_animador()
         self.olhando_esquerda = False
         self._mordidos = {}
 
     def atualizar(self, dt, jogo):
         self.tempo += dt
+        self.animador.atualizar(dt)
         self.angulo += self.arma.valor("velocidade") * dt
         raio = self.arma.valor("raio")
         nova = self.dono.posicao + pygame.Vector2(math.cos(self.angulo), math.sin(self.angulo)) * raio
@@ -50,7 +61,7 @@ class CachorroCaramelo(Ajudante):
                              inimigo.posicao - self.dono.posicao)
 
     def desenhar(self, tela, camera):
-        imagem = Recursos.imagem(self.IMAGEM, self.ALTURA)
+        imagem = self.animador.quadro_atual
         desenhar_sprite(tela, camera, imagem, self.posicao, espelhar=self.olhando_esquerda,
                         deslocamento_y=abs(math.sin(self.tempo * 14)) * 4)
 
@@ -60,7 +71,7 @@ class MascoteFlutuante(Ajudante):
 
     camada = 2
 
-    def __init__(self, dono, imagem, altura, deslocamento, barra=None):
+    def __init__(self, dono, imagem, altura, deslocamento, barra=None, pasta=None):
         super().__init__(dono.posicao + deslocamento, 14)
         self.dono = dono
         self.imagem = imagem
@@ -68,14 +79,16 @@ class MascoteFlutuante(Ajudante):
         self.deslocamento = pygame.Vector2(deslocamento)
         self.barra = barra
         self.tempo = 0.0
+        self.animador = self.criar_animador(pasta, imagem, altura)
 
     def atualizar(self, dt, jogo):
         self.tempo += dt
+        self.animador.atualizar(dt)
         alvo = self.dono.posicao + self.deslocamento + pygame.Vector2(0, math.sin(self.tempo * 3) * 6)
         self.posicao += (alvo - self.posicao) * min(1.0, dt * 8)
 
     def desenhar(self, tela, camera):
-        imagem = Recursos.imagem(self.imagem, self.altura)
+        imagem = self.animador.quadro_atual
         desenhar_sprite(tela, camera, imagem, self.posicao, sombra=False)
         if self.barra is not None:
             c = camera.para_tela(self.posicao)
@@ -91,6 +104,7 @@ class FuscaVeiculo(Ajudante):
     """Fusca azul que atravessa a tela buzinando e possui quem atropela."""
 
     IMAGEM = "sprites/fusca.png"
+    PASTA_SPRITE = "fusca"
     ALTURA = 56
     VELOCIDADE = 650
 
@@ -100,10 +114,12 @@ class FuscaVeiculo(Ajudante):
         self.possessao = possessao
         self.dano = dano
         self.tempo = 0.0
+        self.animador = self.criar_animador()
         self._atingidos = set()
 
     def atualizar(self, dt, jogo):
         self.tempo += dt
+        self.animador.atualizar(dt)
         self.posicao.x += self.sentido * self.VELOCIDADE * dt
         for inimigo in jogo.inimigos_proximos(self.posicao, self.raio):
             if id(inimigo) in self._atingidos:
@@ -115,7 +131,7 @@ class FuscaVeiculo(Ajudante):
             self.remover()
 
     def desenhar(self, tela, camera):
-        imagem = Recursos.imagem(self.IMAGEM, self.ALTURA)
+        imagem = self.animador.quadro_atual
         desenhar_sprite(tela, camera, imagem, self.posicao, espelhar=self.sentido < 0,
                         deslocamento_y=abs(math.sin(self.tempo * 30)) * 2)
 
@@ -124,6 +140,7 @@ class FuscaCircular(Ajudante):
     """O Caramelo dirigindo o fusca em volta do herói, atropelando e possuindo inimigos."""
 
     IMAGEM = "sprites/caramelo_no_fusca.png"
+    PASTA_SPRITE = "caramelo_no_fusca"
     ALTURA = 64
     RAIO_VOLTA = 230
     VELOCIDADE_ANGULAR = 1.8
@@ -135,11 +152,13 @@ class FuscaCircular(Ajudante):
         self.arma = arma
         self.angulo = 0.0
         self.tempo = 0.0
+        self.animador = self.criar_animador()
         self.olhando_esquerda = False
         self._atropelados = {}
 
     def atualizar(self, dt, jogo):
         self.tempo += dt
+        self.animador.atualizar(dt)
         self.angulo += self.VELOCIDADE_ANGULAR * dt
         nova = self.dono.posicao + pygame.Vector2(math.cos(self.angulo), math.sin(self.angulo)) * self.RAIO_VOLTA
         self.olhando_esquerda = nova.x < self.posicao.x
@@ -157,6 +176,6 @@ class FuscaCircular(Ajudante):
                              inimigo.posicao - self.dono.posicao)
 
     def desenhar(self, tela, camera):
-        imagem = Recursos.imagem(self.IMAGEM, self.ALTURA)
+        imagem = self.animador.quadro_atual
         desenhar_sprite(tela, camera, imagem, self.posicao, espelhar=self.olhando_esquerda,
                         deslocamento_y=abs(math.sin(self.tempo * 30)) * 2)

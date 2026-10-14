@@ -8,6 +8,7 @@ class CalculadoraBrava(Inimigo):
 
     NOME = "Calculadora Brava"
     IMAGEM = "sprites/calculadora.png"
+    PASTA_SPRITE = "calculadora"
     ALTURA = 46
     RAIO = 17
     VIDA = 20

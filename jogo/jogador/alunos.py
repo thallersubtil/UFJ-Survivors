@@ -11,6 +11,7 @@ class AlunoAgil(Jogador):
     VIDA = 80
     VELOCIDADE = 230
     IMAGEM = "sprites/aluno1.png"
+    PASTA_SPRITE = "aluno1"
 
     def criar_arma_inicial(self):
         return CobraPython()
@@ -25,6 +26,8 @@ class AlunoResistente(Jogador):
     VIDA = 130
     VELOCIDADE = 180
     IMAGEM = "sprites/aluno2.png"
+    PASTA_SPRITE = "aluno2"
+    PASTA_TRANSFORMADO = "aluno2_ssj"
     IMAGEM_TRANSFORMADO = "sprites/aluno2_ssj.png"
 
     def criar_arma_inicial(self):

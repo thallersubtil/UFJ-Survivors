@@ -34,7 +34,7 @@ class MascoteChatGPT(ArmaDeDisparo):
 
     def atualizar(self, dt, jogo, dono):
         if self.mascote is None:
-            self.mascote = MascoteFlutuante(dono, self.ICONE, 34, self.DESLOCAMENTO)
+            self.mascote = MascoteFlutuante(dono, self.ICONE, 34, self.DESLOCAMENTO, pasta="chatgpt")
             jogo.adicionar(self.mascote)
         super().atualizar(dt, jogo, dono)
 

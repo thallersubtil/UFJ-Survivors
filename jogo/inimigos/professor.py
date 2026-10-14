@@ -12,6 +12,7 @@ from jogo.projeteis.projeteis import FolhaDeProva
 class Professor(Chefe):
     NOME = "Professor"
     IMAGEM = "sprites/professor.png"
+    PASTA_SPRITE = "professor"
     ALTURA = 112
     RAIO = 40
     VIDA = 5500

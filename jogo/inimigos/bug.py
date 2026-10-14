@@ -8,6 +8,7 @@ class Bug(Inimigo):
 
     NOME = "Bug"
     IMAGEM = "sprites/bug.png"
+    PASTA_SPRITE = "bug"
     ALTURA = 30
     RAIO = 12
     VIDA = 6

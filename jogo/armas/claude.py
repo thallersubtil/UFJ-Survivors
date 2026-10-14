@@ -31,7 +31,8 @@ class MascoteClaude(ArmaDeContato):
 
     def atualizar(self, dt, jogo, dono):
         if self.mascote is None:
-            self.mascote = MascoteFlutuante(dono, self.ICONE, 34, self.DESLOCAMENTO, barra=lambda: self.progresso)
+            self.mascote = MascoteFlutuante(dono, self.ICONE, 34, self.DESLOCAMENTO, barra=lambda: self.progresso,
+                                            pasta="claude")
             jogo.adicionar(self.mascote)
         self.progresso = min(1.0, self.progresso + dt / (self.valor("pensar") * dono.mult_recarga))
         if self.progresso < 1.0:

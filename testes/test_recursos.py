@@ -43,3 +43,12 @@ def test_som_ausente_vira_som_mudo():
 def test_fonte_carrega():
     fonte = Recursos.fonte(20)
     assert fonte.render("Olá", True, (255, 255, 255)).get_width() > 0
+
+
+def test_caminho_vazio_ou_imagem_corrompida_vira_substituto(tmp_path, monkeypatch):
+    (tmp_path / "quebrada.png").write_bytes(b"isto nao e um png")
+    monkeypatch.setattr(Recursos, "pasta", tmp_path)
+    Recursos.limpar()
+    assert Recursos.imagem("", 20).get_height() == 20
+    assert Recursos.imagem("quebrada.png", 24).get_height() == 24
+    Recursos.limpar()

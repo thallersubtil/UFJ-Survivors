@@ -12,6 +12,7 @@ class Caixinha(Inimigo):
 
     NOME = "Caixinha"
     IMAGEM = "sprites/caixinha.png"
+    PASTA_SPRITE = "caixinha"
     ALTURA = 42
     RAIO = 17
     VIDA = 22
@@ -43,6 +44,7 @@ class Caixinha(Inimigo):
 class CaixinhaPequena(Caixinha):
     """A caixinha que sai de dentro da Caixinha. Esta não se divide."""
 
+    PASTA_SPRITE = "caixinha_pequena"
     ALTURA = 26
     RAIO = 11
     VIDA = 8

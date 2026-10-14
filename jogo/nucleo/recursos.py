@@ -33,12 +33,16 @@ class Recursos:
         chave = (caminho, altura)
         if chave not in cls._imagens:
             arquivo = cls.pasta / caminho
-            if arquivo.exists():
-                img = pygame.image.load(str(arquivo))
-                if pygame.display.get_surface() is not None:
-                    img = img.convert_alpha()
-            else:
-                img = cls.substituto(Path(caminho).stem, altura or 48)
+            img = None
+            if caminho and arquivo.is_file():
+                try:
+                    img = pygame.image.load(str(arquivo))
+                    if pygame.display.get_surface() is not None:
+                        img = img.convert_alpha()
+                except pygame.error:
+                    img = None
+            if img is None:
+                img = cls.substituto(Path(caminho).stem or "?", altura or 48)
             if altura and img.get_height() != altura:
                 largura = max(1, round(img.get_width() * altura / img.get_height()))
                 img = cls._redimensionar(img, (largura, int(altura)))

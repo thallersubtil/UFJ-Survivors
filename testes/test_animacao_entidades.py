@@ -97,3 +97,27 @@ def test_sem_arte_animada_usa_imagem_estatica():
     Recursos.limpar()
     b = Bug((0, 0))
     assert b.animador.quadro_atual.get_height() == Bug.ALTURA
+
+
+def test_ajudantes_projeteis_e_coletaveis_animam(tmp_path, monkeypatch):
+    from jogo.ajudantes.ajudantes import CachorroCaramelo, MascoteFlutuante
+    from jogo.coletaveis.coletaveis import Nota
+    from jogo.projeteis.projeteis import CobraProjetil
+    s = tmp_path / "sprites"
+    for pasta in ("cao", "cobrinha", "moeda", "robo"):
+        gravar_tira(s / pasta, "mover", 4, 6, 6, (10, 200, 10))
+    monkeypatch.setattr(Recursos, "pasta", tmp_path)
+    monkeypatch.setattr(CachorroCaramelo, "PASTA_SPRITE", "cao")
+    monkeypatch.setattr(CobraProjetil, "PASTA_SPRITE", "cobrinha")
+    monkeypatch.setattr(Nota, "PASTA_SPRITE", "moeda")
+    Recursos.limpar()
+    dono = SimpleNamespace(posicao=pygame.Vector2(0, 0), multiplicador_dano=1.0)
+    arma = SimpleNamespace(valor=lambda nome: {"velocidade": 3, "raio": 50, "dano": 5}[nome])
+    jogo = SimpleNamespace(inimigos_proximos=lambda p, r: [], jogador=SimpleNamespace(
+        posicao=pygame.Vector2(900, 900), alcance_coleta=10, raio=10), arena=pygame.Rect(0, 0, 2000, 2000))
+    for entidade in (CachorroCaramelo(dono, 0, arma), CobraProjetil((5, 5), (100, 0), 1), Nota((0, 0)),
+                     MascoteFlutuante(dono, "sprites/x.png", 20, (0, 0), pasta="robo")):
+        primeiro = entidade.animador.quadro_atual
+        entidade.atualizar(0.11, jogo)
+        assert entidade.animador.quadro_atual is not primeiro, type(entidade).__name__
+    Recursos.limpar()
