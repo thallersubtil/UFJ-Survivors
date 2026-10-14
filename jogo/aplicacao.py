@@ -5,6 +5,33 @@ from jogo.config import ALTURA, ARQUIVO_RANKING, FPS, LARGURA, TITULO
 from jogo.ranking import Ranking
 
 
+class JanelaNitida:
+    """Janela que usa todos os pixels da tela (Retina inclusive) e amplia o jogo sem suavizar.
+
+    O jogo desenha sempre em `tela` (1280x720); `mostrar()` copia para a janela,
+    ampliando com vizinho mais próximo quando a tela física tem mais pixels.
+    """
+
+    def __init__(self, titulo, tamanho):
+        self.janela = pygame.Window(titulo, tamanho, allow_high_dpi=True)
+        self.tela = pygame.Surface(tamanho)
+
+    def mostrar(self):
+        destino = self.janela.get_surface()
+        largura, altura = destino.get_size()
+        fator = min(largura / self.tela.get_width(), altura / self.tela.get_height())
+        if abs(fator - round(fator)) < 0.03:
+            fator = round(fator)
+        tamanho = (max(1, int(self.tela.get_width() * fator)), max(1, int(self.tela.get_height() * fator)))
+        if tamanho == destino.get_size():
+            pygame.transform.scale(self.tela, tamanho, destino)
+        else:
+            destino.fill((0, 0, 0))
+            ampliada = pygame.transform.scale(self.tela, tamanho)   # vizinho mais próximo: sem borrar
+            destino.blit(ampliada, ampliada.get_rect(center=(largura // 2, altura // 2)))
+        self.janela.flip()
+
+
 class Aplicacao:
     def __init__(self, tela=None):
         pygame.init()
@@ -12,9 +39,14 @@ class Aplicacao:
             pygame.mixer.init()
         except pygame.error:
             pass
+        self.janela = None
         if tela is None:
-            tela = pygame.display.set_mode((LARGURA, ALTURA), pygame.SCALED | pygame.RESIZABLE)
-            pygame.display.set_caption(TITULO)
+            try:
+                self.janela = JanelaNitida(TITULO, (LARGURA, ALTURA))
+                tela = self.janela.tela
+            except (pygame.error, AttributeError, TypeError):
+                tela = pygame.display.set_mode((LARGURA, ALTURA), pygame.SCALED | pygame.RESIZABLE)
+                pygame.display.set_caption(TITULO)
         self.tela = tela
         self.relogio = pygame.time.Clock()
         self.ranking = Ranking(ARQUIVO_RANKING)
@@ -54,5 +86,8 @@ class Aplicacao:
         while self.rodando and self.cenas:
             dt = min(self.relogio.tick(FPS) / 1000, 1 / 20)
             self.passo(dt, pygame.event.get())
-            pygame.display.flip()
+            if self.janela is not None:
+                self.janela.mostrar()
+            else:
+                pygame.display.flip()
         pygame.quit()

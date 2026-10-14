@@ -50,7 +50,7 @@ def test_heroi_parado_e_andando(arte_falsa):
     j = AlunoAgil((100, 100))
     j.atualizar(0.1, jogo_falso())
     assert j.animador.atual == "parado"
-    assert j.animador.quadro_atual.get_height() == 40
+    assert j.animador.quadro_atual.get_height() == 20
     j.atualizar(0.1, jogo_falso((1, 0)))
     assert j.animador.atual == "andar"
 
@@ -58,32 +58,32 @@ def test_heroi_parado_e_andando(arte_falsa):
 def test_super_saiyajin_troca_o_conjunto_de_animacoes(arte_falsa):
     j = AlunoResistente((100, 100))
     j.atualizar(0.1, jogo_falso())
-    assert j.animador.quadro_atual.get_height() == 40
+    assert j.animador.quadro_atual.get_height() == 20
     j.adicionar_bonus(BonusTemporario("ssj", "dano", 2.0, 5))
     j.atualizar(0.1, jogo_falso())
-    assert j.animador.quadro_atual.get_height() == 44
+    assert j.animador.quadro_atual.get_height() == 22
     j.atualizar(6, jogo_falso())
-    assert j.animador.quadro_atual.get_height() == 40
+    assert j.animador.quadro_atual.get_height() == 20
 
 
 def test_inimigo_anda_animado(arte_falsa):
     b = Bug((0, 0))
     assert b.animador.atual == "andar"
     primeiro = b.animador.quadro_atual
-    b.animador.atualizar(0.1)
+    b.animador.atualizar(0.15)
     assert b.animador.quadro_atual is not primeiro
 
 
 def test_gigante_usa_sprite_proprio_em_resolucao_maior(arte_falsa):
     g = Bug((0, 0))
     g.tornar_gigante()
-    assert g.animador.quadro_atual.get_size() == (48, 36)
+    assert g.animador.quadro_atual.get_size() == (24, 18)
 
 
 def test_gigante_sem_sprite_proprio_amplia_sem_suavizar(arte_falsa):
     g = MouseDeBolinha((0, 0))
     g.tornar_gigante()
-    assert g.animador.quadro_atual.get_height() == 5 * 2 * 3
+    assert g.animador.quadro_atual.get_height() == 5 * 3
 
 
 def test_mouse_parado_e_correndo(arte_falsa):

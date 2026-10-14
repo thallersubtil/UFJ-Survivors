@@ -85,12 +85,21 @@ class Recursos:
             cls._derivadas[chave] = cls.ampliar(cls.imagem(caminho), escala)
         return cls._derivadas[chave]
 
-    FPS_PADRAO = {"parado": 5, "andar": 10, "mover": 10, "atacar": 10}
+    @classmethod
+    def na_altura(cls, imagem, altura):
+        """Cópia (em cache) de uma imagem já carregada, redimensionada para `altura`."""
+        chave = ("altura", id(imagem), altura)
+        if chave not in cls._derivadas:
+            largura = max(1, round(imagem.get_width() * altura / imagem.get_height()))
+            cls._derivadas[chave] = cls._redimensionar(imagem, (largura, altura))
+        return cls._derivadas[chave]
+
+    FPS_PADRAO = {"parado": 5, "andar": 8, "mover": 10, "atacar": 10}
     NAO_REPETE = {"atacar"}
 
     @classmethod
-    def animacoes(cls, pasta, escala=ESCALA_PIXEL):
-        """Lê as tiras assets/sprites/<pasta>/<nome>-<n>.png (n quadros de mesma largura)."""
+    def animacoes(cls, pasta, escala=1):
+        """Lê as tiras assets/sprites/<pasta>/<nome>-<n>.png (n quadros de mesma largura, já no tamanho de tela)."""
         chave = ("animacoes", pasta, escala)
         if chave not in cls._derivadas:
             resultado = {}
@@ -111,7 +120,7 @@ class Recursos:
         return cls._derivadas[chave]
 
     @classmethod
-    def animacoes_ou_imagem(cls, pasta, imagem, altura, escala=ESCALA_PIXEL):
+    def animacoes_ou_imagem(cls, pasta, imagem, altura, escala=1):
         """Animações da pasta; sem elas, uma animação 'parado' com a imagem estática (ou o substituto)."""
         animacoes = cls.animacoes(pasta, escala) if pasta else {}
         return animacoes or {"parado": Animacao([cls.imagem(imagem, altura)])}

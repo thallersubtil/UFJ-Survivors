@@ -63,9 +63,9 @@ class CenaSelecao(Cena):
 
     def _cartao(self, tela, heroi, r, focado):
         desenhar_painel(tela, r, cor_borda=Cor.DESTAQUE if focado else Cor.BORDA_ESCURA)
-        animacoes = Recursos.animacoes_ou_imagem(heroi.PASTA_SPRITE, heroi.IMAGEM, 150, escala=3)
+        animacoes = Recursos.animacoes_ou_imagem(heroi.PASTA_SPRITE, heroi.IMAGEM, 150)
         animacao = animacoes.get("andar" if focado else "parado") or next(iter(animacoes.values()))
-        sprite = animacao.quadro(self.tempo)
+        sprite = Recursos.na_altura(animacao.quadro(self.tempo), 150)
         pulo = 0 if len(animacao.quadros) > 1 else (abs(math.sin(self.tempo * 6)) * 8 if focado else 0)
         tela.blit(sprite, sprite.get_rect(midbottom=(r.centerx, r.top + 190 - pulo)))
         desenhar_texto(tela, heroi.NOME, 30, Cor.TEXTO, centro=(r.centerx, r.top + 215))

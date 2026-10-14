@@ -13,6 +13,8 @@ Pedidos do grupo:
 
 ## 2. Pixel art
 
+> **Revisão (14/10):** reduzir a arte gerada para 48 px e ampliar 2x deixou os personagens borrados (a arte gerada não tem uma grade de pixels regular) e o andar tremia (quadros centralizados pela largura). Agora: sprites guardados no tamanho de tela, reduzidos com LANCZOS, paleta comum por animação, alfa duro e alinhados pelo centro da cabeça e do tronco; andar com 4 quadros (os 2 últimos da folha repetiam a passada); janela em alta resolução com ampliação sem suavizar. O texto abaixo descreve a primeira versão.
+
 - Toda arte do mundo (personagens, inimigos, ajudantes, projéteis, coletáveis, cenário) é guardada em **resolução nativa baixa** e desenhada **ampliada 2x com vizinho mais próximo** (`ESCALA_PIXEL = 2`). Nada do mundo usa `smoothscale`.
 - Alturas nativas: heróis 48 px (96 na tela), Professor 80 px (160), lacaios 18 a 28 px, ajudantes e projéteis 10 a 28 px.
 - **Mini-chefes têm sprites próprios** pixelizados em resolução nativa 3 vezes maior a partir da arte original em alta resolução, e não o sprite pequeno ampliado. O Professor também tem a sua resolução própria. Assim, quanto maior o personagem, mais detalhe ele tem.

@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 import pygame
 
 from jogo.coletaveis.coletaveis import Bau, CopoDeCafe, PocaoDeVida
-from jogo.config import DISTANCIA_REPOSICIONAR, ESCALA_PIXEL, Cor
+from jogo.config import DISTANCIA_REPOSICIONAR, Cor
 from jogo.nucleo.animacao import Animador
 from jogo.efeitos import TextoFlutuante
 from jogo.nucleo.colisao import Colisao
@@ -58,7 +58,7 @@ class Inimigo(SerVivo, ABC):
         self.raio = self.RAIO * self.ESCALA_GIGANTE
         proprias = Recursos.animacoes(f"{self.PASTA_SPRITE}_gigante") if self.PASTA_SPRITE else {}
         self.animador = Animador(proprias or Recursos.animacoes_ou_imagem(
-            self.PASTA_SPRITE, self.IMAGEM, self.ALTURA * self.ESCALA_GIGANTE, ESCALA_PIXEL * self.ESCALA_GIGANTE))
+            self.PASTA_SPRITE, self.IMAGEM, self.ALTURA * self.ESCALA_GIGANTE, self.ESCALA_GIGANTE))
         self.vida_maxima = self.vida_maxima * self.VIDA_GIGANTE
         self.vida = self.vida_maxima
 

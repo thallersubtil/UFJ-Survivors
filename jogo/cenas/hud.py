@@ -24,8 +24,8 @@ class Hud:
     def _heroi(self, tela, jogo):
         j = jogo.jogador
         desenhar_painel(tela, pygame.Rect(10, 24, 300, 70))
-        animacoes = Recursos.animacoes_ou_imagem(j.PASTA_SPRITE, j.IMAGEM, 52, escala=1)
-        retrato = next(iter(animacoes.values())).quadros[0]
+        animacoes = Recursos.animacoes_ou_imagem(j.PASTA_SPRITE, j.IMAGEM, 52)
+        retrato = Recursos.na_altura(next(iter(animacoes.values())).quadros[0], 52)
         tela.blit(retrato, retrato.get_rect(center=(44, 59)))
         desenhar_texto(tela, j.NOME, 18, Cor.TEXTO, topo_esquerda=(78, 32))
         desenhar_barra(tela, pygame.Rect(78, 58, 160, 16), j.vida / j.vida_maxima, Cor.VIDA)
