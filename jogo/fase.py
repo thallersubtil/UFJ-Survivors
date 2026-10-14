@@ -72,13 +72,17 @@ class Fase(ABC):
 
     @staticmethod
     def posicao_de_nascimento(jogo):
-        """Um ponto logo fora da tela, em volta do herói, dentro da arena."""
-        angulo = jogo.rng.uniform(0, 2 * math.pi)
+        """Um ponto logo fora da tela, em volta do herói, dentro da arena e fora dos prédios."""
         distancia = math.hypot(LARGURA, ALTURA) / 2 + 80
-        p = jogo.jogador.posicao + pygame.Vector2(math.cos(angulo), math.sin(angulo)) * distancia
-        p.x = max(jogo.arena.left + 30, min(p.x, jogo.arena.right - 30))
-        p.y = max(jogo.arena.top + 30, min(p.y, jogo.arena.bottom - 30))
-        return p
+        p = pygame.Vector2(jogo.jogador.posicao)
+        for tentativa in range(30):
+            angulo = jogo.rng.uniform(0, 2 * math.pi)
+            p = jogo.jogador.posicao + pygame.Vector2(math.cos(angulo), math.sin(angulo)) * (distancia + tentativa * 10)
+            p.x = max(jogo.arena.left + 30, min(p.x, jogo.arena.right - 30))
+            p.y = max(jogo.arena.top + 30, min(p.y, jogo.arena.bottom - 30))
+            if not jogo.mapa.bloqueado(p, 30):
+                return p
+        return jogo.mapa.empurrar(p, 30)
 
     def formacao_circulo(self, jogo, nome, quantidade, raio=560):
         for i in range(quantidade):

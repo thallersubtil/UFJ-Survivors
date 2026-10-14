@@ -184,6 +184,7 @@ class Jogador(SerVivo, ABC):
             self.direcao_mira = pygame.Vector2(direcao)
             if abs(direcao.x) > 0.01:
                 self.olhando_esquerda = direcao.x < 0
+        self.posicao = jogo.resolver_obstaculos(self.posicao, self.raio)
         arena = jogo.arena
         self.posicao.x = max(arena.left + self.raio, min(self.posicao.x, arena.right - self.raio))
         self.posicao.y = max(arena.top + self.raio, min(self.posicao.y, arena.bottom - self.raio))

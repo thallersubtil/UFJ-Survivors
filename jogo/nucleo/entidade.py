@@ -28,6 +28,10 @@ class Entidade(ABC):
     def desenhar(self, tela, camera):
         """Desenha a entidade na tela, convertendo a posição pela câmera."""
 
+    def esta_visivel(self, camera):
+        """Se vale a pena desenhar. Entidades grandes (prédios) sobrescrevem."""
+        return camera.visivel(self.posicao, 160)
+
     def remover(self):
         """Marca a entidade para sair do jogo no fim do quadro."""
         self.ativo = False

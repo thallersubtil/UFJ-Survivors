@@ -77,6 +77,14 @@ class Recursos:
             return img
         return pygame.transform.scale(img, (img.get_width() * fator, img.get_height() * fator))
 
+    @classmethod
+    def imagem_pixel(cls, caminho, escala=ESCALA_PIXEL):
+        """Imagem de pixel art em resolução nativa, ampliada sem suavizar."""
+        chave = ("pixel", caminho, escala)
+        if chave not in cls._derivadas:
+            cls._derivadas[chave] = cls.ampliar(cls.imagem(caminho), escala)
+        return cls._derivadas[chave]
+
     FPS_PADRAO = {"parado": 5, "andar": 10, "mover": 10, "atacar": 10}
     NAO_REPETE = {"atacar"}
 

@@ -27,6 +27,9 @@ class JogoFalso:
         self.arena = pygame.Rect(0, 0, 3200, 1800)
         self.adicionados = []
 
+    def resolver_obstaculos(self, posicao, raio):
+        return posicao
+
     def adicionar(self, e):
         self.adicionados.append(e)
 

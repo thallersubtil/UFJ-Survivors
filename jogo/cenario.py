@@ -1,31 +1,14 @@
-"""Chão do pátio e decorações da arena."""
+"""Pátio genérico: o mapa usado quando o mapa da UFJ não está disponível."""
 import pygame
 
-from jogo.config import Cor
-from jogo.nucleo.desenho import desenhar_sprite
-from jogo.nucleo.entidade import Entidade
+from jogo.config import ARENA_ALTURA, ARENA_LARGURA, Cor
+from jogo.mapa import Decoracao, Mapa
 from jogo.nucleo.recursos import Recursos
 
-
-class Decoracao(Entidade):
-    """Enfeite parado (árvore, banco, poste). Só existe para ser visto."""
-
-    grupo = "decoracao"
-    camada = 1
-
-    def __init__(self, posicao, imagem, altura):
-        super().__init__(posicao, 0)
-        self.imagem = imagem
-        self.altura = altura
-
-    def atualizar(self, dt, jogo):
-        pass
-
-    def desenhar(self, tela, camera):
-        desenhar_sprite(tela, camera, Recursos.imagem(self.imagem, self.altura), self.posicao)
+__all__ = ["Cenario", "Decoracao"]
 
 
-class Cenario:
+class Cenario(Mapa):
     TIPOS = (
         ("cenario/arvore.png", 140, 0.35),
         ("cenario/banco.png", 46, 0.25),
@@ -34,8 +17,13 @@ class Cenario:
     )
     CHAO = "cenario/chao.png"
 
-    def __init__(self, arena):
-        self.arena = arena
+    def __init__(self, arena=None, rng=None):
+        arena = arena or pygame.Rect(0, 0, ARENA_LARGURA, ARENA_ALTURA)
+        super().__init__(arena, arena.center)
+        self.decoracoes = self.gerar_decoracoes(arena, rng) if rng is not None else []
+
+    def entidades(self):
+        return list(self.decoracoes)
 
     @staticmethod
     def gerar_decoracoes(arena, rng, quantidade=70):

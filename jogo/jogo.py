@@ -8,11 +8,12 @@ import pygame
 
 from jogo.cenario import Cenario
 from jogo.coletaveis.coletaveis import Nota
-from jogo.config import (ALTURA, ARENA_ALTURA, ARENA_LARGURA, BONUS_67_DURACAO, BONUS_67_VELOCIDADE, LARGURA,
+from jogo.config import (ALTURA, BONUS_67_DURACAO, BONUS_67_VELOCIDADE, LARGURA,
                          LIMITE_COLETAVEIS, LIMITE_EFEITOS, SORTEIOS_POR_PARTIDA, Cor)
 from jogo.efeitos import TextoFlutuante
 from jogo.fase import SemanaDeProvas
 from jogo.jogador.bonus import BonusTemporario
+from jogo.mapa import MapaUFJ
 from jogo.nucleo.camera import Camera
 from jogo.nucleo.grade import GradeEspacial
 from jogo.nucleo.recursos import Recursos
@@ -31,16 +32,16 @@ class Entrada:
 class Jogo:
     MARGEM_BUSCA = 64
 
-    def __init__(self, classe_jogador, fase=None, semente=None):
+    def __init__(self, classe_jogador, fase=None, semente=None, mapa=None):
         self.rng = random.Random(semente)
-        self.arena = pygame.Rect(0, 0, ARENA_LARGURA, ARENA_ALTURA)
-        self.jogador = classe_jogador(self.arena.center)
+        self.mapa = mapa or MapaUFJ.carregar(self.rng) or Cenario(rng=self.rng)
+        self.arena = self.mapa.arena
+        self.jogador = classe_jogador(self.mapa.inicio)
         self.fase = fase if fase is not None else SemanaDeProvas()
         self.placar = Placar()
         self.camera = Camera(LARGURA, ALTURA, self.arena)
         self.entrada = Entrada()
         self.grade = GradeEspacial(96)
-        self.cenario = Cenario(self.arena)
         self.entidades = []
         self.grupos = defaultdict(list)
         self._novas = []
@@ -53,8 +54,8 @@ class Jogo:
         self.anuncios = []
         self._ultima_nota = None
         self.adicionar(self.jogador)
-        for decoracao in Cenario.gerar_decoracoes(self.arena, self.rng):
-            self.adicionar(decoracao)
+        for entidade in self.mapa.entidades():
+            self.adicionar(entidade)
         self._incorporar_novas()
         self.camera.seguir(self.jogador.posicao)
 
@@ -97,11 +98,15 @@ class Jogo:
             self.terminar(False)
 
     def desenhar(self, tela):
-        self.cenario.desenhar_chao(tela, self.camera)
-        visiveis = [e for e in self.entidades if self.camera.visivel(e.posicao, 160)]
+        self.mapa.desenhar_chao(tela, self.camera)
+        visiveis = [e for e in self.entidades if e.esta_visivel(self.camera)]
         visiveis.sort(key=lambda e: (e.camada, e.posicao.y))
         for e in visiveis:
             e.desenhar(tela, self.camera)
+
+    def resolver_obstaculos(self, posicao, raio):
+        """Posição corrigida para fora dos prédios do mapa."""
+        return self.mapa.empurrar(posicao, raio)
 
     # Buscas
 

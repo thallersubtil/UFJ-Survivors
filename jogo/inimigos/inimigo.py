@@ -96,6 +96,7 @@ class Inimigo(SerVivo, ABC):
             self.posicao += self.empurrao * dt
             self.empurrao *= max(0.0, 1 - 8 * dt)
         self._separar(jogo)
+        self.posicao = jogo.resolver_obstaculos(self.posicao, self.raio)
         self.posicao.x = max(jogo.arena.left + self.raio, min(self.posicao.x, jogo.arena.right - self.raio))
         self.posicao.y = max(jogo.arena.top + self.raio, min(self.posicao.y, jogo.arena.bottom - self.raio))
 
