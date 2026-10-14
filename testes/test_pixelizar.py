@@ -36,7 +36,7 @@ def test_quadros_tem_altura_nativa_mesma_largura_e_transparencia_dura():
 
 def test_preserva_o_brilho_do_olho_e_poe_contorno():
     q = pixelizar.pixelizar(pixelizar.dividir(folha_sintetica(1), 1), altura=24, cores=8)[0]
-    cores = {c[:3] for c in map(tuple, np.array(q).reshape(-1, 4)) if c[3] == 255}
+    cores = {tuple(int(v) for v in c[:3]) for c in np.array(q).reshape(-1, 4) if c[3] == 255}
     assert any(sum(c) > 700 for c in cores)
     assert any(sum(c) < 100 for c in cores)
 
