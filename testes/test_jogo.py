@@ -34,7 +34,8 @@ def test_jogo_contem_jogador_fase_e_placar():
     jogo = Jogo(AlunoAgil, semente=1)
     assert jogo.jogador in jogo.entidades
     assert jogo.fase is not None and jogo.placar is not None
-    assert jogo.jogador.posicao == pygame.Vector2(jogo.arena.center)
+    assert jogo.jogador.posicao == jogo.mapa.inicio
+    assert not jogo.mapa.bloqueado(jogo.jogador.posicao, jogo.jogador.raio)
 
 
 def test_laco_unico_atualiza_qualquer_entidade():

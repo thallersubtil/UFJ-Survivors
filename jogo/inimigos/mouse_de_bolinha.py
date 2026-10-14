@@ -14,7 +14,7 @@ class MouseDeBolinha(Inimigo):
     IMAGEM = "sprites/mouse.png"
     PASTA_SPRITE = "mouse"
     ALTURA = 34
-    RAIO = 15
+    RAIO = 16
     VIDA = 12
     VELOCIDADE = 320
     DANO = 7

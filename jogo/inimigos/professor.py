@@ -14,7 +14,7 @@ class Professor(Chefe):
     IMAGEM = "sprites/professor.png"
     PASTA_SPRITE = "professor"
     ALTURA = 112
-    RAIO = 40
+    RAIO = 46
     VIDA = 5500
     VELOCIDADE = 75
     DANO = 18

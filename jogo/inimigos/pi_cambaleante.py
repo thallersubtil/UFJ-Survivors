@@ -14,7 +14,7 @@ class PiCambaleante(Inimigo):
     IMAGEM = "sprites/pi.png"
     PASTA_SPRITE = "pi"
     ALTURA = 46
-    RAIO = 16
+    RAIO = 19
     VIDA = 16
     VELOCIDADE = 95
     DANO = 6

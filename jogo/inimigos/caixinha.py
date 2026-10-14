@@ -14,7 +14,7 @@ class Caixinha(Inimigo):
     IMAGEM = "sprites/caixinha.png"
     PASTA_SPRITE = "caixinha"
     ALTURA = 42
-    RAIO = 17
+    RAIO = 19
     VIDA = 22
     VELOCIDADE = 230
     DANO = 7

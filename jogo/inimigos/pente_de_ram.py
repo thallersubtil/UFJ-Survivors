@@ -16,7 +16,7 @@ class PenteDeRAM(Inimigo):
     IMAGEM = "sprites/pente_ram.png"
     PASTA_SPRITE = "pente_ram"
     ALTURA = 26
-    RAIO = 22
+    RAIO = 26
     VIDA = 60
     VELOCIDADE = 55
     DANO = 10

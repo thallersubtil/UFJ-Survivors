@@ -13,7 +13,7 @@ class PilhaAA(Inimigo):
     IMAGEM = "sprites/pilha.png"
     PASTA_SPRITE = "pilha"
     ALTURA = 44
-    RAIO = 15
+    RAIO = 18
     VIDA = 20
     VELOCIDADE = 75
     DANO = 9

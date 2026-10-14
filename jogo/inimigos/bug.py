@@ -10,7 +10,7 @@ class Bug(Inimigo):
     IMAGEM = "sprites/bug.png"
     PASTA_SPRITE = "bug"
     ALTURA = 30
-    RAIO = 12
+    RAIO = 14
     VIDA = 6
     VELOCIDADE = 125
     DANO = 3

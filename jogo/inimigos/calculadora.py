@@ -10,7 +10,7 @@ class CalculadoraBrava(Inimigo):
     IMAGEM = "sprites/calculadora.png"
     PASTA_SPRITE = "calculadora"
     ALTURA = 46
-    RAIO = 17
+    RAIO = 19
     VIDA = 20
     VELOCIDADE = 85
     DANO = 8

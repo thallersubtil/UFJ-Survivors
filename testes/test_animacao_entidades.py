@@ -94,7 +94,8 @@ def test_mouse_parado_e_correndo(arte_falsa):
     assert m.escolher_animacao() == "andar"
 
 
-def test_sem_arte_animada_usa_imagem_estatica():
+def test_sem_arte_animada_usa_imagem_estatica(monkeypatch):
+    monkeypatch.setattr(Bug, "PASTA_SPRITE", "pasta_que_nao_existe")
     Recursos.limpar()
     b = Bug((0, 0))
     assert b.animador.quadro_atual.get_height() == Bug.ALTURA

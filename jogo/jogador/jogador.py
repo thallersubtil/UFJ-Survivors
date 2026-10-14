@@ -24,7 +24,7 @@ class Jogador(SerVivo, ABC):
     PASTA_SPRITE = None          # pasta em assets/sprites/ com as animações (parado, andar)
     PASTA_TRANSFORMADO = None    # animações da forma transformada (Super Saiyajin)
     ALTURA = 64
-    RAIO = 18
+    RAIO = 22
     MAX_ARMAS = 6
     MAX_ITENS = 6
     ALCANCE_COLETA_BASE = 90
