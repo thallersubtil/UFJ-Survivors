@@ -139,3 +139,53 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def _ancora_x(quadro):
+    """Centro horizontal da cabeça e do tronco (55% de cima), que não mexe ao andar."""
+    opaco = np.array(quadro)[..., 3] > 0
+    linhas = np.nonzero(opaco.any(axis=1))[0]
+    if len(linhas) == 0:
+        return quadro.width / 2
+    limite = linhas[0] + (linhas[-1] - linhas[0]) * 0.55
+    ys, xs = np.nonzero(opaco[: int(limite) + 1])
+    return xs.mean() if len(xs) else quadro.width / 2
+
+
+def alinhar(quadros):
+    """Põe todos os quadros na mesma tela, com a âncora do corpo na mesma coluna e os pés na base."""
+    ancoras = [_ancora_x(q) for q in quadros]
+    esquerda = max(int(np.ceil(a)) for a in ancoras)
+    direita = max(int(np.ceil(q.width - a)) for q, a in zip(quadros, ancoras))
+    altura = max(q.height for q in quadros)
+    saida = []
+    for q, a in zip(quadros, ancoras):
+        tela = Image.new("RGBA", (esquerda + direita + 2, altura), (0, 0, 0, 0))
+        tela.paste(q, (int(round(esquerda - a)) + 1, altura - q.height))
+        saida.append(tela)
+    return saida
+
+
+def reduzir(quadros, altura, cores=48):
+    """Reduz direto ao tamanho de tela com filtro de qualidade, paleta comum e alfa duro, alinhando pelo corpo."""
+    maior = max(q.height for q in quadros)
+    fator = altura / maior
+    reduzidos = [q.resize((max(1, round(q.width * fator)), max(1, round(q.height * fator))), Image.LANCZOS)
+                 for q in quadros]
+    largura = sum(q.width for q in reduzidos)
+    tira = Image.new("RGBA", (largura, max(q.height for q in reduzidos)), (0, 0, 0, 0))
+    x = 0
+    for q in reduzidos:
+        tira.paste(q, (x, 0))
+        x += q.width
+    alfa = np.array(tira)[..., 3] > 120
+    rgb = np.array(tira.convert("RGB").quantize(cores, method=Image.Quantize.MEDIANCUT,
+                                                 dither=Image.Dither.NONE).convert("RGB"))
+    saida, x = [], 0
+    for q in reduzidos:
+        bloco = np.zeros((q.height, q.width, 4), np.uint8)
+        bloco[..., :3] = rgb[: q.height, x:x + q.width]
+        bloco[..., 3] = alfa[: q.height, x:x + q.width] * 255
+        saida.append(Image.fromarray(bloco, "RGBA"))
+        x += q.width
+    return alinhar(saida)
