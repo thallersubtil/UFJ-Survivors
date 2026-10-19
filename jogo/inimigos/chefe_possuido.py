@@ -112,6 +112,11 @@ class ChefePossuido(Chefe, ABC):
         self.escudo = max(0.0, self.escudo - dt)
         super().mover(dt, jogo)
 
+    def tocar_jogador(self, jogo):
+        """Durante a troca de matéria o chefe fica parado e não machuca."""
+        if self.troca <= 0:
+            super().tocar_jogador(jogo)
+
     def ao_morrer(self, jogo):
         """Última matéria derrotada: a prova acabou."""
         jogo.concluir_fase()

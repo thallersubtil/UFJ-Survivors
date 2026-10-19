@@ -131,3 +131,24 @@ def test_poo_encapsulamento_protege_e_polimorfismo_alterna(jogo_limpo):
     primeiro = set(simbolos(jogo))
     poo.polimorfismo(chefe, jogo)
     assert set(simbolos(jogo)) != primeiro
+
+
+def test_golpe_no_chefe_invulneravel_nao_mostra_dano(jogo_limpo):
+    from jogo.efeitos import TextoFlutuante
+    jogo = jogo_limpo()
+    chefe = colocar_chefe(jogo, "chefe_td_poo")
+    chefe.proteger(2)
+    jogo._incorporar_novas()
+    antes = sum(isinstance(e, TextoFlutuante) for e in jogo.entidades)
+    assert not jogo.causar_dano(chefe, 50)
+    assert sum(isinstance(e, TextoFlutuante) for e in novos(jogo)) == antes
+
+
+def test_chefe_nao_machuca_por_contato_durante_a_troca(jogo_limpo):
+    jogo = jogo_limpo()
+    chefe = colocar_chefe(jogo, "chefe_td_poo")
+    derrotar_fase(jogo, chefe)
+    chefe.posicao = jogo.jogador.posicao.copy()
+    vida = jogo.jogador.vida
+    chefe.tocar_jogador(jogo)
+    assert jogo.jogador.vida == vida

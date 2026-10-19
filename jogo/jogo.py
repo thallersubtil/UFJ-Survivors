@@ -148,7 +148,7 @@ class Jogo:
 
     def causar_dano(self, inimigo, dano, direcao=None, forte=False):
         """Fere um inimigo. Retorna True se ele morreu com este golpe."""
-        if not inimigo.ativo or not inimigo.esta_vivo:
+        if not inimigo.ativo or not inimigo.esta_vivo or inimigo.invulneravel:
             return False
         dano = max(1, round(dano))
         morreu = inimigo.receber_dano(dano)

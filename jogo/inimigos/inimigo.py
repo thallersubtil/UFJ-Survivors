@@ -68,6 +68,11 @@ class Inimigo(SerVivo, ABC):
         return self.NOME
 
     @property
+    def invulneravel(self):
+        """Se golpes agora não tiram vida. Inimigos comuns nunca ficam invulneráveis."""
+        return False
+
+    @property
     def rotulo_da_barra(self):
         """Texto em cima da barra de vida do chefe."""
         return self.nome.upper()
