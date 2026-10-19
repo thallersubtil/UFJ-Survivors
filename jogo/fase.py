@@ -119,13 +119,17 @@ class Fase(ABC):
         jogo.iniciar_chefe(FabricaDeInimigos.criar(nome, self.posicao_de_nascimento(jogo)))
 
 
-class Prova(Fase, ABC):
+class Prova(Fase):
     """Fase descrita só por dados: quem aparece e quando, formações, mini-chefes e o chefe.
 
     Cada prova do semestre é uma subclasse que só preenche as constantes abaixo.
     """
 
-    CHEFE = ""                   # nome do chefe na FabricaDeInimigos
+    @property
+    @abstractmethod
+    def CHEFE(self):
+        """Nome do chefe na FabricaDeInimigos. Cada prova define como constante de classe."""
+
     ROTULO = ""                  # nome curto, para o menu de treino
     FORMACOES = ()               # um lacaio por minuto, alternando círculo e parede
     MINI_CHEFES = ()             # (segundos, nome do lacaio que vira gigante)

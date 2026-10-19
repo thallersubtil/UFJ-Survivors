@@ -131,3 +131,12 @@ def test_quadro_continua_rapido_com_muitas_entidades():
         jogo.desenhar(tela)
     media_ms = (time.perf_counter() - inicio) / 30 * 1000
     assert media_ms < 33, f"quadro médio de {media_ms:.1f} ms"
+
+
+def test_prova_e_chefe_possuido_sao_abstratos():
+    import pytest
+    from jogo.fase import Prova
+    with pytest.raises(TypeError):
+        Prova()
+    with pytest.raises(TypeError):
+        ChefePossuido((0, 0))

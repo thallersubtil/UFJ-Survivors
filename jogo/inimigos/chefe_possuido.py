@@ -1,6 +1,6 @@
 """Professor possuído por matérias: cada matéria é uma fase da luta contra o chefe."""
 import math
-from abc import ABC
+from abc import ABC, abstractmethod
 from functools import partial
 
 import pygame
@@ -17,7 +17,6 @@ class ChefePossuido(Chefe, ABC):
     volta cheia e a luta continua na fase seguinte. Só a última matéria derrota o chefe.
     """
 
-    MATERIAS = ()                  # classes de Materia, na ordem das fases
     NOME_PROFESSOR = "o Professor"
     IMAGEM = "sprites/professor.png"
     PASTA_SPRITE = "professor"
@@ -28,6 +27,11 @@ class ChefePossuido(Chefe, ABC):
     PONTOS = 5000
     EXPERIENCIA = 0
     DURACAO_TROCA = 1.6            # segundos parado e invulnerável enquanto troca de matéria
+
+    @property
+    @abstractmethod
+    def MATERIAS(self):
+        """Classes de Materia, na ordem das fases. Cada chefe define como constante de classe."""
 
     def __init__(self, posicao, escala=1.0):
         if not self.MATERIAS:
