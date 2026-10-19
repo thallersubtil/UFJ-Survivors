@@ -140,3 +140,24 @@ def test_prova_e_chefe_possuido_sao_abstratos():
         Prova()
     with pytest.raises(TypeError):
         ChefePossuido((0, 0))
+
+
+def test_lacaio_criado_no_mesmo_quadro_nao_passa_para_a_proxima_prova():
+    jogo = jogo_imortal()
+    pular_para(jogo, DURACAO_PROVA)
+    jogo._incorporar_novas()
+    atrasado = Bug(jogo.jogador.posicao + (200, 0))
+    jogo.adicionar(atrasado)          # ainda na fila de novas entidades
+    jogo.causar_dano(jogo.chefe, 10 ** 7)
+    assert not atrasado.ativo
+
+
+def test_reprovado_mostra_a_materia_do_chefe_atual():
+    from jogo.cenas.fim import CenaFimDeJogo
+    jogo = jogo_imortal(fases=[ProvaDeArquiteturaEED()])
+    assert CenaFimDeJogo.motivo(jogo) == "Reprovado em Arquitetura de Computadores e Estrutura de Dados em C."
+    pular_para(jogo, DURACAO_PROVA)
+    jogo._incorporar_novas()
+    chefe = jogo.chefe
+    jogo.causar_dano(chefe, chefe.vida)
+    assert CenaFimDeJogo.motivo(jogo) == "Reprovado em Estrutura de Dados em C."

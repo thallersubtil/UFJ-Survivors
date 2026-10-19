@@ -20,7 +20,7 @@ class EventoDaFase:
 
 class Fase(ABC):
     NOME = "Fase"
-    MATERIA = "Semana de Provas"   # o que aparece em "Aprovado em ..." e "Reprovado em ..."
+    MATERIA = ""                   # o que aparece em "Aprovado em ..." e "Reprovado em ..."
     DURACAO = DURACAO_PROVA
     APRESENTACOES = ()
     INTERVALO_NASCIMENTO = 0.5

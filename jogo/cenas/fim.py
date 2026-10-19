@@ -15,6 +15,13 @@ class CenaFimDeJogo(Cena):
         self.tempo = 0.0
         pygame.key.start_text_input()
 
+    @staticmethod
+    def motivo(jogo):
+        """Em que matéria o aluno reprovou: a do chefe atual ou, antes dele, a da prova."""
+        if jogo.chefe is not None and jogo.chefe.ativo:
+            return f"Reprovado em {jogo.chefe.nome}."
+        return f"Reprovado em {jogo.fase.MATERIA}." if jogo.fase.MATERIA else "Reprovado."
+
     def _salvar(self):
         if self.jogo.treino:
             self._sair()
@@ -49,8 +56,7 @@ class CenaFimDeJogo(Cena):
         desenhar_fundo(tela, "cenario/titulo_fundo.png", escuro=190)
         venceu = self.jogo.venceu
         titulo = "APROVADO!" if venceu else "REPROVADO!"
-        frase = "Você passou em todas as provas do semestre!" if venceu \
-            else f"Reprovado em {self.jogo.fase.MATERIA}."
+        frase = "Você passou em todas as provas do semestre!" if venceu else self.motivo(self.jogo)
         desenhar_texto(tela, titulo, 72, Cor.APROVADO if venceu else Cor.REPROVADO, centro=(LARGURA // 2, 110))
         desenhar_texto(tela, frase, 22, Cor.TEXTO, centro=(LARGURA // 2, 170))
         painel = pygame.Rect(0, 0, 560, 250)

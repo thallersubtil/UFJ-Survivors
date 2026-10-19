@@ -213,6 +213,7 @@ class Jogo:
         """O chefe da prova caiu: passa para a próxima prova ou vence o jogo."""
         concluida = self.fase
         self.chefe = None
+        self._incorporar_novas()     # o que nasceu neste quadro também sai
         if self.ultima_fase:
             self.terminar(venceu=True)
             return
