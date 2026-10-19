@@ -49,7 +49,39 @@ classDiagram
         <<abstract>>
         +ataques()* list
     }
-    class Professor
+    class ChefePossuido {
+        <<abstract>>
+        +materias: list~Materia~
+        +materia: Materia «property»
+        +nome: str «property»
+        +receber_dano(q) bool
+        +proteger(duracao)
+    }
+    class ProfessorDeCalculo
+    class ProfessorDeArquiteturaEED
+    class ProfessoraDeTDEPOO
+    class Materia {
+        <<abstract>>
+        +NOME: str
+        +VIDA: int
+        +ataques()* list
+        +leque(chefe, jogo, n)
+        +anel(chefe, jogo, n)
+        +rajada(chefe, vezes, intervalo, disparo)
+        +chamada(chefe, jogo, n)
+    }
+    class CalculoI
+    class ArquiteturaDeComputadores
+    class EstruturaDeDadosEmC
+    class TransformacaoDigital
+    class ProgramacaoOrientadaAObjetos
+    class AcaoDoChefe {
+        <<abstract>>
+        +#95;#95;call#95;#95;(dt, jogo)* bool
+        +desenhar_aviso(tela, camera)
+    }
+    class Investida
+    class Rajada
     class Projetil {
         <<abstract>>
         +verificar_colisao(jogo)*
@@ -104,7 +136,15 @@ classDiagram
         +criar_eventos()* list
         +posicao_de_nascimento(jogo)$
     }
-    class SemanaDeProvas
+    class Prova {
+        <<abstract>>
+        +CHEFE: str
+        +APRESENTACOES: tuple
+        +adiantar_para_o_chefe()
+    }
+    class ProvaDeCalculo
+    class ProvaDeArquiteturaEED
+    class ProvaDeTDEPOO
     class Placar {
         -_pontos: int
         +pontos: int «property»
@@ -172,16 +212,31 @@ classDiagram
     Inimigo <|-- PilhaAA
     Inimigo <|-- PenteDeRAM
     Inimigo <|-- Chefe
-    Chefe <|-- Professor
+    Chefe <|-- ChefePossuido
+    ChefePossuido <|-- ProfessorDeCalculo
+    ChefePossuido <|-- ProfessorDeArquiteturaEED
+    ChefePossuido <|-- ProfessoraDeTDEPOO
+    ChefePossuido *-- Materia
+    Materia <|-- CalculoI
+    Materia <|-- ArquiteturaDeComputadores
+    Materia <|-- EstruturaDeDadosEmC
+    Materia <|-- TransformacaoDigital
+    Materia <|-- ProgramacaoOrientadaAObjetos
+    Chefe o-- AcaoDoChefe
+    AcaoDoChefe <|-- Investida
+    AcaoDoChefe <|-- Rajada
     Projetil <|-- ProjetilDoHeroi
     Projetil <|-- ProjetilInimigo
     Arma <|-- ArmaDeDisparo
     Arma <|-- ArmaDeContato
     Arma <|-- Colab
-    Fase <|-- SemanaDeProvas
+    Fase <|-- Prova
+    Prova <|-- ProvaDeCalculo
+    Prova <|-- ProvaDeArquiteturaEED
+    Prova <|-- ProvaDeTDEPOO
 
     Jogo *-- Jogador
-    Jogo *-- Fase
+    Jogo *-- Fase : 3 provas
     Jogo *-- Placar
     Jogo *-- Mapa
     Mapa <|-- MapaUFJ

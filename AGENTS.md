@@ -8,7 +8,7 @@ Leia este arquivo inteiro antes de mexer no projeto. Ele vale para qualquer pess
 
 - O enunciado do trabalho está resumido em `docs/superpowers/specs/2026-10-10-ufj-survivors-design.md` (seções 1 e 12). **A especificação é a referência**: se algo aqui ou no código contradizer a especificação, siga a especificação ou converse com o grupo.
 - O plano de implementação que gerou o código está em `docs/superpowers/plans/2026-10-10-ufj-survivors.md`.
-- Animação, pixel art, mapa da UFJ e partida de 8 minutos: `docs/superpowers/specs/2026-10-14-animacao-mapa-ufj-design.md` (vale sobre a especificação original onde divergirem).
+- Animação, pixel art e mapa da UFJ (a partida de 8 minutos descrita ali foi trocada pelas três provas de 5 minutos, veja abaixo): `docs/superpowers/specs/2026-10-14-animacao-mapa-ufj-design.md` (vale sobre a especificação original onde divergirem).
 - O que ainda falta fazer está em `docs/PENDENCIAS.md`. **Comece por lá.**
 
 ## Como rodar e testar
@@ -30,7 +30,7 @@ A nota depende de estes pontos continuarem verdadeiros e fáceis de mostrar na d
 | Requisito | Onde está |
 |---|---|
 | Classe abstrata `Entidade` com `atualizar()` e `desenhar()` | `jogo/nucleo/entidade.py` |
-| 3+ inimigos herdando de `Inimigo` | `jogo/inimigos/` (8 lacaios + Professor) |
+| 3+ inimigos herdando de `Inimigo` | `jogo/inimigos/` (8 lacaios + 3 chefes possuídos) |
 | **Um único laço** `for e in self.entidades: e.atualizar(dt, self)` **sem `if`/`isinstance` por tipo** | `Jogo.atualizar()` em `jogo/jogo.py` |
 | `vida`, `pontos`, `municao` com `@property` e validação | `SerVivo`, `Placar`, `ArmaDeDisparo` |
 | `Jogo` contém `Jogador`, `Fase`, `Placar`; `Jogador` contém `Arma` | `jogo/jogo.py`, `jogo/jogador/jogador.py` |
@@ -48,12 +48,13 @@ Regras que decorrem disso:
 main.py                ponto de entrada (abre a CenaTitulo)
 jogo/config.py         tamanhos, cores e números gerais
 jogo/jogo.py           Jogo: a partida; o laço polimórfico; regras de dano, morte, combo 67, notas
-jogo/fase.py           Fase (abstrata) e SemanaDeProvas: linha do tempo dos 8 minutos
+jogo/fase.py           Fase (abstrata), Prova e as três provas (Cálculo I; Arquitetura e ED; TD e POO), 5 min cada
 jogo/mapa.py           Mapa (abstrata), MapaUFJ, Predio (obstáculo), Decoracao; jogo/cenario.py: pátio genérico
 jogo/nucleo/animacao.py  Animacao e Animador (composição: personagens contêm um Animador)
 jogo/nucleo/           Entidade, SerVivo, Colisao, Camera, GradeEspacial, Recursos (arte/som com substitutos), desenho
 jogo/jogador/          Jogador (abstrata), AlunoAgil, AlunoResistente, especiais, BonusTemporario
-jogo/inimigos/         Inimigo (abstrata), FabricaDeInimigos, um arquivo por lacaio, Chefe, Professor
+jogo/inimigos/         Inimigo (abstrata), FabricaDeInimigos, um arquivo por lacaio, Chefe, ChefePossuido e os três chefes
+jogo/inimigos/materias/  Materia (abstrata) e as cinco matérias: os ataques de cada chefe
 jogo/armas/            Arma, ArmaDeDisparo (usa café), ArmaDeContato (não usa café), uma arma por arquivo, colabs.py
 jogo/itens/            Item (abstrata) e os 7 itens passivos
 jogo/projeteis/  jogo/ajudantes/  jogo/coletaveis/  jogo/efeitos.py   o que as armas e inimigos colocam na arena
@@ -68,7 +69,9 @@ docs/                  entregas, diagrama, registro de uso de IA, especificaçã
 
 ## Receitas
 
-**Inimigo novo** (é o "requisito surpresa" mais provável na apresentação): um arquivo novo em `jogo/inimigos/` com uma classe que herda de `Inimigo`, decorada com `@FabricaDeInimigos.registrar("nome")` e implementando `mover()`. O pacote importa todos os arquivos da pasta sozinho; **nenhuma classe existente muda**. Para aparecer na fase, acrescente `(segundos, "nome")` em `SemanaDeProvas.APRESENTACOES`. Exemplo completo no `README.md`.
+**Inimigo novo** (é o "requisito surpresa" mais provável na apresentação): um arquivo novo em `jogo/inimigos/` com uma classe que herda de `Inimigo`, decorada com `@FabricaDeInimigos.registrar("nome")` e implementando `mover()`. O pacote importa todos os arquivos da pasta sozinho; **nenhuma classe existente muda**. Para aparecer, acrescente `(segundos, "nome")` em `APRESENTACOES` de uma das provas em `jogo/fase.py`. Exemplo completo no `README.md`.
+
+**Matéria ou chefe novo**: uma classe que herda de `Materia` em `jogo/inimigos/materias/` com `ataques()` combinando os ataques prontos (`leque`, `anel`, `rajada`, `chamada`, `chefe.investir`); o chefe é uma classe que herda de `ChefePossuido`, registrada na fábrica, com `MATERIAS = (...)` na ordem das fases. Exemplo no `README.md`.
 
 **Arma nova**: herde de `ArmaDeDisparo` (implemente `disparar()`, que retorna `False` se não havia alvo) ou de `ArmaDeContato` (implemente `atualizar()`). Defina `NOME`, `DESCRICAO`, `ICONE`, `ATRIBUTOS` (uma tupla de 7 valores por atributo, um por nível) e `MELHORIAS` (6 textos). Acrescente a classe em `Progressao.ARMAS` para ela aparecer nas cartas.
 

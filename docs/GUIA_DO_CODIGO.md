@@ -4,7 +4,7 @@ Mapa de tudo o que já existe no UFJ Survivors, na ordem em que vale a pena ente
 
 ## 1. O jogo em uma frase
 
-O herói (um aluno) anda pelo Campus Jatobá; as armas atacam sozinhas; ondas de inimigos (objetos das matérias) crescem durante 8 minutos; inimigos mortos soltam notas que dão experiência; a cada nível o jogador escolhe uma carta (arma, melhoria ou item); aos 8:00 chega o chefe (Professor). Vencer o chefe = "APROVADO!"; morrer = "REPROVADO!".
+O herói (um aluno) anda pelo Campus Jatobá; as armas atacam sozinhas; ondas de inimigos (objetos das matérias) crescem durante cada uma das três provas de 5 minutos; inimigos mortos soltam notas que dão experiência; a cada nível o jogador escolhe uma carta (arma, melhoria ou item); no fim de cada prova chega o chefe: um professor possuído pela própria matéria. Vencer os três chefes = "APROVADO!"; morrer = "REPROVADO!".
 
 ## 2. Como o programa roda
 
@@ -48,10 +48,13 @@ Entidade (abstrata: atualizar, desenhar)            jogo/nucleo/entidade.py
 │     ├─ Bug, CalculadoraBrava, MouseDeBolinha, Caixinha (-> CaixinhaPequena),
 │     │  PiCambaleante, Ponteiro, PilhaAA, PenteDeRAM      (um arquivo cada)
 │     └─ Chefe (abstrata: ataques)                  jogo/inimigos/chefe.py
-│        └─ Professor       folhas em leque, investida, chamada de lacaios
+│        └─ ChefePossuido (abstrata: CONTÉM matérias) jogo/inimigos/chefe_possuido.py
+│           ├─ ProfessorDeCalculo          Cálculo I
+│           ├─ ProfessorDeArquiteturaEED   Arquitetura de Computadores -> Estrutura de Dados em C
+│           └─ ProfessoraDeTDEPOO          Transformação Digital -> POO
 ├─ Projetil (abstrata: verificar_colisao)           jogo/projeteis/projeteis.py
 │  ├─ ProjetilDoHeroi -> CobraProjetil, TiroChatGPT, ProjetilDivisivel (EstrelaGemini, CobraGemea)
-│  └─ ProjetilInimigo -> FolhaDeProva
+│  └─ ProjetilInimigo -> ProjetilDaMateria (o símbolo da matéria: "dx", "*p", "{}"...)
 ├─ Ajudante (abstrata)    CachorroCaramelo, MascoteFlutuante, FuscaVeiculo, FuscaCircular
 ├─ Coletavel (abstrata: ao_coletar)   Nota, CopoDeCafe, PocaoDeVida, Bau
 ├─ Efeito (abstrata)      TextoFlutuante, FaiscaExplosao, RaioZoltraak, AuraSSJ, GolpeClaude, RaioDebate
@@ -79,7 +82,10 @@ BonusTemporario               efeitos com tempo (combo 67, Super Saiyajin)
 ### Partida, mapa e telas
 
 ```
-Fase (abstrata: criar_eventos)  -> SemanaDeProvas     jogo/fase.py
+Fase (abstrata: criar_eventos)  -> Prova -> ProvaDeCalculo, ProvaDeArquiteturaEED, ProvaDeTDEPOO   jogo/fase.py
+Materia (abstrata: ataques)     -> CalculoI, ArquiteturaDeComputadores, EstruturaDeDadosEmC,
+                                   TransformacaoDigital, ProgramacaoOrientadaAObjetos   jogo/inimigos/materias/
+AcaoDoChefe (abstrata)          -> Investida, Rajada   jogo/inimigos/acoes_do_chefe.py
 Mapa (abstrata)                 -> MapaUFJ, Cenario   jogo/mapa.py, jogo/cenario.py
 Cena (abstrata)                 -> 8 telas            jogo/cenas/
 Placar, Ranking, RegistroRanking                      jogo/placar.py, jogo/ranking.py
@@ -88,7 +94,8 @@ FabricaDeInimigos, Colisao, Camera, GradeEspacial, Recursos, Animacao, Animador
 
 ## 5. Composição (quem contém quem)
 
-- `Jogo` contém `Jogador`, `Fase`, `Placar`, `Mapa`, `Camera`, `GradeEspacial` e a lista de entidades.
+- `Jogo` contém `Jogador`, as três `Fase` (provas) e a atual, `Placar`, `Mapa`, `Camera`, `GradeEspacial` e a lista de entidades.
+- `ChefePossuido` contém suas `Materia`: o chefe não **é** Cálculo; ele **está possuído** por Cálculo. Por isso composição: o mesmo professor troca de matéria no meio da luta, o que herança não permitiria.
 - `Jogador` contém uma lista de `Arma`, uma lista de `Item`, um `Especial`, bônus temporários e um `Animador`.
 - `Animador` contém várias `Animacao` (parado, andar), e cada `Animacao` contém os quadros.
 
@@ -99,7 +106,7 @@ Por que composição e não herança entre `Jogador` e `Arma`: o jogador **tem**
 | Requisito | Onde | Como explicar em uma frase |
 |---|---|---|
 | Classe abstrata | `Entidade` (`atualizar`, `desenhar` com `@abstractmethod`) | Não existe "uma entidade" genérica na tela; ela só define o contrato que o laço do `Jogo` usa. |
-| Herança (3+ inimigos) | `Inimigo` e 8 lacaios + `Chefe`/`Professor` | O que é comum (vida, perseguir, soltar nota, animação) está em `Inimigo`; cada lacaio só sobrescreve `mover` e às vezes `ao_morrer`. |
+| Herança (3+ inimigos) | `Inimigo` e 8 lacaios + `Chefe` > `ChefePossuido` > 3 chefes | O que é comum (vida, perseguir, soltar nota, animação) está em `Inimigo`; cada lacaio só sobrescreve `mover` e às vezes `ao_morrer`. |
 | Polimorfismo | `Jogo.atualizar`, laço `for e in self.entidades` | O mesmo `e.atualizar()` faz o Bug correr, o Ponteiro mergulhar e a nota ser atraída. |
 | Encapsulamento | `SerVivo.vida`, `Placar.pontos`, `ArmaDeDisparo.municao` | O atributo real é `_vida`; o setter impede vida negativa ou acima do máximo. |
 | Composição | ver seção 5 | |
@@ -107,15 +114,26 @@ Por que composição e não herança entre `Jogador` e `Arma`: o jogador **tem**
 | `@classmethod` | `FabricaDeInimigos.registrar/criar` | A fábrica guarda um registro na própria classe; inimigo novo se registra com um decorador. |
 | `@staticmethod` | `Colisao.circulos_colidem` | Função pura de geometria; não precisa de instância. |
 
-Pergunta provável: "o que muda se eu criar um inimigo novo?". Resposta: nada nas classes existentes. Arquivo novo em `jogo/inimigos/`, classe herdando de `Inimigo`, `@FabricaDeInimigos.registrar("nome")`, implementar `mover()`; para aparecer, uma linha em `SemanaDeProvas.APRESENTACOES`. A receita completa está no `AGENTS.md`.
+Pergunta provável: "o que muda se eu criar um inimigo novo?". Resposta: nada nas classes existentes. Arquivo novo em `jogo/inimigos/`, classe herdando de `Inimigo`, `@FabricaDeInimigos.registrar("nome")`, implementar `mover()`; para aparecer, uma linha em `APRESENTACOES` de uma das provas. A receita completa está no `AGENTS.md`. Para um chefe novo, o mesmo vale com `Materia` e `ChefePossuido`.
 
-## 7. A partida de 8 minutos (`SemanaDeProvas`)
+## 7. As três provas (`jogo/fase.py`)
 
-- Um lacaio novo entra no sorteio a cada 40 s: Bug (0:00), Calculadora (0:40), Mouse (1:20), Caixinha (2:00), Pi (2:40), Ponteiro (3:20), Pilha AA (4:00), Pente de RAM (4:40).
-- Formações a cada minuto (círculo e parede, alternando).
-- Mini-chefes: Calculadora Gigante (2:40) e Pente de RAM Gigante (5:20); soltam baú.
-- 8:00: o Professor. Com menos de metade da vida ele fica furioso (ataca mais rápido e mais forte).
-- A dificuldade sobe com o tempo (`escala_dificuldade`) e o número de inimigos na tela tem teto (`MAX_INIMIGOS`).
+| Prova | Lacaios | Mini-chefe | Chefe (aos 5:00) |
+|---|---|---|---|
+| `ProvaDeCalculo` | bug, calculadora, pi, caixinha, mouse | Calculadora Gigante (2:30) | Cálculo I |
+| `ProvaDeArquiteturaEED` | bug, mouse, pente de RAM, ponteiro, pilha, calculadora | Pente de RAM Gigante (2:30) | Arquitetura de Computadores, depois Estrutura de Dados em C |
+| `ProvaDeTDEPOO` | todos | Caixinha Gigante (2:00), Ponteiro Gigante (3:30) | Transformação Digital, depois POO |
+
+- Cada prova é uma subclasse de `Prova` que só preenche dados (`APRESENTACOES`, `FORMACOES`, `MINI_CHEFES`, `CHEFE`); a `Prova` monta a linha do tempo a partir deles.
+- Cada prova começa mais difícil que a anterior (`INICIO_DIFICULDADE`); a dificuldade sobe com o tempo (`escala_dificuldade`) e o número de inimigos tem teto (`MAX_INIMIGOS`).
+- Quando o chefe cai, `Jogo.concluir_fase()` limpa os inimigos e tiros da tela, cura metade da vida, dá um baú e começa a próxima prova; na última, vence o jogo.
+
+### Como o chefe possuído funciona
+
+- A matéria atual define o nome na tela, a vida, o ritmo e os ataques; o chefe só repassa (`ChefePossuido.ataques` devolve os ataques da matéria).
+- Com menos da metade da vida, fica furioso: ataques maiores e mais rápidos.
+- `receber_dano` é sobrescrito: se a vida zerou e ainda há matéria, a próxima possui o professor (vida cheia, 1,6 s invulnerável, anúncio da fase 2). Só a última matéria derrota o chefe.
+- Ataques prontos em `Materia`: `leque`, `anel`, `rajada` (vários disparos seguidos) e `chamada` (lacaios); `chefe.investir()` faz a investida. As ações de várias etapas são objetos `AcaoDoChefe` (`Investida`, `Rajada`), executados um quadro por vez.
 
 ## 8. Sistemas de jogo
 
