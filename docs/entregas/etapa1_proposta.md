@@ -2,7 +2,7 @@
 
 **Disciplina:** Programação Orientada a Objetos, UFJ. **Professora:** Emília Alves Nogueira.
 
-**Integrantes:** Filipe Duarte de Freitas Oliveira; Thaller [PREENCHER: nome completo]
+**Integrantes:** Filipe Duarte de Freitas Oliveira; Thaller Subtil de Carvalho
 
 **Repositório:** https://github.com/thallersubtil/UFJ-Survivors
 
