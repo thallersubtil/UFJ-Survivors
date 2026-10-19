@@ -21,7 +21,7 @@ main.py
 
 Toda tela herda de `Cena` (abstrata, `jogo/cenas/cena.py`) e implementa `tratar_evento`, `atualizar` e `desenhar`. A `Aplicacao` só chama esses três métodos na cena do topo da pilha: polimorfismo também nas telas.
 
-`OpcoesDePartida` (`jogo/opcoes.py`) viaja de tela em tela dizendo como a partida vai ser: quais provas, se é treino, se começa direto no chefe, se o aluno é imortal. `CenaPartida` cria um `Jogo` (a partida) a partir delas e, a cada quadro, passa o teclado/mouse para ele e chama `jogo.atualizar(dt)` e `jogo.desenhar(tela)`; depois desenha o `Hud` por cima.
+`OpcoesDePartida` (`jogo/opcoes.py`) viaja de tela em tela dizendo como a partida vai ser: quais provas, se é treino, se começa direto no chefe, se o aluno é imortal. `CenaPartida` cria um `Jogo` (a partida) a partir delas com o `@classmethod` `Jogo.a_partir_de(classe, opcoes)` e, a cada quadro, passa o teclado/mouse para ele e chama `jogo.atualizar(dt)` e `jogo.desenhar(tela)`; depois desenha o `Hud` por cima.
 
 ## 3. Um quadro da partida (`Jogo.atualizar`, `jogo/jogo.py`)
 
@@ -117,6 +117,8 @@ Por que composição e não herança entre `Jogador` e `Arma`: o jogador **tem**
 | Encapsulamento (2) | `Aparencia.pele`, `cabelo`, `moletom`, `calca` | Cada setter só aceita uma opção da lista; um valor inválido gera `ValueError`. |
 | Métodos especiais (2) | `Aparencia.__eq__`, `__hash__`, `__str__` | Duas aparências com as mesmas escolhas são iguais e têm o mesmo hash, por isso servem de chave no cache das imagens recoloridas. |
 | `@staticmethod` | `Colisao.circulos_colidem` | Função pura de geometria; não precisa de instância. |
+
+Durante o escudo ou a troca de matéria o chefe fica `invulneravel` (propriedade que todo `Inimigo` tem, falsa por padrão): `Jogo.causar_dano` não mostra dano e o chefe não fere por contato. `Prova` e `ChefePossuido` são abstratas de verdade: `CHEFE` e `MATERIAS` são propriedades abstratas que cada subclasse preenche com uma constante.
 
 Pergunta provável: "o que muda se eu criar um inimigo novo?". Resposta: nada nas classes existentes. Arquivo novo em `jogo/inimigos/`, classe herdando de `Inimigo`, `@FabricaDeInimigos.registrar("nome")`, implementar `mover()`; para aparecer, uma linha em `APRESENTACOES` de uma das provas. A receita completa está no `AGENTS.md`. Para um chefe novo, o mesmo vale com `Materia` e `ChefePossuido`.
 

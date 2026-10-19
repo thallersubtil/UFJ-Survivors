@@ -1,10 +1,10 @@
 # Pendências
 
-O jogo está completo e jogável (três provas de 5 minutos no mapa do Campus Jatobá, pixel art animada, 8 lacaios, 3 chefes possuídos por 5 matérias, 6 armas, 3 colabs, 7 itens, todas as telas, 182 testes passando). Esta é a lista do que ainda vale fazer, mais ou menos em ordem de prioridade. Ao terminar um item, apague-o daqui no mesmo commit.
+O jogo está completo e jogável (três provas de 5 minutos no mapa do Campus Jatobá, pixel art animada, 8 lacaios, 3 chefes possuídos por 5 matérias, 6 armas, 3 colabs, 7 itens, todas as telas, 239 testes passando). Esta é a lista do que ainda vale fazer, mais ou menos em ordem de prioridade. Ao terminar um item, apague-o daqui no mesmo commit.
 
 ## Para o grupo decidir ou fazer
 
-- [ ] **Jogar e calibrar.** O balanceamento foi feito com um jogador automático (`ferramentas/simular_partida.py`). Joguem partidas inteiras com os dois alunos e ajustem os números se estiver fácil ou difícil demais: `VIDA` e ritmo de cada matéria (`jogo/inimigos/materias/`), duração das provas (`DURACAO_PROVA` em `jogo/config.py`; a partida inteira dá uns 19 minutos no simulador), `Fase.alvo_de_inimigos` e `Fase.escala_dificuldade` (`jogo/fase.py`), `DANO`/`VIDA` dos lacaios, `Jogador.experiencia_necessaria`.
+- [ ] **Jogar e calibrar.** O balanceamento foi feito com um jogador automático (`ferramentas/simular_partida.py`). Joguem partidas inteiras com os dois alunos e ajustem os números se estiver fácil ou difícil demais: `VIDA` e ritmo de cada matéria (`jogo/inimigos/materias/`), duração das provas (`DURACAO_PROVA` em `jogo/config.py`; o semestre inteiro dá de 17 a 19 minutos no simulador), `Fase.alvo_de_inimigos` e `Fase.escala_dificuldade` (`jogo/fase.py`), `DANO`/`VIDA` dos lacaios, `Jogador.experiencia_necessaria`.
 - [ ] **Caricaturas do grupo e do professor.** Gerar as folhas animadas com as caricaturas (receita no `AGENTS.md`) e trocar os nomes "Aluno 1", "Aluno 2" e "Professor".
 - [ ] **Áudio do 67.** `assets/sons/67.wav` é uma voz sintetizada provisória; troquem pelo áudio do meme se quiserem (mesmo nome de arquivo, formato WAV).
 - [ ] **Registro de IA.** Revisar e completar `docs/registro_ia.md` com as próprias palavras (etapas 1 e 2 estão adiantadas).
