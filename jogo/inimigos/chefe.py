@@ -39,9 +39,13 @@ class Chefe(Inimigo, ABC):
         falta = jogo.jogador.posicao - self.posicao
         return falta.normalize() if falta.length_squared() > 0 else pygame.Vector2(1, 0)
 
+    def executar(self, acao):
+        """Começa uma ação de várias etapas (AcaoDoChefe). Só o chefe mexe na própria ação atual."""
+        self.acao_atual = acao
+
     def investir(self, vezes=1, **ajustes):
         """Começa uma investida (ou várias seguidas) em direção ao herói."""
-        self.acao_atual = Investida(self, vezes, **ajustes)
+        self.executar(Investida(self, vezes, **ajustes))
 
     def mover(self, dt, jogo):
         if self.acao_atual is not None:

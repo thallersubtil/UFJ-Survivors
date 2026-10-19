@@ -53,7 +53,7 @@ class Materia(ABC):
 
     def rajada(self, chefe, vezes, intervalo, disparo):
         """O chefe para e executa `disparo(i)` várias vezes seguidas."""
-        chefe.acao_atual = Rajada(vezes, intervalo, disparo)
+        chefe.executar(Rajada(vezes, intervalo, disparo))
 
     def chamada(self, chefe, jogo, quantidade, texto="CHAMADA!"):
         """Lacaios da matéria aparecem em volta do chefe."""
