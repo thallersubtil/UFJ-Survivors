@@ -194,7 +194,7 @@ class Jogo:
     def iniciar_chefe(self, chefe):
         self.chefe = chefe
         self.adicionar(chefe)
-        self.anunciar(f"{chefe.NOME} chegou!", 3)
+        self.anunciar(f"{chefe.nome} chegou!", 3)
 
     def anunciar(self, texto, duracao=2.5):
         self.anuncios.append([texto, duracao])

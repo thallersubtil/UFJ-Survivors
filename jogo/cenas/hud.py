@@ -76,7 +76,7 @@ class Hud:
         retangulo = pygame.Rect(0, 0, 640, 18)
         retangulo.midbottom = (LARGURA // 2, tela.get_height() - 24)
         desenhar_barra(tela, retangulo, chefe.vida / chefe.vida_maxima, Cor.VIDA)
-        desenhar_texto(tela, chefe.NOME.upper(), 18, Cor.TEXTO, centro=(LARGURA // 2, retangulo.top - 14))
+        desenhar_texto(tela, chefe.nome.upper(), 18, Cor.TEXTO, centro=(LARGURA // 2, retangulo.top - 14))
 
     def _anuncios(self, tela, jogo):
         for i, (texto, restante) in enumerate(jogo.anuncios[-3:]):

@@ -129,6 +129,37 @@ class FolhaDeProva(ProjetilInimigo):
         return self.tempo * 360
 
 
+class ProjetilDaMateria(ProjetilInimigo):
+    """Símbolo da matéria lançado pelo chefe ("dx" no Cálculo, "*p" em ED...)."""
+
+    DURACAO = 4.5
+    _imagens = {}
+
+    def __init__(self, posicao, velocidade, dano, simbolo, cor, raio=12):
+        super().__init__(posicao, velocidade, dano, raio)
+        self.simbolo = simbolo
+        self.cor = tuple(cor)
+
+    @classmethod
+    def imagem_do_simbolo(cls, simbolo, cor, raio):
+        """Bolinha escura com borda na cor da matéria e o símbolo no meio (guardada em cache)."""
+        chave = (simbolo, tuple(cor), raio)
+        if chave not in cls._imagens:
+            texto = Recursos.fonte(max(10, raio)).render(simbolo, True, cor)
+            largura = max(raio * 2, texto.get_width() + 10)
+            imagem = pygame.Surface((largura + 4, raio * 2 + 4), pygame.SRCALPHA)
+            caixa = imagem.get_rect().inflate(-4, -4)
+            pygame.draw.rect(imagem, (24, 18, 34), caixa, border_radius=raio)
+            pygame.draw.rect(imagem, cor, caixa, 2, border_radius=raio)
+            imagem.blit(texto, texto.get_rect(center=caixa.center))
+            cls._imagens[chave] = imagem
+        return cls._imagens[chave]
+
+    def desenhar(self, tela, camera):
+        imagem = self.imagem_do_simbolo(self.simbolo, self.cor, round(self.raio))
+        tela.blit(imagem, imagem.get_rect(center=camera.para_tela(self.posicao)))
+
+
 class TiroChatGPT(ProjetilDoHeroi):
     """Bolinha de energia do mascote. Quando alucinado, é rosa e com '?'."""
 

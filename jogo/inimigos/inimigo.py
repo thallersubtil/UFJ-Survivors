@@ -63,6 +63,11 @@ class Inimigo(SerVivo, ABC):
         self.vida = self.vida_maxima
 
     @property
+    def nome(self):
+        """Nome mostrado no jogo (os chefes possuídos usam o nome da matéria)."""
+        return self.NOME
+
+    @property
     def altura_sprite(self):
         return self.animador.quadro_atual.get_height()
 
