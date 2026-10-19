@@ -43,6 +43,7 @@ class Jogo:
             fases = [fase] if fase is not None else semestre()
         self.fases = list(fases)
         self.indice_fase = 0
+        self.treino = False
         self.fase = self.fases[0]
         self.placar = Placar()
         self.camera = Camera(LARGURA, ALTURA, self.arena)

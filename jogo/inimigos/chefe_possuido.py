@@ -49,6 +49,12 @@ class ChefePossuido(Chefe, ABC):
         return self.materia.NOME
 
     @property
+    def rotulo_da_barra(self):
+        if self.total_de_fases == 1:
+            return self.nome.upper()
+        return f"{self.nome.upper()}  (FASE {self.fase_da_luta}/{self.total_de_fases})"
+
+    @property
     def fase_da_luta(self):
         return self._indice_materia + 1
 

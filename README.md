@@ -44,6 +44,10 @@ py -3.12 -m venv .venv
 | 1, 2, 3 ou Enter | Escolher carta ao subir de nível |
 | R / P | Sortear as cartas de novo / pular a escolha |
 
+## Modo treino
+
+No título, **TREINO** abre um menu para escolher qual professor enfrentar (Cálculo I; Arquitetura e ED em C; TD e POO). Na mesma tela, **C** liga "começar direto no chefe" (a prova começa 3 segundos antes dele chegar) e **I** deixa o aluno imortal. Partidas de treino não entram no ranking. Serve para testar e balancear cada chefe sem jogar o semestre inteiro.
+
 ## Testes
 
 ```bash

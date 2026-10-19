@@ -14,14 +14,19 @@ class CenaTitulo(Cena):
         self.tempo = 0.0
         meio = LARGURA // 2
         self.menu = MenuDeBotoes([
-            Botao("JOGAR", (meio, 440), self._jogar),
-            Botao("RANKING", (meio, 520), self._ranking),
-            Botao("SAIR", (meio, 600), app.sair),
+            Botao("JOGAR", (meio, 410), self._jogar),
+            Botao("TREINO", (meio, 480), self._treino),
+            Botao("RANKING", (meio, 550), self._ranking),
+            Botao("SAIR", (meio, 620), app.sair),
         ])
 
     def _jogar(self):
         from jogo.cenas.selecao import CenaSelecao
         self.app.trocar(CenaSelecao(self.app))
+
+    def _treino(self):
+        from jogo.cenas.treino import CenaTreino
+        self.app.trocar(CenaTreino(self.app))
 
     def _ranking(self):
         from jogo.cenas.ranking import CenaRanking

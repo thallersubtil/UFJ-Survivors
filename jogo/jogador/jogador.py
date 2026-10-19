@@ -39,6 +39,7 @@ class Jogador(SerVivo, ABC):
         self.movendo = False
         self.olhando_esquerda = False
         self.invencivel = 0.0
+        self.imortal = False          # modo treino
         self.tempo = 0.0
         self.transformado = False
         self.animador = Animador(self._animacoes(), inicial="parado")
@@ -145,7 +146,7 @@ class Jogador(SerVivo, ABC):
 
     @property
     def pode_levar_dano(self):
-        return self.invencivel <= 0 and self.esta_vivo
+        return self.invencivel <= 0 and self.esta_vivo and not self.imortal
 
     def receber_dano(self, quantidade):
         morreu = super().receber_dano(quantidade)

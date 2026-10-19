@@ -16,6 +16,9 @@ class CenaFimDeJogo(Cena):
         pygame.key.start_text_input()
 
     def _salvar(self):
+        if self.jogo.treino:
+            self._sair()
+            return
         registro = self.jogo.resultado(self.nome)
         self.app.ranking.adicionar(registro)
         pygame.key.stop_text_input()
@@ -65,6 +68,10 @@ class CenaFimDeJogo(Cena):
             y = painel.top + 26 + i * 42
             desenhar_texto(tela, rotulo, 22, Cor.TEXTO_FRACO, topo_esquerda=(painel.left + 30, y))
             desenhar_texto(tela, valor, 24, Cor.DESTAQUE, topo_direita=(painel.right - 30, y))
+        if self.jogo.treino:
+            desenhar_texto(tela, "Modo treino: não entra no ranking.    [Enter] voltar ao título", 16,
+                           Cor.TEXTO_FRACO, centro=(LARGURA // 2, ALTURA - 40))
+            return
         cursor = "_" if int(self.tempo * 2) % 2 == 0 else " "
         caixa = pygame.Rect(0, 0, 460, 56)
         caixa.center = (LARGURA // 2, 540)

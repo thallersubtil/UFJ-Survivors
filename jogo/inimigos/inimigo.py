@@ -68,6 +68,11 @@ class Inimigo(SerVivo, ABC):
         return self.NOME
 
     @property
+    def rotulo_da_barra(self):
+        """Texto em cima da barra de vida do chefe."""
+        return self.nome.upper()
+
+    @property
     def altura_sprite(self):
         return self.animador.quadro_atual.get_height()
 

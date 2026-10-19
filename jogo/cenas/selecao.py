@@ -8,11 +8,13 @@ from jogo.cenas.widgets import (TECLAS_CONFIRMAR, desenhar_barra, desenhar_fundo
 from jogo.config import ALTURA, LARGURA, Cor
 from jogo.jogador.alunos import HEROIS
 from jogo.nucleo.recursos import Recursos
+from jogo.opcoes import OpcoesDePartida
 
 
 class CenaSelecao(Cena):
-    def __init__(self, app):
+    def __init__(self, app, opcoes=None):
         super().__init__(app)
+        self.opcoes = opcoes or OpcoesDePartida()
         self.indice = 0
         self.tempo = 0.0
         self.exemplos = [classe((0, 0)) for classe in HEROIS]
@@ -24,7 +26,7 @@ class CenaSelecao(Cena):
 
     def _comecar(self):
         from jogo.cenas.partida import CenaPartida
-        self.app.trocar(CenaPartida(self.app, HEROIS[self.indice]))
+        self.app.trocar(CenaPartida(self.app, HEROIS[self.indice], self.opcoes))
 
     def _voltar(self):
         from jogo.cenas.titulo import CenaTitulo
@@ -56,6 +58,8 @@ class CenaSelecao(Cena):
     def desenhar(self, tela):
         desenhar_fundo(tela, "cenario/titulo_fundo.png", escuro=170)
         desenhar_texto(tela, "ESCOLHA SEU ALUNO", 44, Cor.DESTAQUE, centro=(LARGURA // 2, 70))
+        if self.opcoes.treino:
+            desenhar_texto(tela, "MODO TREINO", 18, Cor.TEXTO_FRACO, centro=(LARGURA // 2, 112))
         for i, (heroi, r) in enumerate(zip(self.exemplos, self.cartoes)):
             self._cartao(tela, heroi, r, i == self.indice)
         desenhar_texto(tela, "[<- ->] escolher    [Enter] começar    [Esc] voltar", 16, Cor.TEXTO_FRACO,

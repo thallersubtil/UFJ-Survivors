@@ -9,15 +9,19 @@ from jogo.cenas.pausa import CenaPausa
 from jogo.cenas.widgets import desenhar_texto
 from jogo.config import Cor
 from jogo.jogo import Jogo
+from jogo.opcoes import OpcoesDePartida
 
 
 class CenaPartida(Cena):
     ESPERA_FIM = 1.5
     ALCANCE_MIRA_AUTOMATICA = 700
 
-    def __init__(self, app, classe_jogador):
+    def __init__(self, app, classe_jogador, opcoes=None):
         super().__init__(app)
-        self.jogo = Jogo(classe_jogador)
+        self.opcoes = opcoes or OpcoesDePartida()
+        self.jogo = Jogo(classe_jogador, fases=self.opcoes.criar_fases(), aparencia=self.opcoes.aparencia)
+        self.jogo.treino = self.opcoes.treino
+        self.jogo.jogador.imortal = self.opcoes.imortal
         self.hud = Hud()
         self._espera_fim = self.ESPERA_FIM
 

@@ -30,6 +30,7 @@ def test_professor_tem_arquitetura_e_depois_estrutura_de_dados(jogo_limpo):
     jogo = jogo_limpo()
     chefe = colocar_chefe(jogo, "chefe_arquitetura_ed")
     assert chefe.nome == "Arquitetura de Computadores"
+    assert chefe.rotulo_da_barra.endswith("(FASE 1/2)")
     assert chefe.total_de_fases == 2 and chefe.fase_da_luta == 1
     derrotar_fase(jogo, chefe)
     assert chefe.ativo and not jogo.terminou

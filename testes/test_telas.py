@@ -38,7 +38,7 @@ def test_titulo_jogar_leva_a_selecao(app):
 
 def test_titulo_ranking_e_sair(app):
     app.trocar(CenaTitulo(app))
-    app.passo(1 / 60, [tecla(pygame.K_DOWN), tecla(pygame.K_RETURN)])
+    app.passo(1 / 60, [tecla(pygame.K_DOWN), tecla(pygame.K_DOWN), tecla(pygame.K_RETURN)])
     assert isinstance(app.cena_atual, CenaRanking)
     app.passo(1 / 60, [tecla(pygame.K_ESCAPE)])
     assert isinstance(app.cena_atual, CenaTitulo)

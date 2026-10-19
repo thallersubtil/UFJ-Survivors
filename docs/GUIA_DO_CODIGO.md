@@ -12,6 +12,7 @@ O herói (um aluno) anda pelo Campus Jatobá; as armas atacam sozinhas; ondas de
 main.py
  └─ Aplicacao (jogo/aplicacao.py)        janela 1280x720 e uma PILHA de cenas
      └─ CenaTitulo -> CenaSelecao -> CenaPartida -> CenaFimDeJogo -> CenaRanking
+         └─ CenaTreino (escolhe o professor) -> CenaSelecao -> ...
                                          │
                                          ├─ empilha CenaNivel  (escolher carta ao subir de nível)
                                          ├─ empilha CenaBau    (prêmio do mini-chefe)
@@ -20,7 +21,7 @@ main.py
 
 Toda tela herda de `Cena` (abstrata, `jogo/cenas/cena.py`) e implementa `tratar_evento`, `atualizar` e `desenhar`. A `Aplicacao` só chama esses três métodos na cena do topo da pilha: polimorfismo também nas telas.
 
-`CenaPartida` cria um `Jogo` (a partida) e, a cada quadro, passa o teclado/mouse para ele e chama `jogo.atualizar(dt)` e `jogo.desenhar(tela)`; depois desenha o `Hud` por cima.
+`OpcoesDePartida` (`jogo/opcoes.py`) viaja de tela em tela dizendo como a partida vai ser: quais provas, se é treino, se começa direto no chefe, se o aluno é imortal. `CenaPartida` cria um `Jogo` (a partida) a partir delas e, a cada quadro, passa o teclado/mouse para ele e chama `jogo.atualizar(dt)` e `jogo.desenhar(tela)`; depois desenha o `Hud` por cima.
 
 ## 3. Um quadro da partida (`Jogo.atualizar`, `jogo/jogo.py`)
 
