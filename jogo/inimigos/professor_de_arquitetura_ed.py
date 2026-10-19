@@ -13,4 +13,5 @@ from jogo.inimigos.materias.estrutura_de_dados import EstruturaDeDadosEmC
 class ProfessorDeArquiteturaEED(ChefePossuido):
     NOME = "Professor de Arquitetura e ED"
     NOME_PROFESSOR = "o Professor"
+    PASTA_SPRITE = "professor_computacao"
     MATERIAS = (ArquiteturaDeComputadores, EstruturaDeDadosEmC)
