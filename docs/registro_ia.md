@@ -26,7 +26,10 @@ Segue o formato pedido no enunciado: uma tabela por etapa, com onde a IA foi usa
 
 | Etapa | Onde usamos IA | O que precisamos corrigir ou entender |
 |---|---|---|
-| | | |
+| 3 | Guia do código para estudo (Claude) | Usado para entender o que já existia antes de mudar: fluxo das telas, laço polimórfico, hierarquias e onde está cada requisito. |
+| 3 | Chefes possuídos pelas matérias, `Materia` e `ChefePossuido` (Claude, com testes) | A ideia e a ordem das provas foram nossas (Cálculo I, depois Arquitetura/ED, por último TD/POO, com a matéria mais fácil primeiro). Escolhemos composição (o chefe contém matérias) em vez de uma subclasse por fase, para a troca de matéria no meio da luta. |
+| 3 | Três provas em sequência no lugar da partida única de 8 minutos (Claude) | No simulador o chefe de Cálculo I levava quase 5 minutos para cair com o herói ainda fraco; reduzimos a vida dele de 2600 para 1500. |
+| 3 | Modo treino e personalização do aluno por recoloração dos sprites (Claude) | A primeira versão da recoloração apagava a transparência (fundo preto); corrigido restaurando o canal alfa. O cabelo dourado do Super Saiyajin precisou ficar fora da recoloração. |
 
 ## Etapa 4: versão final
 
