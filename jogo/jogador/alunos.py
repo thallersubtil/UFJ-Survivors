@@ -27,6 +27,7 @@ class AlunoResistente(Jogador):
     VELOCIDADE = 180
     IMAGEM = "sprites/aluno2.png"
     PASTA_SPRITE = "aluno2"
+    MOLETOM_ORIGINAL = "laranja"
     PASTA_TRANSFORMADO = "aluno2_ssj"
     IMAGEM_TRANSFORMADO = "sprites/aluno2_ssj.png"
 

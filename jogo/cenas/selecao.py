@@ -25,8 +25,8 @@ class CenaSelecao(Cena):
             self.cartoes.append(r)
 
     def _comecar(self):
-        from jogo.cenas.partida import CenaPartida
-        self.app.trocar(CenaPartida(self.app, HEROIS[self.indice], self.opcoes))
+        from jogo.cenas.personalizacao import CenaPersonalizacao
+        self.app.trocar(CenaPersonalizacao(self.app, HEROIS[self.indice], self.opcoes))
 
     def _voltar(self):
         from jogo.cenas.titulo import CenaTitulo

@@ -49,6 +49,7 @@ def test_titulo_ranking_e_sair(app):
 def test_selecao_escolhe_o_segundo_aluno(app):
     app.trocar(CenaSelecao(app))
     app.passo(1 / 60, [tecla(pygame.K_RIGHT), tecla(pygame.K_RETURN)])
+    app.passo(1 / 60, [tecla(pygame.K_RETURN)])     # personalização: começar sem mudar nada
     assert isinstance(app.cena_atual, CenaPartida)
     assert isinstance(app.cena_atual.jogo.jogador, AlunoResistente)
 

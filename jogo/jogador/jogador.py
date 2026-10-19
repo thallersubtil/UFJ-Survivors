@@ -7,6 +7,7 @@ import pygame
 from jogo.config import ESCALA_PIXEL, INVENCIBILIDADE_APOS_DANO
 from jogo.nucleo.animacao import Animador
 from jogo.nucleo.desenho import desenhar_sprite
+from jogo.jogador.aparencia import vestir_animacoes
 from jogo.nucleo.recursos import Recursos
 from jogo.nucleo.ser_vivo import SerVivo
 
@@ -26,6 +27,7 @@ class Jogador(SerVivo, ABC):
     ALTURA = 64
     RAIO = 22
     MAX_ARMAS = 6
+    MOLETOM_ORIGINAL = "verde"    # como achar o moletom na arte, para trocar a cor
     MAX_ITENS = 6
     ALCANCE_COLETA_BASE = 90
 
@@ -39,6 +41,7 @@ class Jogador(SerVivo, ABC):
         self.movendo = False
         self.olhando_esquerda = False
         self.invencivel = 0.0
+        self.aparencia = None         # Aparencia escolhida na personalização
         self.imortal = False          # modo treino
         self.tempo = 0.0
         self.transformado = False
@@ -155,8 +158,15 @@ class Jogador(SerVivo, ABC):
 
     def _animacoes(self):
         if self.transformado:
-            return Recursos.animacoes_ou_imagem(self.PASTA_TRANSFORMADO, self.IMAGEM_TRANSFORMADO, self.ALTURA)
-        return Recursos.animacoes_ou_imagem(self.PASTA_SPRITE, self.IMAGEM, self.ALTURA)
+            base = Recursos.animacoes_ou_imagem(self.PASTA_TRANSFORMADO, self.IMAGEM_TRANSFORMADO, self.ALTURA)
+            return vestir_animacoes(base, self.aparencia, self.MOLETOM_ORIGINAL, cabelo_natural=False)
+        base = Recursos.animacoes_ou_imagem(self.PASTA_SPRITE, self.IMAGEM, self.ALTURA)
+        return vestir_animacoes(base, self.aparencia, self.MOLETOM_ORIGINAL)
+
+    def vestir(self, aparencia):
+        """Troca as cores do aluno (pele, cabelo, moletom, calça)."""
+        self.aparencia = aparencia
+        self.animador.trocar_conjunto(self._animacoes())
 
     @property
     def animado(self):

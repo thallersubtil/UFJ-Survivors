@@ -44,6 +44,10 @@ py -3.12 -m venv .venv
 | 1, 2, 3 ou Enter | Escolher carta ao subir de nível |
 | R / P | Sortear as cartas de novo / pular a escolha |
 
+## Personalização do aluno
+
+Depois de escolher o aluno, a tela **MONTE SEU ALUNO** troca o tom de pele, a cor do cabelo, do moletom e da calça (setas para escolher e trocar, R sorteia, Enter começa). A arte não muda: `Aparencia` (`jogo/jogador/aparencia.py`) classifica cada pixel do sprite pela cor original e aplica o novo tom mantendo o sombreado. A última escolha fica lembrada para a próxima partida. No Super Saiyajin o cabelo continua dourado.
+
 ## Modo treino
 
 No título, **TREINO** abre um menu para escolher qual professor enfrentar (Cálculo I; Arquitetura e ED em C; TD e POO). Na mesma tela, **C** liga "começar direto no chefe" (a prova começa 3 segundos antes dele chegar) e **I** deixa o aluno imortal. Partidas de treino não entram no ranking. Serve para testar e balancear cada chefe sem jogar o semestre inteiro.

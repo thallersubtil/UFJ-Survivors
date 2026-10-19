@@ -50,6 +50,7 @@ class Aplicacao:
         self.tela = tela
         self.relogio = pygame.time.Clock()
         self.ranking = Ranking(ARQUIVO_RANKING)
+        self.aparencia = None        # última aparência escolhida, para a próxima partida
         self.modo_mira = "mouse"     # "mouse": mira no cursor; "automatica": no inimigo mais próximo
         self.cenas = []
         self.rodando = True

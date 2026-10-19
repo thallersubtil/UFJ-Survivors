@@ -39,6 +39,8 @@ class Jogo:
         self.mapa = mapa or MapaUFJ.carregar(self.rng) or Cenario(rng=self.rng)
         self.arena = self.mapa.arena
         self.jogador = classe_jogador(self.mapa.inicio)
+        if aparencia is not None:
+            self.jogador.vestir(aparencia)
         if fases is None:
             fases = [fase] if fase is not None else semestre()
         self.fases = list(fases)
