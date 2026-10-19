@@ -13,6 +13,6 @@ from jogo.inimigos.materias.transformacao_digital import TransformacaoDigital
 class ProfessoraDeTDEPOO(ChefePossuido):
     NOME = "Professora de TD e POO"
     NOME_PROFESSOR = "a Professora"
-    PASTA_SPRITE = "professora"            # sem a pasta, usa a imagem abaixo (provisória)
+    PASTA_SPRITE = "professora"
     IMAGEM = "sprites/professor.png"
     MATERIAS = (TransformacaoDigital, ProgramacaoOrientadaAObjetos)

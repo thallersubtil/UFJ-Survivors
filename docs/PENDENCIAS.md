@@ -18,7 +18,7 @@ Cada uma deve vir com um teste que falha antes da correção.
 - [ ] Limite de notas (`Jogo.soltar_nota`) soma `len(self._novas)`, que conta qualquer entidade na fila; contar só coletáveis.
 - [ ] A tela de nível ou de baú pode abrir sobre uma partida que acabou no mesmo quadro: em `CenaPartida.atualizar`, checar `jogo.terminou` antes de empilhar.
 - [ ] A barra de vida do chefe fica embaixo; a especificação pede no topo (`jogo/cenas/hud.py`).
-- [ ] Arte dos chefes: o professor de Cálculo e o de Arquitetura/ED usam a mesma arte; a professora ainda usa a arte do professor (pasta `assets/sprites/professora/` pendente).
+- [ ] Arte dos chefes: o professor de Cálculo e o de Arquitetura/ED ainda usam a mesma arte (a professora já tem a dela).
 - [ ] O HUD mostra `67` fixo; usar `COMBO_ESPECIAL` de `jogo/config.py`.
 - [ ] O bando de Bugs é sempre de 6; a especificação pede de 5 a 8.
 - [ ] O nome `ArmaDeContato` engana (o Claude e o Fusca não atacam por contato). Na defesa, explicar como "arma que não usa café", ou renomear para algo como `ArmaSemMunicao` (atualizando diagrama e docs).
