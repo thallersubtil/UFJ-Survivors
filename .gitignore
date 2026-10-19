@@ -5,3 +5,6 @@ __pycache__/
 dados/ranking.json
 .DS_Store
 arte_bruta/
+
+# estado de trabalho local
+.claude/trabalho/
