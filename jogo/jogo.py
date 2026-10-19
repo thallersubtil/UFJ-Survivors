@@ -18,6 +18,7 @@ from jogo.nucleo.camera import Camera
 from jogo.nucleo.grade import GradeEspacial
 from jogo.nucleo.recursos import Recursos
 from jogo.placar import Placar
+from jogo.progressao import Progressao
 from jogo.ranking import RegistroRanking
 
 import jogo.inimigos  # noqa: F401  (registra todos os inimigos na fábrica)
@@ -67,6 +68,23 @@ class Jogo:
             self.adicionar(entidade)
         self._incorporar_novas()
         self.camera.seguir(self.jogador.posicao)
+
+    @classmethod
+    def a_partir_de(cls, classe_jogador, opcoes, semente=None):
+        """Monta a partida a partir das OpcoesDePartida (provas, treino, imortal, aparência)."""
+        jogo = cls(classe_jogador, fases=opcoes.criar_fases(), semente=semente, aparencia=opcoes.aparencia)
+        jogo.treino = opcoes.treino
+        jogo.jogador.imortal = opcoes.imortal
+        if opcoes.direto_no_chefe:
+            jogo.evoluir_jogador(jogo.fase.NIVEL_TREINO - 1)
+        return jogo
+
+    def evoluir_jogador(self, niveis):
+        """Sobe o aluno `niveis` níveis escolhendo cartas sozinho (treino direto no chefe)."""
+        for _ in range(niveis):
+            self.jogador.ganhar_experiencia(self.jogador.experiencia_necessaria - self.jogador.experiencia)
+            Progressao.gerar_opcoes(self.jogador, self.rng)[0].aplicar(self.jogador, self)
+        self.jogador.vida = self.jogador.vida_maxima
 
     @property
     def inimigos(self):

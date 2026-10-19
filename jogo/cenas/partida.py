@@ -19,9 +19,7 @@ class CenaPartida(Cena):
     def __init__(self, app, classe_jogador, opcoes=None):
         super().__init__(app)
         self.opcoes = opcoes or OpcoesDePartida()
-        self.jogo = Jogo(classe_jogador, fases=self.opcoes.criar_fases(), aparencia=self.opcoes.aparencia)
-        self.jogo.treino = self.opcoes.treino
-        self.jogo.jogador.imortal = self.opcoes.imortal
+        self.jogo = Jogo.a_partir_de(classe_jogador, self.opcoes)
         self.hud = Hud()
         self._espera_fim = self.ESPERA_FIM
 

@@ -80,3 +80,25 @@ def test_treino_nao_entra_no_ranking(app):
     app.passo(1 / 60, [tecla(pygame.K_RETURN)])
     assert len(app.ranking.registros) == 0
     assert isinstance(app.cena_atual, CenaTitulo)
+
+
+def test_jogo_a_partir_das_opcoes_aplica_tudo():
+    from jogo.jogador.aparencia import Aparencia
+    from jogo.jogo import Jogo
+    aparencia = Aparencia(cabelo="Ruivo")
+    opcoes = OpcoesDePartida.treino_contra(ProvaDeTDEPOO, imortal=True).com_aparencia(aparencia)
+    jogo = Jogo.a_partir_de(AlunoAgil, opcoes, semente=2)
+    assert jogo.treino and jogo.jogador.imortal
+    assert jogo.jogador.aparencia == aparencia
+    assert [type(f) for f in jogo.fases] == [ProvaDeTDEPOO]
+
+
+def test_treino_direto_no_chefe_comeca_com_o_aluno_evoluido():
+    from jogo.jogo import Jogo
+    opcoes = OpcoesDePartida.treino_contra(ProvaDeArquiteturaEED, direto_no_chefe=True)
+    jogo = Jogo.a_partir_de(AlunoAgil, opcoes, semente=2)
+    assert jogo.jogador.nivel == ProvaDeArquiteturaEED.NIVEL_TREINO
+    assert len(jogo.jogador.armas) + len(jogo.jogador.itens) > 3
+    assert jogo.niveis_pendentes == 0
+    sem_atalho = Jogo.a_partir_de(AlunoAgil, OpcoesDePartida.treino_contra(ProvaDeArquiteturaEED), semente=2)
+    assert sem_atalho.jogador.nivel == 1

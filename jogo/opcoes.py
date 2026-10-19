@@ -1,5 +1,5 @@
 """Como a partida vai ser: quais provas, se é treino, e a aparência do aluno."""
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Optional
 
 from jogo.fase import PROVAS
@@ -11,7 +11,7 @@ class OpcoesDePartida:
     treino: bool = False              # treino não entra no ranking
     direto_no_chefe: bool = False     # começa a prova poucos segundos antes do chefe
     imortal: bool = False             # o herói não leva dano
-    aparencia: Optional[object] = None
+    aparencia: Optional["Aparencia"] = None   # noqa: F821  (jogo.jogador.aparencia)
 
     @classmethod
     def treino_contra(cls, prova, direto_no_chefe=False, imortal=False):
@@ -19,7 +19,7 @@ class OpcoesDePartida:
         return cls(provas=(prova,), treino=True, direto_no_chefe=direto_no_chefe, imortal=imortal)
 
     def com_aparencia(self, aparencia):
-        return OpcoesDePartida(self.provas, self.treino, self.direto_no_chefe, self.imortal, aparencia)
+        return replace(self, aparencia=aparencia)
 
     def criar_fases(self):
         fases = [classe() for classe in self.provas]

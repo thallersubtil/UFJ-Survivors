@@ -131,6 +131,7 @@ class Prova(Fase):
         """Nome do chefe na FabricaDeInimigos. Cada prova define como constante de classe."""
 
     ROTULO = ""                  # nome curto, para o menu de treino
+    NIVEL_TREINO = 1             # nível típico do aluno quando o chefe chega (treino direto no chefe)
     FORMACOES = ()               # um lacaio por minuto, alternando círculo e parede
     MINI_CHEFES = ()             # (segundos, nome do lacaio que vira gigante)
 
@@ -156,6 +157,7 @@ class ProvaDeCalculo(Prova):
     MATERIA = "Cálculo I"
     CHEFE = "chefe_calculo"
     ROTULO = "Cálculo I"
+    NIVEL_TREINO = 13
     INICIO_DIFICULDADE = 0
     APRESENTACOES = (
         (0, "bug"),
@@ -173,6 +175,7 @@ class ProvaDeArquiteturaEED(Prova):
     MATERIA = "Arquitetura de Computadores e Estrutura de Dados em C"
     CHEFE = "chefe_arquitetura_ed"
     ROTULO = "Arquitetura -> Estrutura de Dados em C"
+    NIVEL_TREINO = 34
     INICIO_DIFICULDADE = 240
     APRESENTACOES = (
         (0, "bug"),
@@ -191,6 +194,7 @@ class ProvaDeTDEPOO(Prova):
     MATERIA = "Transformação Digital e Programação Orientada a Objetos"
     CHEFE = "chefe_td_poo"
     ROTULO = "Transformação Digital -> POO"
+    NIVEL_TREINO = 50
     INICIO_DIFICULDADE = 480
     APRESENTACOES = (
         (0, "bug"),
