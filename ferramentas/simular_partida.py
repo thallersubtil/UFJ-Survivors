@@ -31,7 +31,15 @@ def main():
     dt = 1 / 30
     inicio = time.perf_counter()
     quadro = 0
-    while not jogo.terminou and jogo.placar.tempo < 20 * 60:
+    fase_anterior, chefe_anterior = None, None
+    while not jogo.terminou and jogo.placar.tempo < 30 * 60:
+        if jogo.fase is not fase_anterior:
+            fase_anterior = jogo.fase
+            print(f">>> {jogo.placar.tempo_formatado}  começa {jogo.fase.NOME} (nível {jogo.jogador.nivel})")
+        if jogo.chefe is not chefe_anterior:
+            chefe_anterior = jogo.chefe
+            if jogo.chefe is not None:
+                print(f">>> {jogo.placar.tempo_formatado}  chefe {jogo.chefe.nome} (nível {jogo.jogador.nivel})")
         fuga = pygame.Vector2()
         for inimigo in jogo.inimigos_proximos(jogo.jogador.posicao, 220):
             fuga += jogo.jogador.posicao - inimigo.posicao

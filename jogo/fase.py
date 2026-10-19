@@ -6,7 +6,7 @@ from typing import Callable
 
 import pygame
 
-from jogo.config import ALTURA, DURACAO_FASE, LARGURA, MAX_INIMIGOS
+from jogo.config import ALTURA, DURACAO_PROVA, LARGURA, MAX_INIMIGOS
 from jogo.inimigos.fabrica import FabricaDeInimigos
 
 
@@ -20,9 +20,12 @@ class EventoDaFase:
 
 class Fase(ABC):
     NOME = "Fase"
-    DURACAO = DURACAO_FASE
+    MATERIA = "Semana de Provas"   # o que aparece em "Aprovado em ..." e "Reprovado em ..."
+    DURACAO = DURACAO_PROVA
     APRESENTACOES = ()
     INTERVALO_NASCIMENTO = 0.5
+    INICIO_DIFICULDADE = 0        # segundos "já jogados": provas seguintes começam mais difíceis
+    PASSO_DIFICULDADE = 180       # segundos para a dificuldade subir 1 ponto
 
     def __init__(self):
         self.tempo = 0.0
@@ -38,10 +41,10 @@ class Fase(ABC):
 
     @property
     def escala_dificuldade(self):
-        return 1 + self.tempo / 160
+        return 1 + (self.INICIO_DIFICULDADE + self.tempo) / self.PASSO_DIFICULDADE
 
     def alvo_de_inimigos(self):
-        alvo = 10 + self.tempo * 0.5
+        alvo = 10 + (self.INICIO_DIFICULDADE + self.tempo) * 0.5
         if self.chefe_apareceu:
             alvo *= 0.5
         return min(MAX_INIMIGOS, int(alvo))
@@ -61,6 +64,13 @@ class Fase(ABC):
             self._espera = self.INTERVALO_NASCIMENTO
             if len(jogo.inimigos) < self.alvo_de_inimigos():
                 self.nascer(jogo, jogo.rng.choice(self.ativos))
+
+    def adiantar_para(self, tempo):
+        """Pula a linha do tempo até `tempo` sem executar o que ficou para trás (modo treino)."""
+        self.tempo = tempo
+        for evento in self.eventos:
+            if evento.tempo < tempo:
+                evento.executado = True
 
     def nascer(self, jogo, nome, quantidade=None):
         classe = FabricaDeInimigos.classe(nome)
@@ -109,27 +119,20 @@ class Fase(ABC):
         jogo.iniciar_chefe(FabricaDeInimigos.criar(nome, self.posicao_de_nascimento(jogo)))
 
 
-class SemanaDeProvas(Fase):
-    NOME = "Semana de Provas"
-    DURACAO = DURACAO_FASE
-    APRESENTACOES = (
-        (0, "bug"),
-        (40, "calculadora"),
-        (80, "mouse"),
-        (120, "caixinha"),
-        (160, "pi"),
-        (200, "ponteiro"),
-        (240, "pilha"),
-        (280, "pente_ram"),
-    )
-    FORMACOES = ("bug", "calculadora", "mouse", "caixinha", "ponteiro", "pi", "bug")
+class Prova(Fase, ABC):
+    """Fase descrita só por dados: quem aparece e quando, formações, mini-chefes e o chefe.
+
+    Cada prova do semestre é uma subclasse que só preenche as constantes abaixo.
+    """
+
+    CHEFE = ""                   # nome do chefe na FabricaDeInimigos
+    FORMACOES = ()               # um lacaio por minuto, alternando círculo e parede
+    MINI_CHEFES = ()             # (segundos, nome do lacaio que vira gigante)
 
     def criar_eventos(self):
-        eventos = [
-            EventoDaFase(160, lambda jogo: self.chamar_mini_chefe(jogo, "calculadora"), "Calculadora Gigante"),
-            EventoDaFase(320, lambda jogo: self.chamar_mini_chefe(jogo, "pente_ram"), "Pente de RAM Gigante"),
-            EventoDaFase(self.DURACAO, lambda jogo: self.chamar_chefe(jogo, "professor"), "Professor"),
-        ]
+        eventos = [EventoDaFase(tempo, lambda jogo, n=nome: self.chamar_mini_chefe(jogo, n), f"{nome} gigante")
+                   for tempo, nome in self.MINI_CHEFES]
+        eventos.append(EventoDaFase(self.DURACAO, lambda jogo: self.chamar_chefe(jogo, self.CHEFE), "Chefe"))
         for i, nome in enumerate(self.FORMACOES):
             if i % 2 == 0:
                 acao = lambda jogo, n=nome: self.formacao_circulo(jogo, n, 24)
@@ -137,3 +140,67 @@ class SemanaDeProvas(Fase):
                 acao = lambda jogo, n=nome: self.formacao_parede(jogo, n, 20)
             eventos.append(EventoDaFase(60 * (i + 1), acao, f"Formação de {nome}"))
         return eventos
+
+    def adiantar_para_o_chefe(self):
+        """Modo treino: começa a prova poucos segundos antes do chefe chegar."""
+        self.adiantar_para(self.DURACAO - 3)
+
+
+class ProvaDeCalculo(Prova):
+    NOME = "1ª prova: Cálculo I"
+    MATERIA = "Cálculo I"
+    CHEFE = "chefe_calculo"
+    INICIO_DIFICULDADE = 0
+    APRESENTACOES = (
+        (0, "bug"),
+        (30, "calculadora"),
+        (70, "pi"),
+        (110, "caixinha"),
+        (170, "mouse"),
+    )
+    FORMACOES = ("bug", "calculadora", "pi", "calculadora")
+    MINI_CHEFES = ((150, "calculadora"),)
+
+
+class ProvaDeArquiteturaEED(Prova):
+    NOME = "2ª prova: Arquitetura e Estrutura de Dados"
+    MATERIA = "Arquitetura de Computadores e Estrutura de Dados em C"
+    CHEFE = "chefe_arquitetura_ed"
+    INICIO_DIFICULDADE = 240
+    APRESENTACOES = (
+        (0, "bug"),
+        (0, "mouse"),
+        (30, "pente_ram"),
+        (70, "ponteiro"),
+        (110, "pilha"),
+        (170, "calculadora"),
+    )
+    FORMACOES = ("mouse", "ponteiro", "pente_ram", "pilha")
+    MINI_CHEFES = ((150, "pente_ram"),)
+
+
+class ProvaDeTDEPOO(Prova):
+    NOME = "3ª prova: Transformação Digital e POO"
+    MATERIA = "Transformação Digital e Programação Orientada a Objetos"
+    CHEFE = "chefe_td_poo"
+    INICIO_DIFICULDADE = 480
+    APRESENTACOES = (
+        (0, "bug"),
+        (0, "caixinha"),
+        (30, "pi"),
+        (60, "ponteiro"),
+        (90, "pilha"),
+        (120, "mouse"),
+        (150, "pente_ram"),
+        (180, "calculadora"),
+    )
+    FORMACOES = ("caixinha", "bug", "ponteiro", "caixinha")
+    MINI_CHEFES = ((120, "caixinha"), (210, "ponteiro"))
+
+
+PROVAS = (ProvaDeCalculo, ProvaDeArquiteturaEED, ProvaDeTDEPOO)
+
+
+def semestre():
+    """As três provas em ordem, cada uma uma instância nova."""
+    return [classe() for classe in PROVAS]

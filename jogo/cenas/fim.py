@@ -46,7 +46,8 @@ class CenaFimDeJogo(Cena):
         desenhar_fundo(tela, "cenario/titulo_fundo.png", escuro=190)
         venceu = self.jogo.venceu
         titulo = "APROVADO!" if venceu else "REPROVADO!"
-        frase = "Você derrotou o Professor!" if venceu else "A Semana de Provas venceu desta vez."
+        frase = "Você passou em todas as provas do semestre!" if venceu \
+            else f"Reprovado em {self.jogo.fase.MATERIA}."
         desenhar_texto(tela, titulo, 72, Cor.APROVADO if venceu else Cor.REPROVADO, centro=(LARGURA // 2, 110))
         desenhar_texto(tela, frase, 22, Cor.TEXTO, centro=(LARGURA // 2, 170))
         painel = pygame.Rect(0, 0, 560, 250)

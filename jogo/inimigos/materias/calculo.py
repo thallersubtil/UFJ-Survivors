@@ -6,7 +6,7 @@ class CalculoI(Materia):
     NOME = "Cálculo I"
     COR = (255, 168, 60)
     SIMBOLO = "dx"
-    VIDA = 2600
+    VIDA = 1500
     INTERVALO_ATAQUE = 2.6
     INTERVALO_FURIOSO = 1.7
     LACAIOS = ("calculadora", "pi", "bug")

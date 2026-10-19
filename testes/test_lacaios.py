@@ -6,8 +6,6 @@ from jogo.inimigos.caixinha import Caixinha, CaixinhaPequena
 from jogo.inimigos.fabrica import FabricaDeInimigos
 from jogo.inimigos.inimigo import Inimigo
 from jogo.inimigos.mouse_de_bolinha import MouseDeBolinha
-from jogo.inimigos.professor import Professor
-from jogo.projeteis.projeteis import FolhaDeProva
 
 LACAIOS = ["bug", "calculadora", "mouse", "caixinha", "pi", "ponteiro", "pilha", "pente_ram"]
 
@@ -18,11 +16,11 @@ def novos(jogo):
 
 
 def test_todos_os_lacaios_estao_registrados_e_herdam_de_inimigo():
-    for nome in LACAIOS + ["professor"]:
+    for nome in LACAIOS + ["chefe_calculo", "chefe_arquitetura_ed", "chefe_td_poo"]:
         assert issubclass(FabricaDeInimigos.classe(nome), Inimigo)
 
 
-@pytest.mark.parametrize("nome", LACAIOS + ["professor"])
+@pytest.mark.parametrize("nome", LACAIOS + ["chefe_calculo", "chefe_arquitetura_ed", "chefe_td_poo"])
 def test_cada_inimigo_anda_e_desenha_sem_erro(jogo_limpo, nome):
     jogo = jogo_limpo()
     inimigo = FabricaDeInimigos.criar(nome, jogo.jogador.posicao + (250, 120))
@@ -90,40 +88,10 @@ def test_ponteiro_mergulha_em_linha_reta(jogo_limpo):
     assert ponteiro.direcao == direcao
 
 
-def test_professor_joga_folhas_chama_lacaios_e_investe(jogo_limpo):
+def test_chefe_nao_e_possuido_pelo_fusca(jogo_limpo):
     jogo = jogo_limpo()
-    prof = Professor(jogo.jogador.posicao + (300, 0))
-    jogo.iniciar_chefe(prof)
+    chefe = FabricaDeInimigos.criar("chefe_calculo", jogo.jogador.posicao + (300, 0))
+    jogo.iniciar_chefe(chefe)
     jogo._incorporar_novas()
-    prof.atacar_folhas(jogo)
-    assert sum(isinstance(e, FolhaDeProva) for e in novos(jogo)) == 7
-    antes = len(jogo.inimigos)
-    prof.atacar_chamada(jogo)
-    novos(jogo)
-    assert len(jogo.grupos["inimigo"]) > antes
-    prof.atacar_investida(jogo)
-    inicio = pygame.Vector2(prof.posicao)
-    for _ in range(90):
-        jogo.atualizar(1 / 60)
-    assert prof.posicao.distance_to(inicio) > 150
-
-
-def test_professor_furioso_joga_mais_folhas(jogo_limpo):
-    jogo = jogo_limpo()
-    prof = Professor(jogo.jogador.posicao + (300, 0))
-    jogo.adicionar(prof)
-    prof.vida = prof.vida_maxima * 0.4
-    assert prof.furioso
-    prof.atacar_folhas(jogo)
-    assert sum(isinstance(e, FolhaDeProva) for e in novos(jogo)) == 11
-
-
-def test_professor_nao_e_possuido_e_derrota_vence_o_jogo(jogo_limpo):
-    jogo = jogo_limpo()
-    prof = Professor(jogo.jogador.posicao + (300, 0))
-    jogo.iniciar_chefe(prof)
-    jogo._incorporar_novas()
-    prof.possuir(5)
-    assert prof.possuido == 0
-    jogo.causar_dano(prof, 10 ** 7)
-    assert jogo.terminou and jogo.venceu
+    chefe.possuir(5)
+    assert chefe.possuido == 0

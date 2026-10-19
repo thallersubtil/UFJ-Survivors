@@ -91,6 +91,8 @@ class ProjetilDivisivel(ProjetilDoHeroi):
 
 
 class ProjetilInimigo(Projetil):
+    grupo = "projetil_inimigo"
+
     def verificar_colisao(self, jogo):
         if Colisao.circulos_colidem(self, jogo.jogador):
             jogo.ferir_jogador(self.dano)
@@ -118,15 +120,6 @@ class CobraProjetil(MovimentoSerpente, ProjetilDoHeroi):
     PASTA_SPRITE = "cobra"
     ALTURA = 22
     DURACAO = 1.6
-
-
-class FolhaDeProva(ProjetilInimigo):
-    IMAGEM = "sprites/folha_prova.png"
-    ALTURA = 26
-    DURACAO = 4.0
-
-    def angulo_desenho(self):
-        return self.tempo * 360
 
 
 class ProjetilDaMateria(ProjetilInimigo):

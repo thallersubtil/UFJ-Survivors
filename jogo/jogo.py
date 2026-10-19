@@ -11,7 +11,7 @@ from jogo.coletaveis.coletaveis import Nota
 from jogo.config import (ALTURA, BONUS_67_DURACAO, BONUS_67_VELOCIDADE, LARGURA,
                          LIMITE_COLETAVEIS, LIMITE_EFEITOS, SORTEIOS_POR_PARTIDA, Cor)
 from jogo.efeitos import TextoFlutuante
-from jogo.fase import SemanaDeProvas
+from jogo.fase import semestre
 from jogo.jogador.bonus import BonusTemporario
 from jogo.mapa import MapaUFJ
 from jogo.nucleo.camera import Camera
@@ -32,12 +32,18 @@ class Entrada:
 class Jogo:
     MARGEM_BUSCA = 64
 
-    def __init__(self, classe_jogador, fase=None, semente=None, mapa=None):
+    CURA_ENTRE_PROVAS = 0.5      # fração da vida máxima recuperada ao passar de prova
+
+    def __init__(self, classe_jogador, fase=None, semente=None, mapa=None, fases=None, aparencia=None):
         self.rng = random.Random(semente)
         self.mapa = mapa or MapaUFJ.carregar(self.rng) or Cenario(rng=self.rng)
         self.arena = self.mapa.arena
         self.jogador = classe_jogador(self.mapa.inicio)
-        self.fase = fase if fase is not None else SemanaDeProvas()
+        if fases is None:
+            fases = [fase] if fase is not None else semestre()
+        self.fases = list(fases)
+        self.indice_fase = 0
+        self.fase = self.fases[0]
         self.placar = Placar()
         self.camera = Camera(LARGURA, ALTURA, self.arena)
         self.entrada = Entrada()
@@ -195,6 +201,27 @@ class Jogo:
         self.chefe = chefe
         self.adicionar(chefe)
         self.anunciar(f"{chefe.nome} chegou!", 3)
+
+    @property
+    def ultima_fase(self):
+        return self.indice_fase + 1 >= len(self.fases)
+
+    def concluir_fase(self):
+        """O chefe da prova caiu: passa para a próxima prova ou vence o jogo."""
+        concluida = self.fase
+        self.chefe = None
+        if self.ultima_fase:
+            self.terminar(venceu=True)
+            return
+        self.indice_fase += 1
+        self.fase = self.fases[self.indice_fase]
+        for grupo in ("inimigo", "projetil_inimigo"):
+            for entidade in self.grupos[grupo]:
+                entidade.remover()
+        self.jogador.curar(self.jogador.vida_maxima * self.CURA_ENTRE_PROVAS)
+        self.pedir_bau()
+        self.anunciar(f"Aprovado em {concluida.MATERIA}!", 3)
+        self.anunciar(self.fase.NOME, 4)
 
     def anunciar(self, texto, duracao=2.5):
         self.anuncios.append([texto, duracao])
