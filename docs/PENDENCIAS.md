@@ -1,12 +1,13 @@
 # Pendências
 
-O jogo está completo e jogável (três provas de 5 minutos no mapa do Campus Jatobá, pixel art animada, 8 lacaios, 3 chefes possuídos por 5 matérias, 6 armas, 3 colabs, 7 itens, 3 classes com passiva, boneco articulado personalizável, todas as telas, 262 testes passando). Esta é a lista do que ainda vale fazer, mais ou menos em ordem de prioridade. Ao terminar um item, apague-o daqui no mesmo commit.
+O jogo está completo e jogável (três provas de 5 minutos no mapa do Campus Jatobá, pixel art animada, 8 lacaios, 3 chefes possuídos por 5 matérias, 6 armas, 3 colabs, 7 itens, 3 classes com passiva, todas as telas, 262 testes passando). Esta é a lista do que ainda vale fazer, mais ou menos em ordem de prioridade. Ao terminar um item, apague-o daqui no mesmo commit.
 
 ## Para o grupo decidir ou fazer
 
 - [ ] **Jogar e calibrar.** O balanceamento foi feito com um jogador automático (`ferramentas/simular_partida.py`). Joguem partidas inteiras com as três classes e ajustem os números se estiver fácil ou difícil demais: `VIDA` e ritmo de cada matéria (`jogo/inimigos/materias/`), duração das provas (`DURACAO_PROVA` em `jogo/config.py`; o semestre inteiro dá de 17 a 19 minutos no simulador), `Fase.alvo_de_inimigos` e `Fase.escala_dificuldade` (`jogo/fase.py`), `DANO`/`VIDA` dos lacaios, `Jogador.experiencia_necessaria`, as passivas (`jogo/jogador/passivas.py`) e o limite de 4 armas e 4 itens (`MAX_ARMAS`, `MAX_ITENS`).
-- [ ] **Caricaturas do professor.** Gerar as folhas animadas com as caricaturas (receita no `AGENTS.md`). Os alunos agora são bonecos personalizáveis; dá para montar cada integrante do grupo na personalização.
-- [ ] **Mais classes e opções de visual.** Receitas no `AGENTS.md` ("Classe nova", "Opção nova de personalização"). Ideias: classe com o ChatGPT ou o Fusca de ativa; barba, boné para trás, vestido.
+- [ ] **Caricaturas do grupo e do professor.** Gerar as folhas animadas com as caricaturas (receita no `AGENTS.md`). O Mestre de RPG ainda usa a mesma arte do Programador.
+- [ ] **Boneco articulado com arte gerada (Thaller).** Aluno masculino ou feminino com cabeça, tronco, braços e pernas separados (animação no estilo Scribblenauts, braços e pernas girando separados do tronco) e mais opções de personalização além das cores (penteado, roupas, acessórios). As partes devem ser geradas no ChatGPT no mesmo estilo Disgaea, com roupas e cabelo em tom neutro para serem recoloridos por código. Uma versão desenhada só por código existiu no commit 4cfec8b (revertido) e pode servir de base para o esqueleto e as poses.
+- [ ] **Mais classes.** Receita no `AGENTS.md` ("Classe nova"). Ideia: classe com o ChatGPT ou o Fusca de ativa.
 - [ ] **Áudio do 67.** `assets/sons/67.wav` é uma voz sintetizada provisória; troquem pelo áudio do meme se quiserem (mesmo nome de arquivo, formato WAV).
 - [ ] **Registro de IA.** Revisar e completar `docs/registro_ia.md` com as próprias palavras (etapas 1 e 2 estão adiantadas).
 - [ ] **Entrega 1 (22/10).** Preencher a linha "Integrantes" em `docs/entregas/etapa1_proposta.md` e entregar a proposta com o diagrama.

@@ -54,11 +54,9 @@ py -3.12 -m venv .venv
 
 O aluno carrega no máximo **4 armas e 4 itens**. Com as vagas cheias, as cartas só oferecem melhorias do que ele já tem. Uma colab funde duas armas no nível máximo numa só e libera uma vaga para uma arma nova.
 
-## Personalização do personagem
+## Personalização do aluno
 
-Depois de escolher a classe, a tela **MONTE SEU PERSONAGEM** escolhe gênero (masculino ou feminino), cabelo (curto, espetado, chanel, longo, rabo de cavalo, coque, black power, careca), olhos, tom de pele, parte de cima (moletom, camiseta, jaqueta, regata), parte de baixo (calça, bermuda, saia), acessório (óculos, boné, fone, laço) e as cores (setas para escolher e trocar, R sorteia, Tab mostra parado ou andando, Enter começa). A última escolha fica lembrada para a próxima partida.
-
-O aluno é um boneco articulado no estilo Scribblenauts (`Boneco`, `jogo/jogador/boneco.py`): cabeça, tronco, braços e pernas são desenhados separados e giram em volta dos ombros e do quadril, com 12 quadros no andar e 16 no parado (respira e pisca). Cada opção é uma classe em `jogo/jogador/partes.py`. No Super Saiyajin o cabelo vira o espetado dourado.
+Depois de escolher a classe, a tela **MONTE SEU ALUNO** troca o tom de pele, a cor do cabelo, do moletom e da calça (setas para escolher e trocar, R sorteia, Enter começa). A arte não muda: `Aparencia` (`jogo/jogador/aparencia.py`) classifica cada pixel do sprite pela cor original e aplica o novo tom mantendo o sombreado. A última escolha fica lembrada para a próxima partida. No Super Saiyajin o cabelo continua dourado.
 
 ## Modo treino
 
@@ -91,7 +89,7 @@ Para simular uma partida inteira sem janela (útil para balancear):
 | 3+ inimigos herdando de uma base | `jogo/inimigos/` | `Inimigo` e `Bug`, `CalculadoraBrava`, `MouseDeBolinha`, `Caixinha`, `PiCambaleante`, `Ponteiro`, `PilhaAA`, `PenteDeRAM`; chefes: `Chefe` > `ChefePossuido` > `ProfessorDeCalculo`, `ProfessorDeArquiteturaEED`, `ProfessoraDeTDEPOO`; matérias: `Materia` > `CalculoI`, `ArquiteturaDeComputadores`, `EstruturaDeDadosEmC`, `TransformacaoDigital`, `ProgramacaoOrientadaAObjetos` |
 | Polimorfismo num único laço, sem `if` por tipo | `jogo/jogo.py` | `Jogo.atualizar()` |
 | Encapsulamento com `@property` e validação | `jogo/nucleo/ser_vivo.py`, `jogo/placar.py`, `jogo/armas/arma.py` | `SerVivo.vida`, `Placar.pontos`, `ArmaDeDisparo.municao` |
-| Composição | `jogo/jogo.py`, `jogo/jogador/jogador.py` | `Jogo` contém `Jogador`, `Fase` (a lista das três provas), `Placar`; `Jogador` contém `Arma`, `Item`, `Passiva`, `Especial`; `Boneco` contém as `Parte` escolhidas; `ChefePossuido` contém suas `Materia` |
+| Composição | `jogo/jogo.py`, `jogo/jogador/jogador.py` | `Jogo` contém `Jogador`, `Fase` (a lista das três provas), `Placar`; `Jogador` contém `Arma`, `Item`, `Passiva`, `Especial`; `ChefePossuido` contém suas `Materia` |
 | Métodos especiais | `jogo/ranking.py` | `RegistroRanking.__lt__`, `__eq__`, `__str__` |
 | `@classmethod` e `@staticmethod` | `jogo/inimigos/fabrica.py`, `jogo/nucleo/colisao.py` | `FabricaDeInimigos.criar()`, `Colisao.circulos_colidem()` |
 
@@ -103,7 +101,7 @@ Diagrama de classes: [docs/entregas/diagrama_classes.png](docs/entregas/diagrama
 main.py            ponto de entrada
 jogo/
   nucleo/          Entidade, SerVivo, Colisao, Animacao/Animador, câmera, grade espacial, arte e som
-  jogador/         Jogador, as classes e suas passivas, especiais, bônus temporários, Aparencia, Boneco e partes
+  jogador/         Jogador, as classes e suas passivas, especiais, bônus temporários, Aparencia
   inimigos/        Inimigo, fábrica, um arquivo por inimigo, Chefe, ChefePossuido e os três chefes
     materias/      Materia e uma matéria por arquivo (os ataques de cada chefe)
   armas/           Arma e suas famílias, uma arma por arquivo, colabs

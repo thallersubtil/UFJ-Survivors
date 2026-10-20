@@ -20,7 +20,7 @@ Regras principais:
 - **Café é a munição:** as armas de disparo gastam café, que recarrega sozinho; sem café elas atiram bem mais devagar. Copinhos de café caídos enchem o estoque.
 - **Combo 67:** 67 eliminações seguidas sem levar dano tocam o áudio "six seven" e dão +50% de velocidade por 6 segundos.
 - **Colabs:** duas armas no nível máximo se juntam numa arma nova (por exemplo, Caramelo + Fusca Azul = Caramelo no Fusca).
-- **Personalização:** antes da partida o jogador monta o personagem: masculino ou feminino, cabelo, olhos, tom de pele, roupa de cima e de baixo, acessório e cores. O aluno é um boneco articulado (estilo Scribblenauts), com braços e pernas animados separados do tronco.
+- **Personalização:** antes da partida o jogador escolhe tom de pele, cor do cabelo, do moletom e da calça do aluno.
 - **Vagas:** no máximo 4 armas (ativas) e 4 itens (passivos); com as vagas cheias, só melhorias. Uma colab funde duas armas e libera uma vaga.
 - **Modo treino:** escolher qual professor enfrentar, opcionalmente começando direto no chefe e com o aluno imortal; não entra no ranking.
 - **Ranking:** os 10 melhores resultados ficam salvos em um arquivo local.
@@ -80,7 +80,7 @@ Principais decisões de design:
 - **`SerVivo`** concentra a vida (com `@property` e validação) e é a base comum de `Jogador` e `Inimigo`, que têm vida mas se comportam de jeitos diferentes.
 - **`Inimigo` é abstrata** com o método abstrato `mover()`. Cada lacaio só implementa o próprio jeito de andar e, quando precisa, sobrescreve `ao_morrer()` (a Caixinha se divide, a Pilha explode, o Pi mostra "3,14..."). O `Chefe` é um inimigo com uma lista de ataques. O `ChefePossuido` **contém** uma lista de `Materia` (composição): a matéria atual dá o nome, a vida e os ataques; quando ela é derrotada e ainda há outra, a próxima possui o professor. Cada matéria é uma subclasse de `Materia` que combina ataques prontos (leque, anel, rajada, chamada, investida); chefe novo = matéria nova, sem mudar classes existentes.
 - **`Fase` é abstrata**; `Prova` monta a linha do tempo a partir de dados, e as três provas só preenchem esses dados. O `Jogo` contém a lista de provas e passa de uma para a outra quando o chefe cai.
-- **`Aparencia`** guarda as escolhas do personagem com `@property` e validação, e tem `__eq__`/`__hash__` para servir de chave no cache das animações. O **`Boneco`** contém as partes escolhidas (`Corpo`, `Penteado`, `Olhos`, `RoupaDeCima`, `RoupaDeBaixo`, `Acessorio`), cada uma uma classe que sabe se desenhar.
+- **`Aparencia`** guarda as escolhas de cor do aluno com `@property` e validação, e tem `__eq__`/`__hash__` para servir de chave no cache das imagens recoloridas.
 - **`Jogador` é abstrata** com `criar_arma_inicial()`, `criar_passiva()` e `criar_especial()`; cada classe (Otaku, Programador, Mestre de RPG) só implementa esses três. **`Passiva` é abstrata** com `aplicar(jogador)`, chamada junto com os itens.
 - **`Mapa` é abstrata**, com duas implementações: `MapaUFJ` (o campus, lido de um arquivo gerado) e `Cenario` (um pátio genérico). O `Jogo` não sabe qual está usando. Os prédios são `Predio`, entidades com o contorno real como polígono de colisão.
 - **Animação por composição:** heróis, inimigos e ajudantes contêm um `Animador`, que guarda as `Animacao`s (parado, andar) e sabe qual quadro desenhar; cada classe só diz qual animação quer.
