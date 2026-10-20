@@ -22,13 +22,17 @@ classDiagram
         +armas: list~Arma~
         +itens: list~Item~
         +especial: Especial
+        +passiva: Passiva
+        +chance_critico: float
         +criar_arma_inicial()* Arma
+        +criar_passiva()* Passiva
         +criar_especial()* Especial
         +ganhar_experiencia(q) int
         +aplicar_colab(receita, jogo)
     }
-    class AlunoAgil
-    class AlunoResistente
+    class Otaku
+    class Programador
+    class MestreDeRPG
     class Inimigo {
         <<abstract>>
         +mover(dt, jogo)*
@@ -126,6 +130,35 @@ classDiagram
         <<abstract>>
         +ativar(dono, jogo)*
     }
+    class Passiva {
+        <<abstract>>
+        +aplicar(jogador)*
+    }
+    class InstintoOtaku
+    class Boneco {
+        +esqueleto(pose) dict
+        +quadro(pose) Surface
+        +animacoes_de(aparencia)$ dict
+    }
+    class Parte {
+        +NOME: str
+    }
+    class Corpo {
+        <<abstract>>
+        +desenhar_cabeca(p, e, aparencia)
+    }
+    class Penteado {
+        <<abstract>>
+        +desenhar_tras(p, e, cor, balanco)
+        +desenhar_frente(p, e, cor, balanco)*
+    }
+    class RoupaDeCima {
+        +desenhar_tronco(p, e, corpo, aparencia)
+        +desenhar_braco(p, ombro, mao, aparencia, sombra)
+    }
+    class RoupaDeBaixo {
+        +desenhar_perna(p, quadril, pe, aparencia, sombra)
+    }
     class Jogo {
         +entidades: list~Entidade~
         +fases: list~Fase~
@@ -188,11 +221,12 @@ classDiagram
     class Decoracao
     class Aparencia {
         -_escolhas: dict
+        +genero: str «property»
+        +penteado: str «property»
         +pele: str «property»
         +cabelo: str «property»
-        +moletom: str «property»
-        +calca: str «property»
-        +recolorir(imagem) Surface
+        +cima, baixo, acessorio... «property»
+        +trocar(parte, passo)
         +#95;#95;eq#95;#95;(outra)
         +#95;#95;hash#95;#95;()
         +#95;#95;str#95;#95;()
@@ -221,8 +255,14 @@ classDiagram
     Entidade <|-- Efeito
     SerVivo <|-- Jogador
     SerVivo <|-- Inimigo
-    Jogador <|-- AlunoAgil
-    Jogador <|-- AlunoResistente
+    Jogador <|-- Otaku
+    Jogador <|-- Programador
+    Jogador <|-- MestreDeRPG
+    Passiva <|-- InstintoOtaku
+    Parte <|-- Corpo
+    Parte <|-- Penteado
+    Parte <|-- RoupaDeCima
+    Parte <|-- RoupaDeBaixo
     Inimigo <|-- Bug
     Inimigo <|-- CalculadoraBrava
     Inimigo <|-- MouseDeBolinha
@@ -272,7 +312,11 @@ classDiagram
     Jogador *-- Arma
     Jogador *-- Item
     Jogador *-- Especial
+    Jogador *-- Passiva
     Jogador o-- Aparencia
+    Jogador ..> Boneco : animacoes_de
+    Boneco o-- Aparencia
+    Boneco *-- Parte
     OpcoesDePartida o-- Aparencia
     Jogo ..> OpcoesDePartida : a_partir_de
     Fase ..> FabricaDeInimigos : usa

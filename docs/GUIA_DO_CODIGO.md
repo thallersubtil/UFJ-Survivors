@@ -42,9 +42,10 @@ Regras centrais também ficam no `Jogo`: `causar_dano` (dano em inimigo, número
 ```
 Entidade (abstrata: atualizar, desenhar)            jogo/nucleo/entidade.py
 ├─ SerVivo (abstrata: vida com @property)           jogo/nucleo/ser_vivo.py
-│  ├─ Jogador (abstrata: criar_arma_inicial, criar_especial)
-│  │  ├─ AlunoAgil          80 de vida, rápido, Cobra Python + Zoltraak
-│  │  └─ AlunoResistente   130 de vida, lento, Caramelo + Super Saiyajin
+│  ├─ Jogador (abstrata: criar_arma_inicial, criar_passiva, criar_especial)   jogo/jogador/classes.py
+│  │  ├─ Otaku           130 de vida, lento, Caramelo + Instinto Otaku (crítico por nível) + Super Saiyajin
+│  │  ├─ Programador      80 de vida, rápido, Cobra Python + Cafeinado + Virada de Noite
+│  │  └─ MestreDeRPG     100 de vida, Gemini + Rolagem de Iniciativa + Zoltraak
 │  └─ Inimigo (abstrata: mover)                     jogo/inimigos/inimigo.py
 │     ├─ Bug, CalculadoraBrava, MouseDeBolinha, Caixinha (-> CaixinhaPequena),
 │     │  PiCambaleante, Ponteiro, PilhaAA, PenteDeRAM      (um arquivo cada)
@@ -97,8 +98,9 @@ FabricaDeInimigos, Colisao, Camera, GradeEspacial, Recursos, Animacao, Animador
 
 - `Jogo` contém `Jogador`, as três `Fase` (provas) e a atual, `Placar`, `Mapa`, `Camera`, `GradeEspacial` e a lista de entidades.
 - `ChefePossuido` contém suas `Materia`: o chefe não **é** Cálculo; ele **está possuído** por Cálculo. Por isso composição: o mesmo professor troca de matéria no meio da luta, o que herança não permitiria.
-- `Jogador` contém uma lista de `Arma`, uma lista de `Item`, um `Especial`, bônus temporários e um `Animador`.
-- `Jogador` contém uma `Aparencia` (pele, cabelo, moletom, calça), escolhida na personalização.
+- `Jogador` contém uma lista de `Arma` (até 4), uma lista de `Item` (até 4), uma `Passiva`, um `Especial`, bônus temporários e um `Animador`.
+- `Jogador` contém uma `Aparencia` (gênero, cabelo, olhos, roupas, acessório, cores), escolhida na personalização.
+- `Boneco` contém as partes escolhidas (`Corpo`, `Penteado`, `Olhos`, `RoupaDeCima`, `RoupaDeBaixo`, `Acessorio`) e gera os quadros das animações do aluno; cada parte sabe se desenhar (polimorfismo).
 - `Animador` contém várias `Animacao` (parado, andar), e cada `Animacao` contém os quadros.
 
 Por que composição e não herança entre `Jogador` e `Arma`: o jogador **tem** armas, não **é** uma arma; ele ganha, troca e funde armas durante a partida, o que herança não permitiria.
@@ -114,8 +116,9 @@ Por que composição e não herança entre `Jogador` e `Arma`: o jogador **tem**
 | Composição | ver seção 5 | |
 | Métodos especiais | `RegistroRanking.__lt__`, `__eq__`, `__str__` | `__lt__` é o que deixa `sorted()` ordenar o ranking. |
 | `@classmethod` | `FabricaDeInimigos.registrar/criar` | A fábrica guarda um registro na própria classe; inimigo novo se registra com um decorador. |
-| Encapsulamento (2) | `Aparencia.pele`, `cabelo`, `moletom`, `calca` | Cada setter só aceita uma opção da lista; um valor inválido gera `ValueError`. |
-| Métodos especiais (2) | `Aparencia.__eq__`, `__hash__`, `__str__` | Duas aparências com as mesmas escolhas são iguais e têm o mesmo hash, por isso servem de chave no cache das imagens recoloridas. |
+| Encapsulamento (2) | `Aparencia.genero`, `penteado`, `pele`, `cabelo`... | Cada setter só aceita uma opção da lista; um valor inválido gera `ValueError`. |
+| Métodos especiais (2) | `Aparencia.__eq__`, `__hash__`, `__str__` | Duas aparências com as mesmas escolhas são iguais e têm o mesmo hash, por isso servem de chave no cache das animações do boneco. |
+| Polimorfismo (2) | `Passiva.aplicar`, partes do `Boneco` | O `Jogador` chama `passiva.aplicar(self)` sem saber a classe; o `Boneco` chama `penteado.desenhar_frente` sem saber qual penteado é. |
 | `@staticmethod` | `Colisao.circulos_colidem` | Função pura de geometria; não precisa de instância. |
 
 Durante o escudo ou a troca de matéria o chefe fica `invulneravel` (propriedade que todo `Inimigo` tem, falsa por padrão): `Jogo.causar_dano` não mostra dano e o chefe não fere por contato. `Prova` e `ChefePossuido` são abstratas de verdade: `CHEFE` e `MATERIAS` são propriedades abstratas que cada subclasse preenche com uma constante.
@@ -161,4 +164,4 @@ Pergunta provável: "o que muda se eu criar um inimigo novo?". Resposta: nada na
 
 ## 11. O que ainda está aberto
 
-Lista viva em `docs/PENDENCIAS.md`. Resumo: calibrar a dificuldade jogando, trocar arte provisória dos alunos e do professor, correções pequenas de código, ícones antigos no HUD, roteiro da defesa e ensaio do requisito surpresa.
+Lista viva em `docs/PENDENCIAS.md`. Resumo: calibrar a dificuldade jogando, trocar arte provisória dos professores, correções pequenas de código, ícones antigos no HUD, roteiro da defesa e ensaio do requisito surpresa.

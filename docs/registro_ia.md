@@ -30,6 +30,7 @@ Segue o formato pedido no enunciado: uma tabela por etapa, com onde a IA foi usa
 | 3 | Chefes possuídos pelas matérias, `Materia` e `ChefePossuido` (Claude, com testes) | A ideia e a ordem das provas foram nossas (Cálculo I, depois Arquitetura/ED, por último TD/POO, com a matéria mais fácil primeiro). Escolhemos composição (o chefe contém matérias) em vez de uma subclasse por fase, para a troca de matéria no meio da luta. |
 | 3 | Três provas em sequência no lugar da partida única de 8 minutos (Claude) | No simulador o chefe de Cálculo I levava quase 5 minutos para cair com o herói ainda fraco; reduzimos a vida dele de 2600 para 1500. |
 | 3 | Modo treino e personalização do aluno por recoloração dos sprites (Claude) | A primeira versão da recoloração apagava a transparência (fundo preto); corrigido restaurando o canal alfa. O cabelo dourado do Super Saiyajin precisou ficar fora da recoloração. |
+| 3 | Limite de 4 armas e 4 itens, classes (Otaku, Programador, Mestre de RPG) com passiva e crítico, boneco articulado com masculino/feminino (Claude, com testes) | A ideia das classes e do Otaku (Caramelo, crítico crescente, Super Saiyajin) foi nossa; o boneco no estilo Scribblenauts substituiu a arte dos alunos. Na primeira versão a franja do cabelo espetado cobria os olhos e a sombra do boneco ficou larga demais; ajustados olhando as capturas de tela. |
 
 ## Etapa 4: versão final
 
