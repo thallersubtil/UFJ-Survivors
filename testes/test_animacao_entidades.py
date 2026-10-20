@@ -5,8 +5,7 @@ import pytest
 
 from jogo.inimigos.bug import Bug
 from jogo.inimigos.mouse_de_bolinha import MouseDeBolinha
-from jogo.jogador.classes import Programador, Otaku
-from jogo.jogador.bonus import BonusTemporario
+from jogo.jogador.classes import Programador
 from jogo.nucleo.recursos import Recursos
 
 
@@ -20,18 +19,11 @@ def gravar_tira(pasta, nome, n, largura, altura, cor):
 @pytest.fixture
 def arte_falsa(tmp_path, monkeypatch):
     s = tmp_path / "sprites"
-    gravar_tira(s / "heroi", "parado", 4, 10, 20, (200, 0, 0))
-    gravar_tira(s / "heroi", "andar", 6, 12, 20, (0, 200, 0))
-    gravar_tira(s / "heroi_ssj", "parado", 4, 10, 22, (250, 220, 0))
-    gravar_tira(s / "heroi_ssj", "andar", 6, 12, 22, (250, 220, 0))
     gravar_tira(s / "inseto", "andar", 4, 8, 6, (0, 0, 200))
     gravar_tira(s / "inseto_gigante", "andar", 4, 24, 18, (0, 0, 120))
     gravar_tira(s / "rato", "andar", 4, 9, 5, (90, 90, 90))
     gravar_tira(s / "rato", "parado", 2, 9, 5, (60, 60, 60))
     monkeypatch.setattr(Recursos, "pasta", tmp_path)
-    monkeypatch.setattr(Programador, "PASTA_SPRITE", "heroi")
-    monkeypatch.setattr(Otaku, "PASTA_SPRITE", "heroi")
-    monkeypatch.setattr(Otaku, "PASTA_TRANSFORMADO", "heroi_ssj")
     monkeypatch.setattr(Bug, "PASTA_SPRITE", "inseto")
     monkeypatch.setattr(MouseDeBolinha, "PASTA_SPRITE", "rato")
     Recursos.limpar()
@@ -46,24 +38,15 @@ def jogo_falso(direcao=(0, 0)):
                            jogador=SimpleNamespace(posicao=pygame.Vector2(500, 500)))
 
 
-def test_heroi_parado_e_andando(arte_falsa):
+def test_heroi_parado_e_andando():
     j = Programador((100, 100))
     j.atualizar(0.1, jogo_falso())
     assert j.animador.atual == "parado"
-    assert j.animador.quadro_atual.get_height() == 20
     j.atualizar(0.1, jogo_falso((1, 0)))
     assert j.animador.atual == "andar"
-
-
-def test_super_saiyajin_troca_o_conjunto_de_animacoes(arte_falsa):
-    j = Otaku((100, 100))
-    j.atualizar(0.1, jogo_falso())
-    assert j.animador.quadro_atual.get_height() == 20
-    j.adicionar_bonus(BonusTemporario("ssj", "dano", 2.0, 5))
-    j.atualizar(0.1, jogo_falso())
-    assert j.animador.quadro_atual.get_height() == 22
-    j.atualizar(6, jogo_falso())
-    assert j.animador.quadro_atual.get_height() == 20
+    primeiro = j.animador.quadro_atual
+    j.atualizar(0.1, jogo_falso((1, 0)))
+    assert j.animador.quadro_atual is not primeiro
 
 
 def test_inimigo_anda_animado(arte_falsa):

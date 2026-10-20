@@ -1,17 +1,18 @@
-import math
-
 import pygame
 
 from jogo.cenas.cena import Cena
 from jogo.cenas.widgets import (TECLAS_CONFIRMAR, desenhar_barra, desenhar_fundo, desenhar_painel, desenhar_texto,
                                 quebrar_linhas)
 from jogo.config import ALTURA, LARGURA, Cor
+from jogo.jogador.boneco import Boneco
 from jogo.jogador.classes import CLASSES
 from jogo.nucleo.recursos import Recursos
 from jogo.opcoes import OpcoesDePartida
 
 
 class CenaSelecao(Cena):
+    ESCALA_PREVIA = 1.6
+
     def __init__(self, app, opcoes=None):
         super().__init__(app)
         self.opcoes = opcoes or OpcoesDePartida()
@@ -67,11 +68,9 @@ class CenaSelecao(Cena):
 
     def _cartao(self, tela, heroi, r, focado):
         desenhar_painel(tela, r, cor_borda=Cor.DESTAQUE if focado else Cor.BORDA_ESCURA)
-        animacoes = heroi.animador.animacoes
-        animacao = animacoes.get("andar" if focado else "parado") or next(iter(animacoes.values()))
-        sprite = Recursos.na_altura(animacao.quadro(self.tempo), 130)
-        pulo = 0 if len(animacao.quadros) > 1 else (abs(math.sin(self.tempo * 6)) * 8 if focado else 0)
-        tela.blit(sprite, sprite.get_rect(midbottom=(r.centerx, r.top + 160 - pulo)))
+        animacao = Boneco.animacoes_de(heroi.aparencia, escala=self.ESCALA_PREVIA)["andar" if focado else "parado"]
+        sprite = animacao.quadro(self.tempo)
+        tela.blit(sprite, sprite.get_rect(midbottom=(r.centerx, r.top + 168)))
         desenhar_texto(tela, heroi.NOME, 30, Cor.TEXTO, centro=(r.centerx, r.top + 185))
         desenhar_texto(tela, heroi.DESCRICAO, 15, Cor.TEXTO_FRACO, centro=(r.centerx, r.top + 212))
         x = r.left + 24
