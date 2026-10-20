@@ -30,7 +30,7 @@ class FuscaAzul(ArmaDeContato):
         self._espera -= dt
         if self._espera <= 0:
             self._soltar(jogo, dono)
-            self._espera = self.valor("recarga") * dono.mult_recarga
+            self._espera = self.valor("recarga") * dono.multiplicador_recarga
 
     def _soltar(self, jogo, dono):
         tela = jogo.camera.retangulo

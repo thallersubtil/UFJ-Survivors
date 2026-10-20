@@ -47,7 +47,7 @@ class Grito(Especial):
 
 
 def dono_falso():
-    return SimpleNamespace(mult_cafe=1.0, mult_recarga=1.0, multiplicador_dano=1.0)
+    return SimpleNamespace(mult_cafe=1.0, mult_recarga=1.0, multiplicador_recarga=1.0, multiplicador_dano=1.0)
 
 
 def test_arma_e_abstrata():

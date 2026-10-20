@@ -8,7 +8,7 @@ from jogo.cenas.selecao import CenaSelecao
 from jogo.cenas.titulo import CenaTitulo
 from jogo.cenas.treino import CenaTreino
 from jogo.fase import PROVAS, ProvaDeArquiteturaEED, ProvaDeTDEPOO
-from jogo.jogador.alunos import AlunoAgil
+from jogo.jogador.classes import Programador
 from jogo.opcoes import OpcoesDePartida
 from jogo.ranking import Ranking
 
@@ -64,7 +64,7 @@ def test_treino_alterna_direto_no_chefe_e_imortal(app):
 
 def test_partida_de_treino_usa_as_opcoes(app):
     opcoes = OpcoesDePartida.treino_contra(ProvaDeArquiteturaEED, direto_no_chefe=True, imortal=True)
-    partida = CenaPartida(app, AlunoAgil, opcoes)
+    partida = CenaPartida(app, Programador, opcoes)
     jogo = partida.jogo
     assert jogo.treino and len(jogo.fases) == 1
     assert jogo.jogador.imortal and not jogo.jogador.pode_levar_dano
@@ -73,7 +73,7 @@ def test_partida_de_treino_usa_as_opcoes(app):
 
 def test_treino_nao_entra_no_ranking(app):
     opcoes = OpcoesDePartida.treino_contra(ProvaDeArquiteturaEED)
-    partida = CenaPartida(app, AlunoAgil, opcoes)
+    partida = CenaPartida(app, Programador, opcoes)
     partida.jogo.terminar(venceu=True)
     fim = CenaFimDeJogo(app, partida.jogo)
     app.trocar(fim)
@@ -87,7 +87,7 @@ def test_jogo_a_partir_das_opcoes_aplica_tudo():
     from jogo.jogo import Jogo
     aparencia = Aparencia(cabelo="Ruivo")
     opcoes = OpcoesDePartida.treino_contra(ProvaDeTDEPOO, imortal=True).com_aparencia(aparencia)
-    jogo = Jogo.a_partir_de(AlunoAgil, opcoes, semente=2)
+    jogo = Jogo.a_partir_de(Programador, opcoes, semente=2)
     assert jogo.treino and jogo.jogador.imortal
     assert jogo.jogador.aparencia == aparencia
     assert [type(f) for f in jogo.fases] == [ProvaDeTDEPOO]
@@ -96,9 +96,9 @@ def test_jogo_a_partir_das_opcoes_aplica_tudo():
 def test_treino_direto_no_chefe_comeca_com_o_aluno_evoluido():
     from jogo.jogo import Jogo
     opcoes = OpcoesDePartida.treino_contra(ProvaDeArquiteturaEED, direto_no_chefe=True)
-    jogo = Jogo.a_partir_de(AlunoAgil, opcoes, semente=2)
+    jogo = Jogo.a_partir_de(Programador, opcoes, semente=2)
     assert jogo.jogador.nivel == ProvaDeArquiteturaEED.NIVEL_TREINO
     assert len(jogo.jogador.armas) + len(jogo.jogador.itens) > 3
     assert jogo.niveis_pendentes == 0
-    sem_atalho = Jogo.a_partir_de(AlunoAgil, OpcoesDePartida.treino_contra(ProvaDeArquiteturaEED), semente=2)
+    sem_atalho = Jogo.a_partir_de(Programador, OpcoesDePartida.treino_contra(ProvaDeArquiteturaEED), semente=2)
     assert sem_atalho.jogador.nivel == 1

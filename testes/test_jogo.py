@@ -4,7 +4,7 @@ import pytest
 from jogo.coletaveis.coletaveis import Nota
 from jogo.config import COMBO_ESPECIAL, LIMITE_COLETAVEIS
 from jogo.inimigos.bug import Bug
-from jogo.jogador.alunos import AlunoAgil, AlunoResistente
+from jogo.jogador.classes import Programador, Otaku
 from jogo.jogo import Jogo
 from jogo.nucleo.entidade import Entidade
 
@@ -21,7 +21,7 @@ class Espiao(Entidade):
         pass
 
 
-def jogo_sem_decoracao(classe=AlunoAgil):
+def jogo_sem_decoracao(classe=Programador):
     jogo = Jogo(classe, semente=1)
     for e in jogo.entidades:
         if e.grupo == "decoracao":
@@ -31,7 +31,7 @@ def jogo_sem_decoracao(classe=AlunoAgil):
 
 
 def test_jogo_contem_jogador_fase_e_placar():
-    jogo = Jogo(AlunoAgil, semente=1)
+    jogo = Jogo(Programador, semente=1)
     assert jogo.jogador in jogo.entidades
     assert jogo.fase is not None and jogo.placar is not None
     assert jogo.jogador.posicao == jogo.mapa.inicio
@@ -113,7 +113,7 @@ def test_cobra_acerta_bug_na_frente():
 
 
 def test_caramelo_morde_bug_por_perto():
-    jogo = jogo_sem_decoracao(AlunoResistente)
+    jogo = jogo_sem_decoracao(Otaku)
     bug = Bug(jogo.jogador.posicao + (70, 0), escala=50)
     bug.velocidade = 0
     jogo.adicionar(bug)
@@ -148,7 +148,7 @@ def test_morte_do_heroi_termina_a_partida():
 
 
 def test_partida_de_um_minuto_com_jogador_automatico():
-    jogo = Jogo(AlunoAgil, semente=7)
+    jogo = Jogo(Programador, semente=7)
     jogo.jogador.vida_maxima = 10 ** 9
     jogo.jogador.vida = 10 ** 9
     tela = pygame.Surface((1280, 720))
@@ -171,5 +171,5 @@ def test_resultado_vira_registro_de_ranking():
     jogo.placar.tempo = 10
     jogo.terminar(True)
     r = jogo.resultado("Ana")
-    assert r.nome == "Ana" and r.heroi == "Aluno 1" and r.venceu
+    assert r.nome == "Ana" and r.heroi == "Programador" and r.venceu
     assert r.pontos == 100 + 20 + 5000

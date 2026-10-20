@@ -5,7 +5,7 @@ from jogo.aplicacao import Aplicacao
 from jogo.cenas.partida import CenaPartida
 from jogo.cenas.personalizacao import CenaPersonalizacao
 from jogo.cenas.selecao import CenaSelecao
-from jogo.jogador.alunos import AlunoAgil, AlunoResistente
+from jogo.jogador.classes import Programador, Otaku
 from jogo.jogador.aparencia import Aparencia, classificar, vestir_animacoes
 from jogo.nucleo.recursos import Recursos
 from jogo.ranking import Ranking
@@ -86,11 +86,11 @@ def test_aparencia_original_nao_copia_nada():
 
 def test_jogador_vestido_usa_as_cores_e_guarda_em_cache():
     aparencia = Aparencia("Morena", "Loiro", "Azul", "Cáqui")
-    a = AlunoAgil((0, 0))
+    a = Programador((0, 0))
     a.vestir(aparencia)
-    b = AlunoAgil((0, 0))
+    b = Programador((0, 0))
     b.vestir(Aparencia("Morena", "Loiro", "Azul", "Cáqui"))
-    original = AlunoAgil((0, 0))
+    original = Programador((0, 0))
     assert a.animador.animacoes["parado"].quadros[0] is b.animador.animacoes["parado"].quadros[0]
     assert a.animador.animacoes["parado"].quadros[0] is not original.animador.animacoes["parado"].quadros[0]
 
@@ -99,7 +99,7 @@ def test_selecao_leva_a_personalizacao_e_dela_a_partida(app):
     app.trocar(CenaSelecao(app))
     app.passo(1 / 60, [tecla(pygame.K_RIGHT), tecla(pygame.K_RETURN)])
     cena = app.cena_atual
-    assert isinstance(cena, CenaPersonalizacao) and cena.classe_jogador is AlunoResistente
+    assert isinstance(cena, CenaPersonalizacao) and cena.classe_jogador is Programador
     app.passo(1 / 60, [tecla(pygame.K_DOWN), tecla(pygame.K_RIGHT)])
     assert cena.aparencia.cabelo != "Original"
     app.passo(1 / 60, [tecla(pygame.K_RETURN)])
@@ -110,7 +110,7 @@ def test_selecao_leva_a_personalizacao_e_dela_a_partida(app):
 
 
 def test_personalizacao_aleatoria_e_voltar(app):
-    cena = CenaPersonalizacao(app, AlunoAgil)
+    cena = CenaPersonalizacao(app, Programador)
     app.trocar(cena)
     app.passo(1 / 60, [])
     app.passo(1 / 60, [tecla(pygame.K_r)])

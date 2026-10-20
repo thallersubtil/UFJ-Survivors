@@ -8,13 +8,13 @@ from jogo.fase import PROVAS, ProvaDeArquiteturaEED, ProvaDeCalculo, ProvaDeTDEP
 from jogo.inimigos.bug import Bug
 from jogo.inimigos.chefe_possuido import ChefePossuido
 from jogo.inimigos.fabrica import FabricaDeInimigos
-from jogo.jogador.alunos import AlunoAgil
+from jogo.jogador.classes import Programador
 from jogo.jogo import Jogo
 from jogo.projeteis.projeteis import ProjetilDaMateria
 
 
 def jogo_imortal(**opcoes):
-    jogo = Jogo(AlunoAgil, semente=11, **opcoes)
+    jogo = Jogo(Programador, semente=11, **opcoes)
     jogo.jogador.vida_maxima = 10 ** 9
     jogo.jogador.vida = 10 ** 9
     return jogo

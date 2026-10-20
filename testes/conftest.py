@@ -18,7 +18,7 @@ def pygame_iniciado():
 @pytest.fixture
 def jogo_limpo():
     from jogo.fase import Fase
-    from jogo.jogador.alunos import AlunoAgil
+    from jogo.jogador.classes import Programador
     from jogo.jogo import Jogo
 
     class FaseVazia(Fase):
@@ -27,7 +27,7 @@ def jogo_limpo():
         def criar_eventos(self):
             return []
 
-    def criar(classe=AlunoAgil):
+    def criar(classe=Programador):
         jogo = Jogo(classe, fase=FaseVazia(), semente=3)
         for e in jogo.entidades:
             if e.grupo == "decoracao":

@@ -1,6 +1,6 @@
 """Joga uma partida inteira sem janela, com um jogador automático, e mostra um resumo.
 
-Uso: python ferramentas/simular_partida.py [--heroi 1|2] [--imortal] [--semente N]
+Uso: python ferramentas/simular_partida.py [--heroi 1|2|3]  (1 Otaku, 2 Programador, 3 Mestre de RPG) [--imortal] [--semente N]
 """
 import argparse
 import os
@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pygame  # noqa: E402
 
-from jogo.jogador.alunos import HEROIS  # noqa: E402
+from jogo.jogador.classes import CLASSES  # noqa: E402
 from jogo.jogo import Jogo  # noqa: E402
 from jogo.progressao import Progressao  # noqa: E402
 
@@ -27,7 +27,7 @@ def main():
     a = p.parse_args()
     pygame.init()
     pygame.display.set_mode((1, 1))
-    jogo = Jogo(HEROIS[a.heroi - 1], semente=a.semente)
+    jogo = Jogo(CLASSES[a.heroi - 1], semente=a.semente)
     dt = 1 / 30
     inicio = time.perf_counter()
     quadro = 0

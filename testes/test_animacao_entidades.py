@@ -5,7 +5,7 @@ import pytest
 
 from jogo.inimigos.bug import Bug
 from jogo.inimigos.mouse_de_bolinha import MouseDeBolinha
-from jogo.jogador.alunos import AlunoAgil, AlunoResistente
+from jogo.jogador.classes import Programador, Otaku
 from jogo.jogador.bonus import BonusTemporario
 from jogo.nucleo.recursos import Recursos
 
@@ -29,9 +29,9 @@ def arte_falsa(tmp_path, monkeypatch):
     gravar_tira(s / "rato", "andar", 4, 9, 5, (90, 90, 90))
     gravar_tira(s / "rato", "parado", 2, 9, 5, (60, 60, 60))
     monkeypatch.setattr(Recursos, "pasta", tmp_path)
-    monkeypatch.setattr(AlunoAgil, "PASTA_SPRITE", "heroi")
-    monkeypatch.setattr(AlunoResistente, "PASTA_SPRITE", "heroi")
-    monkeypatch.setattr(AlunoResistente, "PASTA_TRANSFORMADO", "heroi_ssj")
+    monkeypatch.setattr(Programador, "PASTA_SPRITE", "heroi")
+    monkeypatch.setattr(Otaku, "PASTA_SPRITE", "heroi")
+    monkeypatch.setattr(Otaku, "PASTA_TRANSFORMADO", "heroi_ssj")
     monkeypatch.setattr(Bug, "PASTA_SPRITE", "inseto")
     monkeypatch.setattr(MouseDeBolinha, "PASTA_SPRITE", "rato")
     Recursos.limpar()
@@ -47,7 +47,7 @@ def jogo_falso(direcao=(0, 0)):
 
 
 def test_heroi_parado_e_andando(arte_falsa):
-    j = AlunoAgil((100, 100))
+    j = Programador((100, 100))
     j.atualizar(0.1, jogo_falso())
     assert j.animador.atual == "parado"
     assert j.animador.quadro_atual.get_height() == 20
@@ -56,7 +56,7 @@ def test_heroi_parado_e_andando(arte_falsa):
 
 
 def test_super_saiyajin_troca_o_conjunto_de_animacoes(arte_falsa):
-    j = AlunoResistente((100, 100))
+    j = Otaku((100, 100))
     j.atualizar(0.1, jogo_falso())
     assert j.animador.quadro_atual.get_height() == 20
     j.adicionar_bonus(BonusTemporario("ssj", "dano", 2.0, 5))

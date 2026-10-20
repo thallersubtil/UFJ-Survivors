@@ -30,6 +30,7 @@ class Jogador(SerVivo, ABC):
     MOLETOM_ORIGINAL = "verde"    # como achar o moletom na arte, para trocar a cor
     MAX_ITENS = 4                # habilidades passivas
     ALCANCE_COLETA_BASE = 90
+    MULT_CRITICO = 2.0           # quanto o acerto crítico multiplica o dano
 
     def __init__(self, posicao):
         super().__init__(posicao, self.RAIO, self.VIDA)
@@ -48,13 +49,18 @@ class Jogador(SerVivo, ABC):
         self.animador = Animador(self._animacoes(), inicial="parado")
         self.nivel = 1
         self.experiencia = 0
-        self._redefinir_atributos()
+        self.passiva = self.criar_passiva()
+        self.recalcular_atributos()
         self.especial = self.criar_especial()
         self.adicionar_arma(self.criar_arma_inicial())
 
     @abstractmethod
     def criar_arma_inicial(self):
         """Arma com que este herói começa."""
+
+    @abstractmethod
+    def criar_passiva(self):
+        """Passiva desta classe (cresce com o nível)."""
 
     @abstractmethod
     def criar_especial(self):
@@ -64,15 +70,18 @@ class Jogador(SerVivo, ABC):
         self.mult_dano = 1.0
         self.mult_velocidade = 1.0
         self.mult_recarga = 1.0
+        self.mult_especial = 1.0
+        self.chance_critico = 0.0
         self.mult_cafe = 1.0
         self.regeneracao = 0.0
         self.alcance_coleta = self.ALCANCE_COLETA_BASE
         self.vida_maxima_extra = 0
 
     def recalcular_atributos(self):
-        """Zera os modificadores e deixa cada item aplicar o seu (polimorfismo)."""
+        """Zera os modificadores e deixa a passiva e cada item aplicarem o seu (polimorfismo)."""
         maxima_antes = self.vida_maxima
         self._redefinir_atributos()
+        self.passiva.aplicar(self)
         for item in self.itens:
             item.aplicar(self)
         self.vida_maxima = self.VIDA + self.vida_maxima_extra
@@ -93,6 +102,11 @@ class Jogador(SerVivo, ABC):
     @property
     def multiplicador_dano(self):
         return self.mult_dano * self.multiplicador("dano")
+
+    @property
+    def multiplicador_recarga(self):
+        """Fator aplicado ao tempo de recarga das armas (menor é mais rápido)."""
+        return self.mult_recarga * self.multiplicador("recarga")
 
     def tem_bonus(self, nome):
         return any(b.nome == nome for b in self.bonus)
@@ -145,6 +159,8 @@ class Jogador(SerVivo, ABC):
             self.experiencia -= self.experiencia_necessaria
             self.nivel += 1
             ganhos += 1
+        if ganhos:
+            self.recalcular_atributos()     # passivas crescem com o nível
         return ganhos
 
     @property
@@ -210,7 +226,7 @@ class Jogador(SerVivo, ABC):
             b.atualizar(dt)
         self.bonus = [b for b in self.bonus if b.ativo]
         self._atualizar_animacao(dt)
-        self.especial.atualizar(dt, self.mult_recarga)
+        self.especial.atualizar(dt, self.mult_recarga * self.mult_especial)
         for arma in list(self.armas):
             arma.atualizar(dt, jogo, self)
 

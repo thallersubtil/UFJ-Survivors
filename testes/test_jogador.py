@@ -6,7 +6,7 @@ import pytest
 from jogo.armas.caramelo import Caramelo
 from jogo.armas.cobra_python import CobraPython
 from jogo.itens.item import Item
-from jogo.jogador.alunos import HEROIS, AlunoAgil, AlunoResistente
+from jogo.jogador.classes import CLASSES, MestreDeRPG, Programador, Otaku
 from jogo.jogador.bonus import BonusTemporario
 from jogo.jogador.especiais import SuperSaiyajin, Zoltraak
 from jogo.jogador.jogador import Jogador
@@ -40,16 +40,16 @@ def test_jogador_e_abstrato():
 
 
 def test_herois_comecam_com_arma_e_especial_proprios():
-    agil, forte = AlunoAgil((0, 0)), AlunoResistente((0, 0))
-    assert isinstance(agil.armas[0], CobraPython) and isinstance(agil.especial, Zoltraak)
+    agil, forte = Programador((0, 0)), Otaku((0, 0))
+    assert isinstance(agil.armas[0], CobraPython)
     assert isinstance(forte.armas[0], Caramelo) and isinstance(forte.especial, SuperSaiyajin)
     assert agil.vida == 80 and forte.vida == 130
     assert agil.velocidade > forte.velocidade
-    assert HEROIS == (AlunoAgil, AlunoResistente)
+    assert set(CLASSES) >= {Programador, Otaku}
 
 
 def test_movimento_normalizado_e_preso_na_arena():
-    j = AlunoAgil((100, 100))
+    j = Programador((100, 100))
     j.atualizar(0.1, JogoFalso(direcao=(1, 1)))
     andou = j.posicao - pygame.Vector2(100, 100)
     assert andou.length() == pytest.approx(j.velocidade * 0.1)
@@ -59,7 +59,7 @@ def test_movimento_normalizado_e_preso_na_arena():
 
 
 def test_mira_segue_movimento_ou_mouse():
-    j = AlunoAgil((100, 100))
+    j = Programador((100, 100))
     j.atualizar(0.01, JogoFalso(direcao=(0, -1)))
     assert j.direcao_mira == pygame.Vector2(0, -1)
     j.atualizar(0.01, JogoFalso(mira=pygame.Vector2(100, 300)))
@@ -67,7 +67,7 @@ def test_mira_segue_movimento_ou_mouse():
 
 
 def test_experiencia_sobe_varios_niveis_de_uma_vez():
-    j = AlunoAgil((0, 0))
+    j = Programador((0, 0))
     necessario = j.experiencia_necessaria
     assert j.ganhar_experiencia(necessario - 1) == 0
     ganhos = j.ganhar_experiencia(500)
@@ -79,7 +79,7 @@ def test_experiencia_sobe_varios_niveis_de_uma_vez():
 
 
 def test_invencibilidade_depois_de_dano():
-    j = AlunoAgil((0, 0))
+    j = Programador((0, 0))
     j.receber_dano(10)
     assert not j.pode_levar_dano
     j.atualizar(0.6, JogoFalso())
@@ -87,7 +87,7 @@ def test_invencibilidade_depois_de_dano():
 
 
 def test_bonus_multiplicam_e_expiram():
-    j = AlunoAgil((0, 0))
+    j = Programador((0, 0))
     base = j.velocidade
     j.adicionar_bonus(BonusTemporario("combo67", "velocidade", 1.5, 1.0))
     j.adicionar_bonus(BonusTemporario("combo67", "velocidade", 1.5, 1.0))
@@ -97,7 +97,7 @@ def test_bonus_multiplicam_e_expiram():
 
 
 def test_itens_recalculam_atributos_e_curam_a_vida_ganha():
-    j = AlunoAgil((0, 0))
+    j = Programador((0, 0))
     base = j.velocidade
     item = Turbo()
     j.adicionar_item(item)
@@ -109,7 +109,7 @@ def test_itens_recalculam_atributos_e_curam_a_vida_ganha():
 
 
 def test_limites_de_armas_e_itens():
-    j = AlunoAgil((0, 0))
+    j = Programador((0, 0))
     for _ in range(3):
         j.adicionar_arma(Caramelo())
     with pytest.raises(ValueError):
@@ -121,7 +121,7 @@ def test_limites_de_armas_e_itens():
 
 
 def test_super_saiyajin_dobra_o_dano_e_cria_aura():
-    j = AlunoResistente((0, 0))
+    j = Otaku((0, 0))
     jogo = JogoFalso()
     assert j.usar_especial(jogo)
     assert j.tem_bonus("ssj")
@@ -131,14 +131,14 @@ def test_super_saiyajin_dobra_o_dano_e_cria_aura():
 
 
 def test_zoltraak_cria_raio():
-    j = AlunoAgil((0, 0))
+    j = MestreDeRPG((0, 0))
     jogo = JogoFalso()
     assert j.usar_especial(jogo)
     assert type(jogo.adicionados[0]).__name__ == "RaioZoltraak"
 
 
 def test_encher_cafe_so_afeta_armas_de_disparo():
-    j = AlunoAgil((0, 0))
+    j = Programador((0, 0))
     j.adicionar_arma(Caramelo())
     j.armas[0].municao = 0
     j.encher_cafe()

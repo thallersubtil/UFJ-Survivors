@@ -113,7 +113,7 @@ class ArmaDeDisparo(Arma, ABC):
             if com_cafe:
                 self.municao = self._municao - 1
             fator = 1.0 if com_cafe else self.PENALIDADE_SEM_CAFE
-            self._espera = self.valor("recarga") * dono.mult_recarga * fator
+            self._espera = self.valor("recarga") * dono.multiplicador_recarga * fator
         else:
             self._espera = 0.1
 

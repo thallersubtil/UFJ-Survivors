@@ -6,7 +6,7 @@ import pytest
 from jogo.cenario import Cenario
 from jogo.fase import Fase
 from jogo.inimigos.bug import Bug
-from jogo.jogador.alunos import AlunoAgil
+from jogo.jogador.classes import Programador
 from jogo.jogo import Jogo
 from jogo.mapa import Mapa, MapaUFJ, Predio
 from jogo.nucleo.colisao import Colisao
@@ -73,7 +73,7 @@ def test_mapa_ufj_a_partir_dos_dados():
 
 def test_heroi_e_inimigo_nao_atravessam_predio():
     mapa = MapaUFJ(dados_de_teste(), random.Random(1))
-    jogo = Jogo(AlunoAgil, fase=FaseVazia(), semente=1, mapa=mapa)
+    jogo = Jogo(Programador, fase=FaseVazia(), semente=1, mapa=mapa)
     assert jogo.arena.size == (1200, 1000)
     assert jogo.jogador.posicao == pygame.Vector2(600, 800)
     for _ in range(200):
@@ -92,14 +92,14 @@ def test_inimigo_nao_nasce_dentro_de_predio():
     dados = dados_de_teste()
     dados["predios"][0]["poligono"] = [[0, 0], [1200, 0], [1200, 900], [0, 900]]
     mapa = MapaUFJ(dados, random.Random(1))
-    jogo = Jogo(AlunoAgil, fase=FaseVazia(), semente=2, mapa=mapa)
+    jogo = Jogo(Programador, fase=FaseVazia(), semente=2, mapa=mapa)
     for _ in range(40):
         assert not mapa.bloqueado(Fase.posicao_de_nascimento(jogo), 30)
 
 
 def test_predio_visivel_e_desenha_mesmo_sem_arte():
     mapa = MapaUFJ(dados_de_teste(), random.Random(1))
-    jogo = Jogo(AlunoAgil, fase=FaseVazia(), semente=1, mapa=mapa)
+    jogo = Jogo(Programador, fase=FaseVazia(), semente=1, mapa=mapa)
     jogo.desenhar(pygame.Surface((1280, 720)))
     predio = next(e for e in mapa.entidades() if isinstance(e, Predio))
     assert predio.esta_visivel(jogo.camera)
@@ -107,7 +107,7 @@ def test_predio_visivel_e_desenha_mesmo_sem_arte():
 
 def test_jogo_sem_mapa_ufj_usa_patio_generico(monkeypatch):
     monkeypatch.setattr(MapaUFJ, "carregar", classmethod(lambda cls, rng: None))
-    jogo = Jogo(AlunoAgil, fase=FaseVazia(), semente=1)
+    jogo = Jogo(Programador, fase=FaseVazia(), semente=1)
     assert isinstance(jogo.mapa, Cenario)
 
 
@@ -118,7 +118,7 @@ def test_escala_do_mapa_vem_do_arquivo():
     assert mapa.escala == 3
     predio = next(e for e in mapa.entidades() if isinstance(e, Predio))
     assert predio.escala == 3
-    jogo = Jogo(AlunoAgil, fase=FaseVazia(), semente=1, mapa=mapa)
+    jogo = Jogo(Programador, fase=FaseVazia(), semente=1, mapa=mapa)
     jogo.desenhar(pygame.Surface((1280, 720)))
 
 
@@ -134,7 +134,7 @@ def test_chao_suave_desenha_por_blocos_em_cache(tmp_path, monkeypatch):
     dados.update({"largura": 1200, "altura": 1200, "chao": "cenario/chao.png", "escala": 3, "escala_predios": 1})
     mapa = MapaUFJ(dados, random.Random(1))
     assert all(p.escala == 1 for p in mapa.entidades() if isinstance(p, Predio))
-    jogo = Jogo(AlunoAgil, fase=FaseVazia(), semente=1, mapa=mapa)
+    jogo = Jogo(Programador, fase=FaseVazia(), semente=1, mapa=mapa)
     tela = pygame.Surface((1280, 720))
     mapa.desenhar_chao(tela, jogo.camera)
     assert tela.get_at((640, 360))[:3] == (10, 200, 10)

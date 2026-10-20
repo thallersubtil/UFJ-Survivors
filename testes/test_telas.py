@@ -10,7 +10,7 @@ from jogo.cenas.pausa import CenaPausa
 from jogo.cenas.ranking import CenaRanking
 from jogo.cenas.selecao import CenaSelecao
 from jogo.cenas.titulo import CenaTitulo
-from jogo.jogador.alunos import AlunoAgil, AlunoResistente
+from jogo.jogador.classes import Programador, Otaku
 from jogo.ranking import Ranking
 
 
@@ -51,7 +51,7 @@ def test_selecao_escolhe_o_segundo_aluno(app):
     app.passo(1 / 60, [tecla(pygame.K_RIGHT), tecla(pygame.K_RETURN)])
     app.passo(1 / 60, [tecla(pygame.K_RETURN)])     # personalização: começar sem mudar nada
     assert isinstance(app.cena_atual, CenaPartida)
-    assert isinstance(app.cena_atual.jogo.jogador, AlunoResistente)
+    assert isinstance(app.cena_atual.jogo.jogador, Programador)
 
 
 def test_selecao_esc_volta_ao_titulo(app):
@@ -61,7 +61,7 @@ def test_selecao_esc_volta_ao_titulo(app):
 
 
 def test_subir_de_nivel_abre_cartas_e_tecla_1_escolhe(app):
-    partida = CenaPartida(app, AlunoAgil)
+    partida = CenaPartida(app, Programador)
     app.trocar(partida)
     partida.jogo.niveis_pendentes = 2
     app.passo(1 / 60, [])
@@ -73,7 +73,7 @@ def test_subir_de_nivel_abre_cartas_e_tecla_1_escolhe(app):
 
 
 def test_sortear_de_novo_e_pular(app):
-    partida = CenaPartida(app, AlunoAgil)
+    partida = CenaPartida(app, Programador)
     app.trocar(partida)
     partida.jogo.niveis_pendentes = 1
     app.passo(1 / 60, [])
@@ -86,7 +86,7 @@ def test_sortear_de_novo_e_pular(app):
 
 
 def test_bau_abre_aplica_premio_e_fecha(app):
-    partida = CenaPartida(app, AlunoAgil)
+    partida = CenaPartida(app, Programador)
     app.trocar(partida)
     partida.jogo.baus_pendentes = 1
     app.passo(1 / 60, [])
@@ -99,7 +99,7 @@ def test_bau_abre_aplica_premio_e_fecha(app):
 
 
 def test_pausa_alterna_mira_e_volta(app):
-    partida = CenaPartida(app, AlunoAgil)
+    partida = CenaPartida(app, Programador)
     app.trocar(partida)
     app.passo(1 / 60, [tecla(pygame.K_ESCAPE)])
     assert isinstance(app.cena_atual, CenaPausa)
@@ -113,7 +113,7 @@ def test_pausa_alterna_mira_e_volta(app):
 
 
 def test_fim_de_jogo_grava_nome_no_ranking(app):
-    partida = CenaPartida(app, AlunoAgil)
+    partida = CenaPartida(app, Programador)
     app.trocar(partida)
     partida.jogo.placar.adicionar_pontos(321)
     partida.jogo.terminar(False)
@@ -127,7 +127,7 @@ def test_fim_de_jogo_grava_nome_no_ranking(app):
 
 
 def test_espaco_nao_escolhe_carta_nem_fecha_bau(app):
-    partida = CenaPartida(app, AlunoAgil)
+    partida = CenaPartida(app, Programador)
     app.trocar(partida)
     partida.jogo.niveis_pendentes = 1
     app.passo(1 / 60, [])
@@ -148,7 +148,7 @@ def clique(pos=(640, 360)):
 
 
 def test_clique_alterna_entre_mira_no_mouse_e_automatica(app):
-    partida = CenaPartida(app, AlunoAgil)
+    partida = CenaPartida(app, Programador)
     app.trocar(partida)
     assert app.modo_mira == "mouse"
     app.passo(1 / 60, [])
@@ -161,7 +161,7 @@ def test_clique_alterna_entre_mira_no_mouse_e_automatica(app):
 
 def test_mira_automatica_aponta_para_o_inimigo_mais_proximo(app):
     from jogo.inimigos.bug import Bug
-    partida = CenaPartida(app, AlunoAgil)
+    partida = CenaPartida(app, Programador)
     app.trocar(partida)
     app.modo_mira = "automatica"
     jogo = partida.jogo

@@ -10,7 +10,7 @@ from jogo.armas.colabs import CarameloNoFusca, Colab, CobrasGemeas, DebateDasIAs
 from jogo.armas.fusca import FuscaAzul
 from jogo.armas.gemini import Gemini
 from jogo.itens.itens import ITENS, FoneDeOuvido, GarrafaTermica, MarmitaDoRU, MochilaPesada, RelogioDePulso
-from jogo.jogador.alunos import AlunoAgil, AlunoResistente
+from jogo.jogador.classes import MestreDeRPG, Programador, Otaku
 from jogo.progressao import Progressao
 
 
@@ -28,14 +28,14 @@ def test_tabelas_dos_itens():
 
 
 def test_efeitos_dos_itens():
-    j = AlunoAgil((0, 0))
+    j = MestreDeRPG((0, 0))
     for classe in (FoneDeOuvido, RelogioDePulso, GarrafaTermica, MarmitaDoRU):
         j.adicionar_item(classe())
     assert j.alcance_coleta == pytest.approx(90 * 1.3)
     assert j.mult_recarga == pytest.approx(0.92)
     assert j.mult_cafe == pytest.approx(1.25)
     assert j.regeneracao == pytest.approx(1 / 3)
-    outro = AlunoAgil((0, 0))
+    outro = MestreDeRPG((0, 0))
     outro.adicionar_item(MochilaPesada())
     assert outro.vida_maxima == outro.VIDA + 20
 
@@ -56,7 +56,7 @@ def test_receitas_das_tres_colabs():
 
 
 def test_aplicar_colab_troca_as_duas_armas_pela_colab(jogo_limpo):
-    jogo = jogo_limpo(AlunoResistente)
+    jogo = jogo_limpo(Otaku)
     j = jogo.jogador
     no_maximo(j.armas[0])
     j.adicionar_arma(no_maximo(FuscaAzul()))
@@ -82,14 +82,14 @@ def test_cada_colab_funciona_na_partida(jogo_limpo, receita):
 
 
 def test_opcoes_de_nivel_sao_tres_e_validas():
-    j = AlunoAgil((0, 0))
+    j = Programador((0, 0))
     opcoes = Progressao.gerar_opcoes(j, random.Random(1))
     assert len(opcoes) == 3
     assert len({o.titulo for o in opcoes}) == 3
 
 
 def test_colab_disponivel_sempre_aparece_primeiro():
-    j = AlunoAgil((0, 0))
+    j = Programador((0, 0))
     no_maximo(j.armas[0])
     j.adicionar_arma(no_maximo(Gemini()))
     opcoes = Progressao.gerar_opcoes(j, random.Random(5))
@@ -133,7 +133,7 @@ def test_premio_do_bau_prefere_melhorar(jogo_limpo):
 
 
 def test_arma_que_virou_colab_nao_volta_como_nova():
-    j = AlunoResistente((0, 0))
+    j = Otaku((0, 0))
     j.armas_em_colab = {Caramelo, FuscaAzul}
     j.armas = []
     titulos = {o.titulo for o in Progressao.candidatas(j)}
@@ -141,7 +141,7 @@ def test_arma_que_virou_colab_nao_volta_como_nova():
 
 
 def test_limite_de_quatro_armas_e_quatro_itens():
-    j = AlunoAgil((0, 0))
+    j = Programador((0, 0))
     assert j.MAX_ARMAS == 4 and j.MAX_ITENS == 4
     for classe in (Caramelo, MascoteChatGPT, MascoteClaude):
         j.adicionar_arma(classe())
@@ -154,7 +154,7 @@ def test_limite_de_quatro_armas_e_quatro_itens():
 
 
 def test_no_limite_so_aparecem_melhorias():
-    j = AlunoAgil((0, 0))
+    j = Programador((0, 0))
     for classe in (Caramelo, MascoteChatGPT, MascoteClaude):
         j.adicionar_arma(classe())
     for classe in ITENS[:4]:

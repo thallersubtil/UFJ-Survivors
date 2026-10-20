@@ -168,18 +168,30 @@ class Jogo:
         """Fere um inimigo. Retorna True se ele morreu com este golpe."""
         if not inimigo.ativo or not inimigo.esta_vivo or inimigo.invulneravel:
             return False
+        critico = self._rolar_critico()
+        if critico:
+            dano *= self.jogador.MULT_CRITICO
         dano = max(1, round(dano))
         morreu = inimigo.receber_dano(dano)
         if direcao is not None:
             inimigo.empurrar(direcao)
         if len(self.grupos["efeito"]) < LIMITE_EFEITOS:
             deslocamento = pygame.Vector2(self.rng.uniform(-8, 8), -inimigo.raio)
-            self.adicionar(TextoFlutuante(str(dano), inimigo.posicao + deslocamento,
-                                          Cor.DANO_FORTE if forte else Cor.DANO, 22 if forte else 16))
+            if critico:
+                texto = TextoFlutuante(f"{dano}!", inimigo.posicao + deslocamento, Cor.DESTAQUE, 26)
+            else:
+                texto = TextoFlutuante(str(dano), inimigo.posicao + deslocamento,
+                                       Cor.DANO_FORTE if forte else Cor.DANO, 22 if forte else 16)
+            self.adicionar(texto)
         Recursos.tocar("acerto", 0.12)
         if morreu:
             self._registrar_morte(inimigo)
         return morreu
+
+    def _rolar_critico(self):
+        """Sorteia um acerto crítico com a chance do herói (só gasta o sorteio se a chance existir)."""
+        chance = self.jogador.chance_critico
+        return chance > 0 and self.rng.random() < chance
 
     def _registrar_morte(self, inimigo):
         inimigo.remover()
