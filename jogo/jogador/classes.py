@@ -16,8 +16,11 @@ class Otaku(Jogador):
     DESCRICAO = "Resistente e lento. O Caramelo luta junto."
     VIDA = 130
     VELOCIDADE = 180
-    APARENCIA = {"penteado": "Espetado", "cabelo": "Preto", "olhos": "Anime", "cor_cima": "Laranja",
-                 "acessorio": "Fone"}
+    IMAGEM = "sprites/aluno2.png"
+    PASTA_SPRITE = "aluno2"
+    MOLETOM_ORIGINAL = "laranja"
+    PASTA_TRANSFORMADO = "aluno2_ssj"
+    IMAGEM_TRANSFORMADO = "sprites/aluno2_ssj.png"
 
     def criar_arma_inicial(self):
         return Caramelo()
@@ -34,7 +37,8 @@ class Programador(Jogador):
     DESCRICAO = "Ágil e frágil. Ataca de longe à base de café."
     VIDA = 80
     VELOCIDADE = 230
-    APARENCIA = {"acessorio": "Óculos", "cima": "Camiseta", "cor_cima": "Preto"}
+    IMAGEM = "sprites/aluno1.png"
+    PASTA_SPRITE = "aluno1"
 
     def criar_arma_inicial(self):
         return CobraPython()
@@ -51,7 +55,8 @@ class MestreDeRPG(Jogador):
     DESCRICAO = "Equilibrado. O especial volta logo."
     VIDA = 100
     VELOCIDADE = 205
-    APARENCIA = {"penteado": "Rabo de cavalo", "cabelo": "Castanho claro", "cima": "Jaqueta", "cor_cima": "Roxo"}
+    IMAGEM = "sprites/aluno1.png"
+    PASTA_SPRITE = "aluno1"
 
     def criar_arma_inicial(self):
         return Gemini()

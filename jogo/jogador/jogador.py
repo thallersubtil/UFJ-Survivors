@@ -4,11 +4,11 @@ from abc import ABC, abstractmethod
 
 import pygame
 
-from jogo.config import INVENCIBILIDADE_APOS_DANO
-from jogo.jogador.aparencia import Aparencia
-from jogo.jogador.boneco import Boneco
+from jogo.config import ESCALA_PIXEL, INVENCIBILIDADE_APOS_DANO
 from jogo.nucleo.animacao import Animador
-from jogo.nucleo.desenho import desenhar_sombra, desenhar_sprite
+from jogo.nucleo.desenho import desenhar_sprite
+from jogo.jogador.aparencia import vestir_animacoes
+from jogo.nucleo.recursos import Recursos
 from jogo.nucleo.ser_vivo import SerVivo
 
 
@@ -20,10 +20,14 @@ class Jogador(SerVivo, ABC):
     DESCRICAO = ""
     VIDA = 100
     VELOCIDADE = 200
-    APARENCIA = {}               # aparência sugerida da classe (antes da personalização)
+    IMAGEM = ""
+    IMAGEM_TRANSFORMADO = None
+    PASTA_SPRITE = None          # pasta em assets/sprites/ com as animações (parado, andar)
+    PASTA_TRANSFORMADO = None    # animações da forma transformada (Super Saiyajin)
+    ALTURA = 64
     RAIO = 22
-    LARGURA_SOMBRA = 36          # o quadro do boneco é largo (cabelo, boné), a sombra não acompanha
     MAX_ARMAS = 4                # habilidades ativas; no limite, só melhorias (uma colab libera vaga)
+    MOLETOM_ORIGINAL = "verde"    # como achar o moletom na arte, para trocar a cor
     MAX_ITENS = 4                # habilidades passivas
     ALCANCE_COLETA_BASE = 90
     MULT_CRITICO = 2.0           # quanto o acerto crítico multiplica o dano
@@ -38,7 +42,7 @@ class Jogador(SerVivo, ABC):
         self.movendo = False
         self.olhando_esquerda = False
         self.invencivel = 0.0
-        self.aparencia = Aparencia(**self.APARENCIA)   # o Boneco desenha o aluno com ela
+        self.aparencia = None         # Aparencia escolhida na personalização
         self.imortal = False          # modo treino
         self.tempo = 0.0
         self.transformado = False
@@ -169,10 +173,14 @@ class Jogador(SerVivo, ABC):
         return morreu
 
     def _animacoes(self):
-        return Boneco.animacoes_de(self.aparencia, self.transformado)
+        if self.transformado:
+            base = Recursos.animacoes_ou_imagem(self.PASTA_TRANSFORMADO, self.IMAGEM_TRANSFORMADO, self.ALTURA)
+            return vestir_animacoes(base, self.aparencia, self.MOLETOM_ORIGINAL, cabelo_natural=False)
+        base = Recursos.animacoes_ou_imagem(self.PASTA_SPRITE, self.IMAGEM, self.ALTURA)
+        return vestir_animacoes(base, self.aparencia, self.MOLETOM_ORIGINAL)
 
     def vestir(self, aparencia):
-        """Troca a aparência do aluno (gênero, cabelo, roupas, cores)."""
+        """Troca as cores do aluno (pele, cabelo, moletom, calça)."""
         self.aparencia = aparencia
         self.animador.trocar_conjunto(self._animacoes())
 
@@ -181,7 +189,7 @@ class Jogador(SerVivo, ABC):
         return len(self.animador.animacoes) > 1
 
     def _atualizar_animacao(self, dt):
-        transformado = self.tem_bonus("ssj")
+        transformado = bool(self.PASTA_TRANSFORMADO or self.IMAGEM_TRANSFORMADO) and self.tem_bonus("ssj")
         if transformado != self.transformado:
             self.transformado = transformado
             self.animador.trocar_conjunto(self._animacoes())
@@ -229,7 +237,5 @@ class Jogador(SerVivo, ABC):
         else:
             pulo = abs(math.sin(self.tempo * 10)) * 4 if self.movendo else (1 + math.sin(self.tempo * 2)) * 0.8
         alfa = 130 if self.invencivel > 0 and int(self.invencivel * 20) % 2 else 255
-        centro = camera.para_tela(self.posicao)
-        desenhar_sombra(tela, (centro.x, centro.y + imagem.get_height() / 2), self.LARGURA_SOMBRA)
         desenhar_sprite(tela, camera, imagem, self.posicao, espelhar=self.olhando_esquerda,
-                        piscar=self.piscar > 0, deslocamento_y=pulo, alfa=alfa, sombra=False)
+                        piscar=self.piscar > 0, deslocamento_y=pulo, alfa=alfa)
