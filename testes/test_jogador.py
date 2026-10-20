@@ -110,11 +110,11 @@ def test_itens_recalculam_atributos_e_curam_a_vida_ganha():
 
 def test_limites_de_armas_e_itens():
     j = AlunoAgil((0, 0))
-    for _ in range(5):
+    for _ in range(3):
         j.adicionar_arma(Caramelo())
     with pytest.raises(ValueError):
         j.adicionar_arma(Caramelo())
-    for _ in range(6):
+    for _ in range(4):
         j.adicionar_item(Turbo())
     with pytest.raises(ValueError):
         j.adicionar_item(Turbo())

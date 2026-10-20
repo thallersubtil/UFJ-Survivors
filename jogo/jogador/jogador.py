@@ -26,9 +26,9 @@ class Jogador(SerVivo, ABC):
     PASTA_TRANSFORMADO = None    # animações da forma transformada (Super Saiyajin)
     ALTURA = 64
     RAIO = 22
-    MAX_ARMAS = 6
+    MAX_ARMAS = 4                # habilidades ativas; no limite, só melhorias (uma colab libera vaga)
     MOLETOM_ORIGINAL = "verde"    # como achar o moletom na arte, para trocar a cor
-    MAX_ITENS = 6
+    MAX_ITENS = 4                # habilidades passivas
     ALCANCE_COLETA_BASE = 90
 
     def __init__(self, posicao):
@@ -110,7 +110,7 @@ class Jogador(SerVivo, ABC):
         self.armas.remove(arma)
 
     def aplicar_colab(self, receita, jogo):
-        """Troca as duas armas da receita pela colab."""
+        """Funde as duas armas da receita na colab: ocupam uma vaga só, e a outra fica livre."""
         from jogo.armas.colabs import Colab
         for arma in Colab.ingredientes_em(receita, self.armas):
             self.armas_em_colab.add(type(arma))

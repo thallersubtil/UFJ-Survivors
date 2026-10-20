@@ -43,18 +43,24 @@ class Hud:
 
     def _armas_e_itens(self, tela, jogo):
         j = jogo.jogador
-        for i, arma in enumerate(j.armas):
+        for i in range(j.MAX_ARMAS):
             caixa = pygame.Rect(12 + i * 46, 102, 42, 42)
-            desenhar_painel(tela, caixa, alfa=210)
+            desenhar_painel(tela, caixa, alfa=210 if i < len(j.armas) else 90)
+            if i >= len(j.armas):
+                continue
+            arma = j.armas[i]
             icone = Recursos.icone(arma.ICONE, 30)
             tela.blit(icone, icone.get_rect(center=caixa.center))
             desenhar_texto(tela, str(arma.nivel), 12, Cor.DESTAQUE, topo_direita=(caixa.right - 4, caixa.bottom - 16))
             if arma.fracao_cafe is not None:
                 desenhar_barra(tela, pygame.Rect(caixa.left + 3, caixa.bottom + 3, caixa.width - 6, 4),
                                arma.fracao_cafe, Cor.CAFE)
-        for i, item in enumerate(j.itens):
+        for i in range(j.MAX_ITENS):
             caixa = pygame.Rect(12 + i * 38, 156, 34, 34)
-            desenhar_painel(tela, caixa, alfa=210)
+            desenhar_painel(tela, caixa, alfa=210 if i < len(j.itens) else 90)
+            if i >= len(j.itens):
+                continue
+            item = j.itens[i]
             icone = Recursos.icone(item.ICONE, 24)
             tela.blit(icone, icone.get_rect(center=caixa.center))
             desenhar_texto(tela, str(item.nivel), 11, Cor.DESTAQUE, topo_direita=(caixa.right - 3, caixa.bottom - 14))

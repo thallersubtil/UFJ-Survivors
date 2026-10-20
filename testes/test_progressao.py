@@ -29,13 +29,15 @@ def test_tabelas_dos_itens():
 
 def test_efeitos_dos_itens():
     j = AlunoAgil((0, 0))
-    for classe in (FoneDeOuvido, RelogioDePulso, GarrafaTermica, MarmitaDoRU, MochilaPesada):
+    for classe in (FoneDeOuvido, RelogioDePulso, GarrafaTermica, MarmitaDoRU):
         j.adicionar_item(classe())
     assert j.alcance_coleta == pytest.approx(90 * 1.3)
     assert j.mult_recarga == pytest.approx(0.92)
     assert j.mult_cafe == pytest.approx(1.25)
     assert j.regeneracao == pytest.approx(1 / 3)
-    assert j.vida_maxima == 100
+    outro = AlunoAgil((0, 0))
+    outro.adicionar_item(MochilaPesada())
+    assert outro.vida_maxima == outro.VIDA + 20
 
 
 def test_colab_so_aparece_com_as_duas_armas_no_maximo():
@@ -109,9 +111,9 @@ def test_aplicar_opcoes_de_melhoria_e_de_arma_nova(jogo_limpo):
 def test_sem_nada_para_oferecer_aparece_o_lanche(jogo_limpo):
     jogo = jogo_limpo()
     j = jogo.jogador
-    j.armas = [CarameloNoFusca(), CobrasGemeas(), DebateDasIAs(), CarameloNoFusca(), CobrasGemeas(), DebateDasIAs()]
+    j.armas = [CarameloNoFusca(), CobrasGemeas(), DebateDasIAs(), CarameloNoFusca()]
     j.itens = []
-    for classe in ITENS[:6]:
+    for classe in ITENS[:4]:
         item = classe()
         item.nivel = item.NIVEL_MAXIMO
         j.itens.append(item)
@@ -136,3 +138,41 @@ def test_arma_que_virou_colab_nao_volta_como_nova():
     j.armas = []
     titulos = {o.titulo for o in Progressao.candidatas(j)}
     assert "Caramelo" not in titulos and "Fusca Azul" not in titulos
+
+
+def test_limite_de_quatro_armas_e_quatro_itens():
+    j = AlunoAgil((0, 0))
+    assert j.MAX_ARMAS == 4 and j.MAX_ITENS == 4
+    for classe in (Caramelo, MascoteChatGPT, MascoteClaude):
+        j.adicionar_arma(classe())
+    with pytest.raises(ValueError):
+        j.adicionar_arma(Gemini())
+    for classe in ITENS[:4]:
+        j.adicionar_item(classe())
+    with pytest.raises(ValueError):
+        j.adicionar_item(ITENS[4]())
+
+
+def test_no_limite_so_aparecem_melhorias():
+    j = AlunoAgil((0, 0))
+    for classe in (Caramelo, MascoteChatGPT, MascoteClaude):
+        j.adicionar_arma(classe())
+    for classe in ITENS[:4]:
+        j.adicionar_item(classe())
+    candidatas = Progressao.candidatas(j)
+    assert candidatas and all(o.tipo == "melhoria" for o in candidatas)
+
+
+def test_colab_funde_as_armas_e_libera_vaga_para_uma_nova(jogo_limpo):
+    jogo = jogo_limpo()
+    j = jogo.jogador                     # começa com a Cobra Python
+    no_maximo(j.armas[0])
+    for classe in (Gemini, MascoteChatGPT, MascoteClaude):
+        j.adicionar_arma(classe())
+    no_maximo(j.armas[1])
+    assert not any(o.tipo == "nova" and o.rotulo == "NOVA" for o in Progressao.candidatas(j))
+    colab = next(o for o in Progressao.candidatas(j) if o.tipo == "colab")
+    colab.aplicar(j, jogo)
+    assert len(j.armas) == 3
+    novas = {o.titulo for o in Progressao.candidatas(j) if o.rotulo == "NOVA"}
+    assert novas == {"Caramelo", "Fusca Azul"}
