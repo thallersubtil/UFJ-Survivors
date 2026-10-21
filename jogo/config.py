@@ -24,8 +24,8 @@ CURA_AO_PULAR = 20
 LIMITE_COLETAVEIS = 400
 LIMITE_EFEITOS = 150
 
-FONTE = "fontes/pixelify-sans-latin-700-normal.woff2"
-FONTE_MEDIA = "fontes/pixelify-sans-latin-500-normal.woff2"
+FONTE = "fontes/pixelify-sans-latin-700-normal.ttf"
+FONTE_MEDIA = "fontes/pixelify-sans-latin-500-normal.ttf"
 
 
 class Cor:

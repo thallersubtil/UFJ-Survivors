@@ -29,7 +29,7 @@ from PIL import Image, ImageDraw, ImageFilter  # noqa: E402
 RAIZ = Path(__file__).resolve().parent.parent
 ENTRADA = RAIZ / "arte_bruta" / "mapa"
 SAIDA = RAIZ / "assets" / "cenario"
-FONTE = RAIZ / "assets" / "fontes" / "pixelify-sans-latin-700-normal.woff2"
+FONTE = RAIZ / "assets" / "fontes" / "pixelify-sans-latin-700-normal.ttf"
 
 ESCALA_CHAO = 3                  # o chão é guardado em 1/3 da resolução; o jogo amplia suavizando
 UNIDADES_POR_METRO = 10.0         # herói de ~76 px; prédios bem maiores que ele

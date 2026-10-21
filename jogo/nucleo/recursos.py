@@ -172,7 +172,12 @@ class Recursos:
         chave = (arquivo, tamanho)
         if chave not in cls._fontes:
             caminho = cls.pasta / arquivo
-            cls._fontes[chave] = pygame.font.Font(str(caminho) if caminho.exists() else None, tamanho)
+            try:
+                fonte = pygame.font.Font(str(caminho) if caminho.exists() else None, tamanho)
+                fonte.render("Aa", True, (255, 255, 255))     # algumas fontes abrem mas não desenham
+            except (pygame.error, OSError):
+                fonte = pygame.font.Font(None, tamanho)        # fonte padrão do pygame
+            cls._fontes[chave] = fonte
         return cls._fontes[chave]
 
     @classmethod
