@@ -261,20 +261,37 @@ def classificar(rgb, alfa, moletom_original="verde", cabelo_natural=True):
         sombra_do_moletom = moletom_cor
     else:   # laranja: bem mais saturado que a pele
         moletom_cor = base & (h >= 5) & (h < 45) & (s >= 0.85) & (v > 0.4)
-        sombra_do_moletom = base & (h >= 5) & (h < 45) & (s >= 0.6) & (v > 0.3)
+        sombra_do_moletom = base & (h >= 5) & (h < 50) & (s >= 0.6) & (v > 0.3) & ~(tom_de_pele & (s < 0.78))
     tronco = (y > 0.5) & (y < 0.65)
     capuz = (y > 0.35) & (y < 0.5) & (s >= 0.95)    # o capuz fica atrás da alça da mochila, separado do tronco
     moletom = crescer(moletom_cor & (tronco | capuz), (moletom_cor | sombra_do_moletom) & (y > 0.22))   # inclui o capuz
 
+    # Olhos: o escuro em volta do branco do olho, na altura do rosto. A íris tem tom de cabelo e às
+    # vezes encosta na franja; sem isso o cabelo "escorre" para dentro do olho.
+    faixa_do_rosto = (y > topo + 0.2) & (y < 0.45)
+    branco_do_olho = visivel & (s < 0.2) & (v > 0.8) & (y > topo + 0.2) & (y < 0.38)   # acima da gola
+    olhos = branco_do_olho.copy()
+    for _ in range(3):
+        olhos |= _vizinhos(olhos)
+    olhos &= faixa_do_rosto & (v < 0.6)
+
     cabelo = np.zeros_like(base)
     if cabelo_natural:
-        cor_de_cabelo = base & ~bone & ((h >= 270) | (h < 55)) & (s >= 0.1) & (v < 0.45) & (y < 0.5) \
+        cor_de_cabelo = ~olhos & base & ~bone & ((h >= 270) | (h < 55)) & (s >= 0.1) & (v < 0.45) & (y < 0.5) \
             & ~tom_de_pele
         cabelo = crescer(cor_de_cabelo & (y < topo + 0.08), cor_de_cabelo)
         cabelo = preencher_buracos(cabelo) & base & ~bone & (y < 0.5)
         cabelo &= ~moletom
         # pele da testa que aparece entre as mechas da franja (inclusive a sombra da franja sobre ela)
-        testa = ((tom_de_pele & (v > 0.7)) | ((h >= 14) & (h < 40) & (s >= 0.35) & (v > 0.38))) & (y > topo + 0.21)
+        # Matiz típica deste cabelo (no topo da cabeça, onde só há cabelo).
+        topo_do_cabelo = cabelo & (y < topo + 0.12)
+        matiz_cabelo = _matiz_media(h[topo_do_cabelo]) if topo_do_cabelo.any() else 0.0
+        longe_do_cabelo = _distancia_matiz(h, matiz_cabelo) > 15
+        # Pele da testa e a sombra da franja sobre ela: tom de pele (mesmo escuro) e matiz diferente da do
+        # cabelo. Sem isso a sombra na testa e no rosto pegava a cor do cabelo e não a da pele.
+        sombra_de_pele = (h >= 8) & (h < 40) & (s >= 0.35) & longe_do_cabelo
+        cor_de_testa = (tom_de_pele & (v > 0.7)) | ((h >= 14) & (h < 40) & (s >= 0.35) & (v > 0.38)) | sombra_de_pele
+        testa = cor_de_testa & _faixa_da_testa(branco_do_olho, tom_de_pele, y, topo)
         cabelo &= ~testa
 
     livre = base & tom_de_pele & ~moletom & ~cabelo & ~bone & ~calca
@@ -288,16 +305,48 @@ def classificar(rgb, alfa, moletom_original="verde", cabelo_natural=True):
         pele |= testa & base & ~moletom & ~bone
     # Sobras na cabeça (blush, transição entre mecha e testa): ficam com a parte vizinha.
     quente = (h < 45) | (h >= 330)
-    resto = base & quente & (y < 0.38) & ~(pele | cabelo | moletom | bone | calca)
+    resto = base & quente & (y < 0.43) & ~(pele | cabelo | moletom | bone | calca)   # até o pescoço
     for _ in range(4):
         perto_da_pele = _vizinhos(pele) & resto
-        perto_do_cabelo = _vizinhos(cabelo) & resto & ~perto_da_pele if cabelo_natural else perto_da_pele & False
+        perto_do_cabelo = _vizinhos(cabelo) & resto & ~perto_da_pele & (y < 0.38) if cabelo_natural \
+            else perto_da_pele & False
         if not (perto_da_pele.any() or perto_do_cabelo.any()):
             break
         pele |= perto_da_pele
         cabelo |= perto_do_cabelo
         resto &= ~(perto_da_pele | perto_do_cabelo)
+    cabelo &= ~olhos & ~pele      # cílios, íris e pele nunca levam a cor do cabelo
     return {"pele": pele, "cabelo": cabelo, "moletom": moletom, "calca": calca, "bone": bone}
+
+
+def _faixa_da_testa(branco_do_olho, tom_de_pele, y, topo):
+    """Onde fica a testa: logo acima dos olhos, na largura do rosto.
+
+    Os reflexos do cabelo têm a mesma cor da pele; o que os separa da testa é o lugar. A largura do
+    rosto vem da pele na altura dos olhos. Sem olhos visíveis, usa uma faixa larga abaixo da franja.
+    """
+    altura = branco_do_olho.shape[1]
+    if not branco_do_olho.any():
+        return y > topo + 0.18
+    olho_topo = np.nonzero(branco_do_olho)[1].min()
+    linhas_dos_olhos = slice(olho_topo, olho_topo + max(3, altura // 20))
+    colunas_com_pele = np.nonzero(tom_de_pele[:, linhas_dos_olhos].any(1))[0]
+    colunas = np.zeros(branco_do_olho.shape[0], bool)
+    if len(colunas_com_pele):
+        colunas[colunas_com_pele.min(): colunas_com_pele.max() + 1] = True
+    return colunas[:, None] & (y >= olho_topo / altura - 0.075) & (y <= olho_topo / altura + 0.02)
+
+
+def _distancia_matiz(h, referencia):
+    """Distância angular entre matizes (0 a 180 graus)."""
+    d = np.abs(h - referencia) % 360
+    return np.minimum(d, 360 - d)
+
+
+def _matiz_media(matizes):
+    """Média circular das matizes em graus (350 e 10 dão 0, não 180)."""
+    rad = np.radians(matizes)
+    return float(np.degrees(np.arctan2(np.sin(rad).mean(), np.cos(rad).mean())) % 360)
 
 
 def _vizinhos(mascara):
