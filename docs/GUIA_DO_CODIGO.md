@@ -11,8 +11,8 @@ O herói (um aluno) anda pelo Campus Jatobá; as armas atacam sozinhas; ondas de
 ```
 main.py
  └─ Aplicacao (jogo/aplicacao.py)        janela 1280x720 e uma PILHA de cenas
-     └─ CenaTitulo -> CenaSelecao -> CenaPersonalizacao -> CenaPartida -> CenaFimDeJogo -> CenaRanking
-         └─ CenaTreino (escolhe o professor) -> CenaSelecao -> ...
+     └─ CenaTitulo -> CenaPersonalizacao -> CenaSelecao -> CenaPartida -> CenaFimDeJogo -> CenaRanking
+         └─ CenaTreino (escolhe o professor) -> CenaPersonalizacao -> ...
                                          │
                                          ├─ empilha CenaNivel  (escolher carta ao subir de nível)
                                          ├─ empilha CenaBau    (prêmio do mini-chefe)
@@ -99,7 +99,7 @@ FabricaDeInimigos, Colisao, Camera, GradeEspacial, Recursos, Animacao, Animador
 - `Jogo` contém `Jogador`, as três `Fase` (provas) e a atual, `Placar`, `Mapa`, `Camera`, `GradeEspacial` e a lista de entidades.
 - `ChefePossuido` contém suas `Materia`: o chefe não **é** Cálculo; ele **está possuído** por Cálculo. Por isso composição: o mesmo professor troca de matéria no meio da luta, o que herança não permitiria.
 - `Jogador` contém uma lista de `Arma` (até 4), uma lista de `Item` (até 4), uma `Passiva`, um `Especial`, bônus temporários e um `Animador`.
-- `Jogador` contém uma `Aparencia` (pele, cabelo, moletom, calça), escolhida na personalização.
+- `Jogador` contém uma `Aparencia` (gênero, pele, cabelo, moletom, calça), escolhida na personalização, antes da classe. Com gênero feminino, o jogador usa a pasta `PASTA_SPRITE_FEMININA` da classe (se existir) e recolore essa arte.
 - `Animador` contém várias `Animacao` (parado, andar), e cada `Animacao` contém os quadros.
 
 Por que composição e não herança entre `Jogador` e `Arma`: o jogador **tem** armas, não **é** uma arma; ele ganha, troca e funde armas durante a partida, o que herança não permitiria.
@@ -115,7 +115,7 @@ Por que composição e não herança entre `Jogador` e `Arma`: o jogador **tem**
 | Composição | ver seção 5 | |
 | Métodos especiais | `RegistroRanking.__lt__`, `__eq__`, `__str__` | `__lt__` é o que deixa `sorted()` ordenar o ranking. |
 | `@classmethod` | `FabricaDeInimigos.registrar/criar` | A fábrica guarda um registro na própria classe; inimigo novo se registra com um decorador. |
-| Encapsulamento (2) | `Aparencia.pele`, `cabelo`, `moletom`, `calca` | Cada setter só aceita uma opção da lista; um valor inválido gera `ValueError`. |
+| Encapsulamento (2) | `Aparencia.genero`, `pele`, `cabelo`, `moletom`, `calca` | Cada setter só aceita uma opção da lista; um valor inválido gera `ValueError`. |
 | Métodos especiais (2) | `Aparencia.__eq__`, `__hash__`, `__str__` | Duas aparências com as mesmas escolhas são iguais e têm o mesmo hash, por isso servem de chave no cache das imagens recoloridas. |
 | Polimorfismo (2) | `Passiva.aplicar` | O `Jogador` chama `passiva.aplicar(self)` sem saber qual é a classe, do mesmo jeito que faz com os itens. |
 | `@staticmethod` | `Colisao.circulos_colidem` | Função pura de geometria; não precisa de instância. |

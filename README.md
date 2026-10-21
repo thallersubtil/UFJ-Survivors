@@ -56,7 +56,7 @@ O aluno carrega no máximo **4 armas e 4 itens**. Com as vagas cheias, as cartas
 
 ## Personalização do aluno
 
-Depois de escolher a classe, a tela **MONTE SEU ALUNO** troca o tom de pele, a cor do cabelo, do moletom e da calça (setas para escolher e trocar, R sorteia, P ou Backspace volta tudo ao padrão, Enter começa). A arte não muda: `Aparencia` (`jogo/jogador/aparencia.py`) separa as partes do sprite (cada parte é a região conectada da sua cor que nasce no lugar certo do corpo, para olhos e bochecha não pegarem a cor do cabelo ou do moletom) e aplica o novo tom mantendo o sombreado. A última escolha fica lembrada para a próxima partida. No Super Saiyajin o cabelo continua dourado.
+Ao clicar em JOGAR (ou escolher o professor no treino), a tela **MONTE SEU ALUNO** vem primeiro: escolhe o gênero (aluno ou aluna) e troca o tom de pele, a cor do cabelo, do moletom e da calça (setas para escolher e trocar, R sorteia as cores, P ou Backspace volta as cores ao padrão sem mudar o gênero, Enter vai para a escolha de classe). Na escolha de classe, cada cartão mostra o aluno montado, caracterizado para aquela classe (a aluna tem arte própria: `aluna1` para Programador e Mestre de RPG, `aluna2` para o Otaku; se faltar a arte feminina de alguma classe, usa a masculina). A arte não muda: `Aparencia` (`jogo/jogador/aparencia.py`) separa as partes do sprite (cada parte é a região conectada da sua cor que nasce no lugar certo do corpo, para olhos e bochecha não pegarem a cor do cabelo ou do moletom) e aplica o novo tom mantendo o sombreado. A última escolha fica lembrada para a próxima partida. No Super Saiyajin o cabelo continua dourado.
 
 ## Modo treino
 
@@ -78,6 +78,7 @@ Para simular uma partida inteira sem janela (útil para balancear):
 ```bash
 .venv/bin/python ferramentas/gerar_mapa.py        # mapa do Campus Jatobá (baixa satélite e OpenStreetMap se faltar)
 .venv/bin/python ferramentas/montar_sprites.py    # folhas de animação -> pixel art (precisa das folhas em arte_bruta/)
+.venv/bin/python ferramentas/endurecer_sprite.py ORIGEM DESTINO   # arte "lisa" no tamanho do jogo -> contorno e paleta de pixel art
 .venv/bin/python ferramentas/gerar_sons.py        # efeitos sonoros
 ```
 
