@@ -42,6 +42,12 @@ class CenaPersonalizacao(Cena):
             setattr(self.aparencia, parte, nome)
         self.previa.vestir(Aparencia(*self.aparencia.chave()))
 
+    def _restaurar(self):
+        """Volta todas as partes para as cores originais do desenho."""
+        for parte, _ in self.LINHAS:
+            setattr(self.aparencia, parte, "Original")
+        self.previa.vestir(Aparencia(*self.aparencia.chave()))
+
     def _comecar(self):
         from jogo.cenas.partida import CenaPartida
         escolhida = Aparencia(*self.aparencia.chave())
@@ -64,6 +70,8 @@ class CenaPersonalizacao(Cena):
                 self._mudar(1)
             elif evento.key == pygame.K_r:
                 self._sortear()
+            elif evento.key in (pygame.K_p, pygame.K_BACKSPACE):
+                self._restaurar()
             elif evento.key in TECLAS_ENTER:
                 self._comecar()
             elif evento.key == pygame.K_ESCAPE:
@@ -107,5 +115,5 @@ class CenaPersonalizacao(Cena):
             else:
                 pygame.draw.circle(tela, Cor.BORDA_ESCURA, amostra, 18)
                 pygame.draw.circle(tela, cor, amostra, 15)
-        desenhar_texto(tela, "[Cima/Baixo] escolher parte    [<- ->] trocar cor    [R] sortear    "
+        desenhar_texto(tela, "[Cima/Baixo] parte    [<- ->] cor    [R] sortear    [P] padrão    "
                        "[Enter] começar    [Esc] voltar", 16, Cor.TEXTO_FRACO, centro=(LARGURA // 2, ALTURA - 24))

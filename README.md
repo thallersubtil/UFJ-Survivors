@@ -56,7 +56,7 @@ O aluno carrega no máximo **4 armas e 4 itens**. Com as vagas cheias, as cartas
 
 ## Personalização do aluno
 
-Depois de escolher a classe, a tela **MONTE SEU ALUNO** troca o tom de pele, a cor do cabelo, do moletom e da calça (setas para escolher e trocar, R sorteia, Enter começa). A arte não muda: `Aparencia` (`jogo/jogador/aparencia.py`) separa as partes do sprite (cada parte é a região conectada da sua cor que nasce no lugar certo do corpo, para olhos e bochecha não pegarem a cor do cabelo ou do moletom) e aplica o novo tom mantendo o sombreado. A última escolha fica lembrada para a próxima partida. No Super Saiyajin o cabelo continua dourado.
+Depois de escolher a classe, a tela **MONTE SEU ALUNO** troca o tom de pele, a cor do cabelo, do moletom e da calça (setas para escolher e trocar, R sorteia, P ou Backspace volta tudo ao padrão, Enter começa). A arte não muda: `Aparencia` (`jogo/jogador/aparencia.py`) separa as partes do sprite (cada parte é a região conectada da sua cor que nasce no lugar certo do corpo, para olhos e bochecha não pegarem a cor do cabelo ou do moletom) e aplica o novo tom mantendo o sombreado. A última escolha fica lembrada para a próxima partida. No Super Saiyajin o cabelo continua dourado.
 
 ## Modo treino
 

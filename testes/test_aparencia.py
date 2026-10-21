@@ -118,6 +118,16 @@ def test_personalizacao_aleatoria_e_voltar(app):
     assert isinstance(app.cena_atual, CenaSelecao)
 
 
+def test_tecla_p_volta_tudo_para_o_padrao(app):
+    cena = CenaPersonalizacao(app, Programador)
+    app.trocar(cena)
+    for parte, nome in (("pele", "Escura"), ("cabelo", "Azul"), ("moletom", "Roxo"), ("calca", "Preta")):
+        setattr(cena.aparencia, parte, nome)
+    app.passo(1 / 60, [tecla(pygame.K_p)])
+    assert cena.aparencia.original
+    assert cena.previa.aparencia.original
+
+
 def _partes(pasta, moletom, animacao="parado"):
     imagem = Recursos.animacoes(pasta)[animacao].quadros[0]
     rgb = pygame.surfarray.array3d(imagem) / 255
