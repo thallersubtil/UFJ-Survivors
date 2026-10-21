@@ -167,3 +167,19 @@ def test_capuz_do_aluno2_andando_entra_no_moletom():
     h, s, v = rgb_para_hsv(rgb)
     laranja_forte = (pygame.surfarray.array_alpha(imagem) > 128) & (h >= 5) & (h < 45) & (s >= 0.95) & (v > 0.5)
     assert (laranja_forte & ~mascaras["moletom"]).sum() <= 0.05 * laranja_forte.sum()
+
+
+@pytest.mark.parametrize("pasta, moletom", [("aluno1", "verde"), ("aluno2", "laranja")])
+def test_pele_da_testa_entre_as_mechas_nao_vira_cabelo(pasta, moletom):
+    """A testa aparece em pedacinhos entre as mechas da franja; eles são pele, não cabelo."""
+    import numpy as np
+    from jogo.jogador.aparencia import rgb_para_hsv
+    for animacao in ("parado", "andar"):
+        mascaras, altura = _partes(pasta, moletom, animacao)
+        imagem = Recursos.animacoes(pasta)[animacao].quadros[0]
+        h, s, v = rgb_para_hsv(pygame.surfarray.array3d(imagem) / 255)
+        alfa = pygame.surfarray.array_alpha(imagem)
+        topo = (alfa > 128).any(0).argmax() / altura
+        y = np.arange(altura)[None, :] / altura
+        pele_clara = (h >= 14) & (h < 40) & (s >= 0.35) & (v > 0.7) & (y > topo + 0.21) & (y < 0.4)
+        assert not (mascaras["cabelo"] & pele_clara).any(), animacao

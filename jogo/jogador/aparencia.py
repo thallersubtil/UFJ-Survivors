@@ -273,6 +273,9 @@ def classificar(rgb, alfa, moletom_original="verde", cabelo_natural=True):
         cabelo = crescer(cor_de_cabelo & (y < topo + 0.08), cor_de_cabelo)
         cabelo = preencher_buracos(cabelo) & base & ~bone & (y < 0.5)
         cabelo &= ~moletom
+        # pele da testa que aparece entre as mechas da franja (inclusive a sombra da franja sobre ela)
+        testa = ((tom_de_pele & (v > 0.7)) | ((h >= 14) & (h < 40) & (s >= 0.35) & (v > 0.38))) & (y > topo + 0.21)
+        cabelo &= ~testa
 
     livre = base & tom_de_pele & ~moletom & ~cabelo & ~bone & ~calca
     rosto_e_maos = ((y > topo + 0.2) & (y < 0.45)) | ((y > 0.5) & (y < 0.8))
@@ -281,4 +284,27 @@ def classificar(rgb, alfa, moletom_original="verde", cabelo_natural=True):
         pontas = base & ~pele & ~moletom & ~bone & ~calca & ((h < 60) | (h >= 300)) & (y < topo + 0.2)
         cabelo = crescer(cabelo, cabelo | pontas)
     pele &= ~cabelo
+    if cabelo_natural:
+        pele |= testa & base & ~moletom & ~bone
+    # Sobras na cabeça (blush, transição entre mecha e testa): ficam com a parte vizinha.
+    quente = (h < 45) | (h >= 330)
+    resto = base & quente & (y < 0.38) & ~(pele | cabelo | moletom | bone | calca)
+    for _ in range(4):
+        perto_da_pele = _vizinhos(pele) & resto
+        perto_do_cabelo = _vizinhos(cabelo) & resto & ~perto_da_pele if cabelo_natural else perto_da_pele & False
+        if not (perto_da_pele.any() or perto_do_cabelo.any()):
+            break
+        pele |= perto_da_pele
+        cabelo |= perto_do_cabelo
+        resto &= ~(perto_da_pele | perto_do_cabelo)
     return {"pele": pele, "cabelo": cabelo, "moletom": moletom, "calca": calca, "bone": bone}
+
+
+def _vizinhos(mascara):
+    """Pixels com algum vizinho (4) dentro da máscara."""
+    v = np.zeros_like(mascara)
+    v[1:, :] |= mascara[:-1, :]
+    v[:-1, :] |= mascara[1:, :]
+    v[:, 1:] |= mascara[:, :-1]
+    v[:, :-1] |= mascara[:, 1:]
+    return v
