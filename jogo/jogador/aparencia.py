@@ -252,6 +252,23 @@ def classificar(rgb, alfa, moletom_original="verde", cabelo_natural=True):
     tom_de_pele = (h >= 5) & (h < 40) & (s >= 0.2) & (s < 0.8) & (v > 0.55)
     cor_de_bone = base & ((h < 12) | (h >= 330)) & (s >= 0.55) & (v > 0.2) & (y < 0.45)
     bone = crescer(cor_de_bone & (y < topo + 0.1), cor_de_bone)   # só o boné, não a boca nem a bochecha
+    if bone.any():
+        # Parte de trás do boné: o vermelho que aparece entre as mechas e a sombra puxada para o marrom,
+        # bem mais saturada que o cabelo (vizinhança de 8, porque a sombra encosta no boné pela diagonal).
+        alto = y < topo + 0.17
+        bone |= cor_de_bone & alto
+        aba_de_tras = base & alto & ((h < 30) | (h >= 330)) & (s >= 0.78) & (v >= 0.45) & (v < 0.78)
+        aba_de_tras |= base & (y < 0.35) & ((h < 20) | (h >= 330)) & (s >= 0.75)   # sombra sob a aba
+        aba_de_tras |= base & (y < topo + 0.1) & (h < 30) & (s >= 0.5) & (v >= 0.78)   # brilho no alto do boné
+        while True:
+            novos = _vizinhos8(bone) & aba_de_tras & ~bone
+            if not novos.any():
+                break
+            bone |= novos
+        # contorno vermelho-escuro do boné (bem escuro e saturado; o cabelo é mais claro)
+        contorno_do_bone = visivel & ((h < 15) | (h >= 330)) & (s >= 0.7) & (v < 0.25) & (y < 0.3)
+        perto = _vizinhos(bone)
+        bone |= perto & contorno_do_bone
 
     calca_cor = base & (h >= 190) & (h < 250) & (s > 0.2)
     calca = crescer(calca_cor & (y > 0.7), calca_cor & (y > 0.5))
@@ -270,6 +287,10 @@ def classificar(rgb, alfa, moletom_original="verde", cabelo_natural=True):
     # vezes encosta na franja; sem isso o cabelo "escorre" para dentro do olho.
     faixa_do_rosto = (y > topo + 0.2) & (y < 0.45)
     branco_do_olho = visivel & (s < 0.2) & (v > 0.8) & (y > topo + 0.2) & (y < 0.38)   # acima da gola
+    perto_do_bone = bone.copy()
+    for _ in range(2):   # o forro claro da aba do boné não é olho
+        perto_do_bone |= _vizinhos(perto_do_bone)
+    branco_do_olho &= ~perto_do_bone
     olhos = branco_do_olho.copy()
     for _ in range(3):
         olhos |= _vizinhos(olhos)
@@ -279,8 +300,16 @@ def classificar(rgb, alfa, moletom_original="verde", cabelo_natural=True):
     if cabelo_natural:
         cor_de_cabelo = ~olhos & base & ~bone & ((h >= 270) | (h < 55)) & (s >= 0.1) & (v < 0.45) & (y < 0.5) \
             & ~tom_de_pele
-        cabelo = crescer(cor_de_cabelo & (y < topo + 0.08), cor_de_cabelo)
+        # Sementes: o topo da cabeça e a borda da silhueta (as mechas do lado). A fita do boné pode
+        # separar o cabelo do topo do resto; olhos e sobrancelhas nunca encostam na borda.
+        borda = ~visivel
+        for _ in range(2):
+            borda |= _vizinhos(borda)
+        sementes = cor_de_cabelo & ((y < topo + 0.08) | (borda & (y < 0.42)))
+        cabelo = crescer(sementes, cor_de_cabelo)
         cabelo = preencher_buracos(cabelo) & base & ~bone & (y < 0.5)
+        if bone.any():   # a fita clara da regulagem do boné não é cabelo
+            cabelo &= ~((s < 0.25) & (v > 0.6) & (y < topo + 0.17))
         cabelo &= ~moletom
         # pele da testa que aparece entre as mechas da franja (inclusive a sombra da franja sobre ela)
         # Matiz típica deste cabelo (no topo da cabeça, onde só há cabelo).
@@ -291,12 +320,23 @@ def classificar(rgb, alfa, moletom_original="verde", cabelo_natural=True):
         # cabelo. Sem isso a sombra na testa e no rosto pegava a cor do cabelo e não a da pele.
         sombra_de_pele = (h >= 8) & (h < 40) & (s >= 0.35) & longe_do_cabelo
         cor_de_testa = (tom_de_pele & (v > 0.7)) | ((h >= 14) & (h < 40) & (s >= 0.35) & (v > 0.38)) | sombra_de_pele
-        testa = cor_de_testa & _faixa_da_testa(branco_do_olho, tom_de_pele, y, topo)
+        testa = cor_de_testa & _faixa_da_testa(branco_do_olho, tom_de_pele, y, topo, v)
         cabelo &= ~testa
 
     livre = base & tom_de_pele & ~moletom & ~cabelo & ~bone & ~calca
-    rosto_e_maos = ((y > topo + 0.2) & (y < 0.45)) | ((y > 0.5) & (y < 0.8))
-    pele = crescer(livre & rosto_e_maos, livre)
+    # Rosto e pescoço até a gola; mãos a partir de baixo. Os cordões do capuz têm tom de pele e
+    # encostam no pescoço, então a pele não desce da gola para o peito.
+    rosto = crescer(livre & (y > topo + 0.2) & (y < 0.45), livre & (y < 0.45))
+    maos = np.zeros_like(livre)
+    sobra = livre & (y > 0.45) & (y < 0.8)
+    while sobra.any():   # cada pedaço separado: a mão começa embaixo; o cordão desce do peito
+        x0, y0 = np.argwhere(sobra)[0]
+        pedaco = crescer(np.zeros_like(sobra) | (np.arange(sobra.shape[0])[:, None] == x0)
+                         & (np.arange(sobra.shape[1])[None, :] == y0), sobra)
+        sobra &= ~pedaco
+        if y[pedaco].min() >= 0.555:
+            maos |= pedaco
+    pele = rosto | maos
     if cabelo_natural:   # pontas claras do cabelo, encostadas nele e longe do rosto
         pontas = base & ~pele & ~moletom & ~bone & ~calca & ((h < 60) | (h >= 300)) & (y < topo + 0.2)
         cabelo = crescer(cabelo, cabelo | pontas)
@@ -316,19 +356,30 @@ def classificar(rgb, alfa, moletom_original="verde", cabelo_natural=True):
         cabelo |= perto_do_cabelo
         resto &= ~(perto_da_pele | perto_do_cabelo)
     cabelo &= ~olhos & ~pele      # cílios, íris e pele nunca levam a cor do cabelo
+    if bone.any():   # contorno escuro entre o boné e o fundo: é do boné, não do cabelo
+        claro = cabelo & (v >= 0.25)
+        contorno_do_bone = cabelo & (v < 0.25) & _vizinhos8(bone) & ~_vizinhos8(claro)
+        cabelo &= ~contorno_do_bone
+        bone = bone | contorno_do_bone
     return {"pele": pele, "cabelo": cabelo, "moletom": moletom, "calca": calca, "bone": bone}
 
 
-def _faixa_da_testa(branco_do_olho, tom_de_pele, y, topo):
+def _faixa_da_testa(branco_do_olho, tom_de_pele, y, topo, v):
     """Onde fica a testa: logo acima dos olhos, na largura do rosto.
 
     Os reflexos do cabelo têm a mesma cor da pele; o que os separa da testa é o lugar. A largura do
-    rosto vem da pele na altura dos olhos. Sem olhos visíveis, usa uma faixa larga abaixo da franja.
+    rosto vem da pele na altura dos olhos. Com os olhos fechados (piscando), a altura dos olhos é a
+    primeira linha do rosto com bastante pele clara.
     """
     altura = branco_do_olho.shape[1]
-    if not branco_do_olho.any():
-        return y > topo + 0.18
-    olho_topo = np.nonzero(branco_do_olho)[1].min()
+    if branco_do_olho.any():
+        olho_topo = np.nonzero(branco_do_olho)[1].min()
+    else:
+        pele_clara = (tom_de_pele & (v > 0.7) & (y > topo + 0.15) & (y < 0.4)).sum(0)
+        linhas = np.nonzero(pele_clara >= 6)[0]
+        if not len(linhas):
+            return np.zeros_like(tom_de_pele)
+        olho_topo = linhas[0] + 1
     linhas_dos_olhos = slice(olho_topo, olho_topo + max(3, altura // 20))
     colunas_com_pele = np.nonzero(tom_de_pele[:, linhas_dos_olhos].any(1))[0]
     colunas = np.zeros(branco_do_olho.shape[0], bool)
@@ -347,6 +398,16 @@ def _matiz_media(matizes):
     """Média circular das matizes em graus (350 e 10 dão 0, não 180)."""
     rad = np.radians(matizes)
     return float(np.degrees(np.arctan2(np.sin(rad).mean(), np.cos(rad).mean())) % 360)
+
+
+def _vizinhos8(mascara):
+    """Pixels com algum vizinho (8, contando as diagonais) dentro da máscara."""
+    v = _vizinhos(mascara)
+    v[1:, 1:] |= mascara[:-1, :-1]
+    v[:-1, :-1] |= mascara[1:, 1:]
+    v[1:, :-1] |= mascara[:-1, 1:]
+    v[:-1, 1:] |= mascara[1:, :-1]
+    return v
 
 
 def _vizinhos(mascara):

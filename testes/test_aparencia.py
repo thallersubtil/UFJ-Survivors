@@ -211,3 +211,54 @@ def test_pele_da_testa_entre_as_mechas_nao_vira_cabelo(pasta, moletom):
         # a testa: os poucos pixels logo acima dos olhos (mais acima são os reflexos do cabelo)
         pele_clara = (h >= 14) & (h < 40) & (s >= 0.35) & (v > 0.7) & (y > olho_topo - 0.06) & (y < olho_topo)
         assert not (mascaras["cabelo"] & pele_clara).any(), animacao
+
+
+def _quadros(pasta):
+    for animacao in ("parado", "andar"):
+        for i, imagem in enumerate(Recursos.animacoes(pasta)[animacao].quadros):
+            yield f"{animacao}{i}", imagem
+
+
+@pytest.mark.parametrize("pasta, moletom", ALUNOS)
+def test_cabelo_escuro_nunca_vira_pele_em_nenhum_quadro(pasta, moletom):
+    """Em todos os quadros (inclusive o de olhos fechados), o cabelo escuro fica no cabelo:
+    se a pele pegasse mechas, trocar o tom de pele pintaria o cabelo."""
+    import numpy as np
+    from jogo.jogador.aparencia import rgb_para_hsv
+    for nome, imagem in _quadros(pasta):
+        rgb = pygame.surfarray.array3d(imagem) / 255
+        alfa = pygame.surfarray.array_alpha(imagem)
+        mascaras = classificar(rgb, alfa, moletom)
+        h, s, v = rgb_para_hsv(rgb)
+        y = np.arange(imagem.get_height())[None, :] / imagem.get_height()
+        cabelo_escuro = (alfa > 128) & (v > 0.08) & (v < 0.4) & (s > 0.25) & (y < 0.3)
+        # a sombra da franja sobre a testa é escura também, mas são poucos pixels
+        assert (mascaras["pele"] & cabelo_escuro).sum() <= 0.05 * cabelo_escuro.sum(), nome
+        assert mascaras["cabelo"].sum() > 0.6 * (cabelo_escuro & ~mascaras["bone"]).sum(), nome
+
+
+@pytest.mark.parametrize("pasta, moletom", ALUNOS)
+def test_cordoes_do_capuz_nao_sao_pele(pasta, moletom):
+    """Os cordões claros do capuz têm tom de pele e encostam no pescoço; não podem trocar com a pele."""
+    import numpy as np
+    for nome, imagem in _quadros(pasta):
+        mascaras = classificar(pygame.surfarray.array3d(imagem) / 255, pygame.surfarray.array_alpha(imagem), moletom)
+        altura = imagem.get_height()
+        pele = mascaras["pele"]
+        largura = pele.shape[0]
+        peito = pele[largura // 4: 3 * largura // 4, int(altura * 0.47): int(altura * 0.56)]
+        assert not peito.any(), nome
+
+
+@pytest.mark.parametrize("pasta", [p for p, m in ALUNOS if m == "laranja"])
+def test_parte_de_tras_do_bone_nao_e_cabelo(pasta):
+    """O boné (inclusive a sombra puxada para o marrom na parte de trás) troca com o moletom, nunca com o cabelo."""
+    from jogo.jogador.aparencia import rgb_para_hsv
+    for nome, imagem in _quadros(pasta):
+        rgb = pygame.surfarray.array3d(imagem) / 255
+        alfa = pygame.surfarray.array_alpha(imagem)
+        mascaras = classificar(rgb, alfa, "laranja")
+        h, s, v = rgb_para_hsv(rgb)
+        vermelho = (alfa > 128) & ((h < 12) | (h >= 345)) & (s >= 0.8) & (v > 0.5)
+        assert not (mascaras["cabelo"] & vermelho).any(), nome
+        assert mascaras["bone"].sum() > 0.9 * vermelho[:, : imagem.get_height() // 4].sum(), nome
