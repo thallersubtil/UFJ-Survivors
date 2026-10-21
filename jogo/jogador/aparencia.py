@@ -306,7 +306,20 @@ def classificar(rgb, alfa, moletom_original="verde", cabelo_natural=True):
         sombra_do_moletom = base & (h >= 5) & (h < 50) & (s >= 0.6) & (v > 0.3) & ~(tom_de_pele & (s < 0.78))
     tronco = (y > 0.5) & (y < 0.65)
     capuz = (y > 0.35) & (y < 0.5) & (s >= 0.95)    # o capuz fica atrás da alça da mochila, separado do tronco
-    moletom = crescer(moletom_cor & (tronco | capuz), (moletom_cor | sombra_do_moletom) & (y > 0.22))   # inclui o capuz
+    # Super Saiyajin: o cabelo dourado tem matiz vizinha à do moletom laranja e à da pele. Ele não troca de
+    # cor, então só precisa ficar fora das outras partes: a região dourada que nasce no alto da cabeça.
+    dourado = np.zeros_like(base)
+    if not cabelo_natural:
+        borda = ~visivel
+        for _ in range(2):
+            borda |= _vizinhos(borda)
+        amarelo = base & (h >= 33) & (h < 68) & (s >= 0.3) & (v >= 0.35)
+        sombra_dourada = base & (h >= 22) & (h < 33) & (s >= 0.6) & (v >= 0.35) & (y < 0.36)   # pele é menos saturada
+        cor_dourada = amarelo | sombra_dourada
+        dourado = crescer(cor_dourada & ((y < topo + 0.08) | (borda & (y < 0.45))), cor_dourada)
+        dourado = preencher_buracos(dourado) & base & (y < 0.8)
+    moletom = crescer(moletom_cor & (tronco | capuz) & ~dourado,
+                      (moletom_cor | sombra_do_moletom) & (y > 0.22) & ~dourado)   # inclui o capuz
 
     # Olhos: o escuro em volta do branco do olho, na altura do rosto. A íris tem tom de cabelo e às
     # vezes encosta na franja; sem isso o cabelo "escorre" para dentro do olho.
@@ -348,7 +361,7 @@ def classificar(rgb, alfa, moletom_original="verde", cabelo_natural=True):
         testa = cor_de_testa & _faixa_da_testa(branco_do_olho, tom_de_pele, y, topo, v)
         cabelo &= ~testa
 
-    livre = base & tom_de_pele & ~moletom & ~cabelo & ~bone & ~calca
+    livre = base & tom_de_pele & ~moletom & ~cabelo & ~bone & ~calca & ~dourado
     # Rosto e pescoço até a gola; mãos a partir de baixo. Os cordões do capuz têm tom de pele e
     # encostam no pescoço, então a pele não desce da gola para o peito.
     rosto = crescer(livre & (y > topo + 0.2) & (y < 0.45), livre & (y < 0.45))
@@ -370,7 +383,7 @@ def classificar(rgb, alfa, moletom_original="verde", cabelo_natural=True):
         pele |= testa & base & ~moletom & ~bone
     # Sobras na cabeça (blush, transição entre mecha e testa): ficam com a parte vizinha.
     quente = (h < 45) | (h >= 330)
-    resto = base & quente & (y < 0.43) & ~(pele | cabelo | moletom | bone | calca)   # até o pescoço
+    resto = base & quente & (y < 0.43) & ~(pele | cabelo | moletom | bone | calca | dourado)   # até o pescoço
     for _ in range(4):
         perto_da_pele = _vizinhos(pele) & resto
         perto_do_cabelo = _vizinhos(cabelo) & resto & ~perto_da_pele & (y < 0.38) if cabelo_natural \

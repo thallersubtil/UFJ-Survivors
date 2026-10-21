@@ -324,3 +324,20 @@ def test_parte_de_tras_do_bone_nao_e_cabelo(pasta):
         vermelho = (alfa > 128) & ((h < 12) | (h >= 345)) & (s >= 0.8) & (v > 0.5)
         assert not (mascaras["cabelo"] & vermelho).any(), nome
         assert mascaras["bone"].sum() > 0.9 * vermelho[:, : imagem.get_height() // 4].sum(), nome
+
+
+@pytest.mark.parametrize("pasta", [p for p in ("aluno2_ssj", "aluna2_ssj") if Recursos.animacoes(p)])
+def test_cabelo_dourado_do_super_saiyajin_fica_fora_da_pele_e_do_moletom(pasta):
+    """O dourado tem matiz vizinha à da pele e à do moletom laranja; trocar essas cores não pode
+    pintar o cabelo do Super Saiyajin."""
+    import numpy as np
+    from jogo.jogador.aparencia import rgb_para_hsv
+    for nome, imagem in _quadros(pasta):
+        rgb = pygame.surfarray.array3d(imagem) / 255
+        alfa = pygame.surfarray.array_alpha(imagem)
+        mascaras = classificar(rgb, alfa, "laranja", cabelo_natural=False)
+        h, s, v = rgb_para_hsv(rgb)
+        y = np.arange(imagem.get_height())[None, :] / imagem.get_height()
+        amarelo = (alfa > 128) & (h >= 42) & (h < 65) & (s > 0.5) & (v > 0.7) & (y < 0.35)
+        assert ((mascaras["pele"] | mascaras["moletom"]) & amarelo).sum() <= 0.03 * amarelo.sum(), nome
+        assert mascaras["pele"].sum() > 40, nome      # o rosto continua sendo pele
