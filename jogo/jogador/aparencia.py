@@ -46,7 +46,12 @@ CORES_DE_CALCA = (
     ("Vinho", (120, 40, 60)),
 )
 
+GENEROS = (("Masculino", None), ("Feminino", None))
+
+CORES = ("pele", "cabelo", "moletom", "calca")    # as partes que trocam de cor
+
 OPCOES = {
+    "genero": GENEROS,
     "pele": TONS_DE_PELE,
     "cabelo": CORES_DE_CABELO,
     "moletom": CORES_DE_MOLETOM,
@@ -55,12 +60,14 @@ OPCOES = {
 
 
 class Aparencia:
-    """Escolhas de cor do aluno. Cada atributo só aceita uma das opções da sua lista."""
+    """Escolhas do aluno: gênero e cores. Cada atributo só aceita uma das opções da sua lista."""
 
     PARTES = tuple(OPCOES)
 
-    def __init__(self, pele="Original", cabelo="Original", moletom="Original", calca="Original"):
+    def __init__(self, pele="Original", cabelo="Original", moletom="Original", calca="Original",
+                 genero="Masculino"):
         self._escolhas = {}
+        self.genero = genero
         self.pele = pele
         self.cabelo = cabelo
         self.moletom = moletom
@@ -71,6 +78,18 @@ class Aparencia:
         if nome not in nomes:
             raise ValueError(f"{parte} inválido: {nome!r} (opções: {', '.join(nomes)})")
         self._escolhas[parte] = nome
+
+    @property
+    def genero(self):
+        return self._escolhas["genero"]
+
+    @genero.setter
+    def genero(self, nome):
+        self._definir("genero", nome)
+
+    @property
+    def feminino(self):
+        return self._escolhas["genero"] == "Feminino"
 
     @property
     def pele(self):
@@ -119,10 +138,16 @@ class Aparencia:
 
     @property
     def original(self):
-        return all(self.cor(parte) is None for parte in self.PARTES)
+        """Todas as cores como no desenho (o gênero não conta: não é cor)."""
+        return all(self.cor(parte) is None for parte in CORES)
+
+    def restaurar_cores(self):
+        for parte in CORES:
+            self._definir(parte, "Original")
 
     def chave(self):
-        return tuple(self._escolhas[parte] for parte in self.PARTES)
+        """As escolhas na ordem do construtor: Aparencia(*a.chave()) == a."""
+        return tuple(self._escolhas[parte] for parte in (*CORES, "genero"))
 
     def __eq__(self, outra):
         return isinstance(outra, Aparencia) and self.chave() == outra.chave()

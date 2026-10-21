@@ -29,11 +29,12 @@ def app(tmp_path):
     return a
 
 
-def test_titulo_jogar_leva_a_selecao(app):
+def test_titulo_jogar_leva_a_personalizacao(app):
+    from jogo.cenas.personalizacao import CenaPersonalizacao
     app.trocar(CenaTitulo(app))
     app.passo(1 / 60, [])
     app.passo(1 / 60, [tecla(pygame.K_RETURN)])
-    assert isinstance(app.cena_atual, CenaSelecao)
+    assert isinstance(app.cena_atual, CenaPersonalizacao)
 
 
 def test_titulo_ranking_e_sair(app):
@@ -49,15 +50,15 @@ def test_titulo_ranking_e_sair(app):
 def test_selecao_escolhe_o_segundo_aluno(app):
     app.trocar(CenaSelecao(app))
     app.passo(1 / 60, [tecla(pygame.K_RIGHT), tecla(pygame.K_RETURN)])
-    app.passo(1 / 60, [tecla(pygame.K_RETURN)])     # personalização: começar sem mudar nada
     assert isinstance(app.cena_atual, CenaPartida)
     assert isinstance(app.cena_atual.jogo.jogador, Programador)
 
 
-def test_selecao_esc_volta_ao_titulo(app):
+def test_selecao_esc_volta_a_personalizacao(app):
+    from jogo.cenas.personalizacao import CenaPersonalizacao
     app.trocar(CenaSelecao(app))
     app.passo(1 / 60, [tecla(pygame.K_ESCAPE)])
-    assert isinstance(app.cena_atual, CenaTitulo)
+    assert isinstance(app.cena_atual, CenaPersonalizacao)
 
 
 def test_subir_de_nivel_abre_cartas_e_tecla_1_escolhe(app):

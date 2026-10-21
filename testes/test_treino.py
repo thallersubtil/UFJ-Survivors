@@ -46,12 +46,15 @@ def test_titulo_tem_botao_de_treino(app):
     assert isinstance(app.cena_atual, CenaTreino)
 
 
-def test_treino_escolhe_o_professor_e_vai_para_a_selecao(app):
+def test_treino_escolhe_o_professor_e_vai_para_a_personalizacao(app):
+    from jogo.cenas.personalizacao import CenaPersonalizacao
     app.trocar(CenaTreino(app))
     app.passo(1 / 60, [tecla(pygame.K_DOWN), tecla(pygame.K_RETURN)])
-    assert isinstance(app.cena_atual, CenaSelecao)
+    assert isinstance(app.cena_atual, CenaPersonalizacao)
     assert app.cena_atual.opcoes.provas == (ProvaDeArquiteturaEED,)
     assert app.cena_atual.opcoes.treino
+    app.passo(1 / 60, [tecla(pygame.K_RETURN)])
+    assert isinstance(app.cena_atual, CenaSelecao) and app.cena_atual.opcoes.treino
 
 
 def test_treino_alterna_direto_no_chefe_e_imortal(app):

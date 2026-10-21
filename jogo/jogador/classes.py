@@ -1,7 +1,8 @@
 """Classes de personagem. Cada classe tem uma arma inicial (ativa), uma passiva e um especial.
 
-A aparência (masculino ou feminino, cabelo, roupas, cores) não depende da classe:
-é escolhida na personalização e fica no boneco do aluno.
+A aparência (gênero e cores) é escolhida na personalização, ANTES da classe, e vale para
+todas: cada classe tem a sua arte (pastas masculina e feminina), recolorida com as
+cores escolhidas.
 """
 from jogo.armas.caramelo import Caramelo
 from jogo.armas.cobra_python import CobraPython
@@ -18,8 +19,10 @@ class Otaku(Jogador):
     VELOCIDADE = 180
     IMAGEM = "sprites/aluno2.png"
     PASTA_SPRITE = "aluno2"
+    PASTA_SPRITE_FEMININA = "aluna2"
     MOLETOM_ORIGINAL = "laranja"
     PASTA_TRANSFORMADO = "aluno2_ssj"
+    PASTA_TRANSFORMADO_FEMININA = "aluna2_ssj"
     IMAGEM_TRANSFORMADO = "sprites/aluno2_ssj.png"
 
     def criar_arma_inicial(self):
@@ -39,6 +42,7 @@ class Programador(Jogador):
     VELOCIDADE = 230
     IMAGEM = "sprites/aluno1.png"
     PASTA_SPRITE = "aluno1"
+    PASTA_SPRITE_FEMININA = "aluna1"
 
     def criar_arma_inicial(self):
         return CobraPython()
@@ -57,6 +61,7 @@ class MestreDeRPG(Jogador):
     VELOCIDADE = 205
     IMAGEM = "sprites/aluno1.png"
     PASTA_SPRITE = "aluno1"
+    PASTA_SPRITE_FEMININA = "aluna1"
 
     def criar_arma_inicial(self):
         return Gemini()

@@ -18,6 +18,9 @@ class CenaSelecao(Cena):
         self.indice = 0
         self.tempo = 0.0
         self.exemplos = [classe((0, 0)) for classe in CLASSES]
+        for exemplo in self.exemplos:            # o aluno personalizado, caracterizado para cada classe
+            if self.opcoes.aparencia is not None:
+                exemplo.vestir(self.opcoes.aparencia)
         self.cartoes = []
         for i in range(len(CLASSES)):
             r = pygame.Rect(0, 0, 390, 540)
@@ -25,12 +28,12 @@ class CenaSelecao(Cena):
             self.cartoes.append(r)
 
     def _comecar(self):
-        from jogo.cenas.personalizacao import CenaPersonalizacao
-        self.app.trocar(CenaPersonalizacao(self.app, CLASSES[self.indice], self.opcoes))
+        from jogo.cenas.partida import CenaPartida
+        self.app.trocar(CenaPartida(self.app, CLASSES[self.indice], self.opcoes))
 
     def _voltar(self):
-        from jogo.cenas.titulo import CenaTitulo
-        self.app.trocar(CenaTitulo(self.app))
+        from jogo.cenas.personalizacao import CenaPersonalizacao
+        self.app.trocar(CenaPersonalizacao(self.app, self.opcoes))
 
     def tratar_evento(self, evento):
         if evento.type == pygame.KEYDOWN:

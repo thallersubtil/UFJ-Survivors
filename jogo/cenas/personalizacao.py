@@ -1,4 +1,4 @@
-"""Personalização do aluno antes da partida: tom de pele, cabelo, moletom e calça."""
+"""Personalização do aluno (gênero, pele, cabelo, moletom e calça). Vem antes da escolha de classe."""
 import random
 
 import pygame
@@ -6,29 +6,31 @@ import pygame
 from jogo.cenas.cena import Cena
 from jogo.cenas.widgets import TECLAS_ENTER, desenhar_fundo, desenhar_painel, desenhar_texto
 from jogo.config import ALTURA, LARGURA, Cor
-from jogo.jogador.aparencia import OPCOES, Aparencia
+from jogo.jogador.aparencia import CORES, OPCOES, Aparencia
+from jogo.jogador.classes import Programador
 from jogo.nucleo.recursos import Recursos
 from jogo.opcoes import OpcoesDePartida
 
 
 class CenaPersonalizacao(Cena):
-    LINHAS = (("pele", "Tom de pele"), ("cabelo", "Cabelo"), ("moletom", "Moletom"), ("calca", "Calça"))
+    LINHAS = (("genero", "Gênero"), ("pele", "Tom de pele"), ("cabelo", "Cabelo"), ("moletom", "Moletom"),
+              ("calca", "Calça"))
     ALTURA_PREVIA = 230
+    CLASSE_DA_PREVIA = Programador     # o aluno "base" mostrado enquanto personaliza
 
-    def __init__(self, app, classe_jogador, opcoes=None):
+    def __init__(self, app, opcoes=None):
         super().__init__(app)
-        self.classe_jogador = classe_jogador
         self.opcoes = opcoes or OpcoesDePartida()
         anterior = getattr(app, "aparencia", None)
         self.aparencia = Aparencia(*anterior.chave()) if anterior is not None else Aparencia()
         self.linha = 0
         self.tempo = 0.0
-        self.previa = classe_jogador((0, 0))
+        self.previa = self.CLASSE_DA_PREVIA((0, 0))
         self.previa.vestir(self.aparencia)
         self.retangulos = []
         for i in range(len(self.LINHAS)):
-            r = pygame.Rect(0, 0, 600, 76)
-            r.topleft = (590, 170 + i * 96)
+            r = pygame.Rect(0, 0, 600, 70)
+            r.topleft = (590, 140 + i * 84)
             self.retangulos.append(r)
 
     def _mudar(self, passo):
@@ -37,26 +39,29 @@ class CenaPersonalizacao(Cena):
         self.previa.vestir(Aparencia(*self.aparencia.chave()))
 
     def _sortear(self):
-        for parte, _ in self.LINHAS:
+        for parte in CORES:          # sorteia as cores; o gênero fica como está
             nome = random.choice([n for n, _ in OPCOES[parte]])
             setattr(self.aparencia, parte, nome)
         self.previa.vestir(Aparencia(*self.aparencia.chave()))
 
     def _restaurar(self):
-        """Volta todas as partes para as cores originais do desenho."""
-        for parte, _ in self.LINHAS:
-            setattr(self.aparencia, parte, "Original")
+        """Volta todas as cores para as originais do desenho (o gênero fica)."""
+        self.aparencia.restaurar_cores()
         self.previa.vestir(Aparencia(*self.aparencia.chave()))
 
     def _comecar(self):
-        from jogo.cenas.partida import CenaPartida
+        from jogo.cenas.selecao import CenaSelecao
         escolhida = Aparencia(*self.aparencia.chave())
         self.app.aparencia = escolhida
-        self.app.trocar(CenaPartida(self.app, self.classe_jogador, self.opcoes.com_aparencia(escolhida)))
+        self.app.trocar(CenaSelecao(self.app, self.opcoes.com_aparencia(escolhida)))
 
     def _voltar(self):
-        from jogo.cenas.selecao import CenaSelecao
-        self.app.trocar(CenaSelecao(self.app, self.opcoes))
+        if self.opcoes.treino:
+            from jogo.cenas.treino import CenaTreino
+            self.app.trocar(CenaTreino(self.app))
+        else:
+            from jogo.cenas.titulo import CenaTitulo
+            self.app.trocar(CenaTitulo(self.app))
 
     def tratar_evento(self, evento):
         if evento.type == pygame.KEYDOWN:
@@ -100,14 +105,17 @@ class CenaPersonalizacao(Cena):
         desenhar_painel(tela, palco)
         sprite = Recursos.na_altura(self.previa.animador.quadro_atual, self.ALTURA_PREVIA)
         tela.blit(sprite, sprite.get_rect(midbottom=(palco.centerx, palco.bottom - 70)))
-        desenhar_texto(tela, self.classe_jogador.NOME, 26, Cor.TEXTO, centro=(palco.centerx, palco.bottom - 40))
+        desenhar_texto(tela, "Aluna" if self.aparencia.feminino else "Aluno", 26, Cor.TEXTO,
+                       centro=(palco.centerx, palco.bottom - 40))
         for i, ((parte, rotulo), r) in enumerate(zip(self.LINHAS, self.retangulos)):
             focado = i == self.linha
             desenhar_painel(tela, r, cor_borda=Cor.DESTAQUE if focado else Cor.BORDA_ESCURA)
-            desenhar_texto(tela, rotulo, 20, Cor.TEXTO_FRACO, topo_esquerda=(r.left + 22, r.top + 26))
+            desenhar_texto(tela, rotulo, 20, Cor.TEXTO_FRACO, topo_esquerda=(r.left + 22, r.centery - 10))
             nome = self.aparencia.escolha(parte)
             desenhar_texto(tela, f"<  {nome}  >", 24, Cor.DESTAQUE if focado else Cor.TEXTO,
                            centro=(r.left + 360, r.centery))
+            if parte == "genero":
+                continue
             cor = self.aparencia.cor(parte)
             amostra = (r.right - 44, r.centery)
             if cor is None:
@@ -116,4 +124,4 @@ class CenaPersonalizacao(Cena):
                 pygame.draw.circle(tela, Cor.BORDA_ESCURA, amostra, 18)
                 pygame.draw.circle(tela, cor, amostra, 15)
         desenhar_texto(tela, "[Cima/Baixo] parte    [<- ->] cor    [R] sortear    [P] padrão    "
-                       "[Enter] começar    [Esc] voltar", 16, Cor.TEXTO_FRACO, centro=(LARGURA // 2, ALTURA - 24))
+                       "[Enter] escolher classe    [Esc] voltar", 16, Cor.TEXTO_FRACO, centro=(LARGURA // 2, ALTURA - 24))

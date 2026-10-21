@@ -28,6 +28,8 @@ class Jogador(SerVivo, ABC):
     RAIO = 22
     MAX_ARMAS = 4                # habilidades ativas; no limite, só melhorias (uma colab libera vaga)
     MOLETOM_ORIGINAL = "verde"    # como achar o moletom na arte, para trocar a cor
+    PASTA_SPRITE_FEMININA = None        # arte da versão feminina; sem ela, usa a masculina
+    PASTA_TRANSFORMADO_FEMININA = None
     MAX_ITENS = 4                # habilidades passivas
     ALCANCE_COLETA_BASE = 90
     MULT_CRITICO = 2.0           # quanto o acerto crítico multiplica o dano
@@ -172,15 +174,23 @@ class Jogador(SerVivo, ABC):
         self.invencivel = INVENCIBILIDADE_APOS_DANO
         return morreu
 
+    def _arte(self, pasta, pasta_feminina, imagem):
+        """Animações do aluno ou, se a aparência é feminina e a arte existe, da aluna."""
+        if self.aparencia is not None and self.aparencia.feminino and pasta_feminina:
+            feminina = Recursos.animacoes(pasta_feminina)
+            if feminina:
+                return feminina
+        return Recursos.animacoes_ou_imagem(pasta, imagem, self.ALTURA)
+
     def _animacoes(self):
         if self.transformado:
-            base = Recursos.animacoes_ou_imagem(self.PASTA_TRANSFORMADO, self.IMAGEM_TRANSFORMADO, self.ALTURA)
+            base = self._arte(self.PASTA_TRANSFORMADO, self.PASTA_TRANSFORMADO_FEMININA, self.IMAGEM_TRANSFORMADO)
             return vestir_animacoes(base, self.aparencia, self.MOLETOM_ORIGINAL, cabelo_natural=False)
-        base = Recursos.animacoes_ou_imagem(self.PASTA_SPRITE, self.IMAGEM, self.ALTURA)
+        base = self._arte(self.PASTA_SPRITE, self.PASTA_SPRITE_FEMININA, self.IMAGEM)
         return vestir_animacoes(base, self.aparencia, self.MOLETOM_ORIGINAL)
 
     def vestir(self, aparencia):
-        """Troca as cores do aluno (pele, cabelo, moletom, calça)."""
+        """Troca o gênero e as cores do aluno (pele, cabelo, moletom, calça)."""
         self.aparencia = aparencia
         self.animador.trocar_conjunto(self._animacoes())
 

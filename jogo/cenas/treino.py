@@ -20,9 +20,9 @@ class CenaTreino(Cena):
         self.menu = MenuDeBotoes(botoes)
 
     def _comecar(self, prova):
-        from jogo.cenas.selecao import CenaSelecao
+        from jogo.cenas.personalizacao import CenaPersonalizacao
         opcoes = OpcoesDePartida.treino_contra(prova, self.direto_no_chefe, self.imortal)
-        self.app.trocar(CenaSelecao(self.app, opcoes))
+        self.app.trocar(CenaPersonalizacao(self.app, opcoes))
 
     def tratar_evento(self, evento):
         if evento.type == pygame.KEYDOWN:

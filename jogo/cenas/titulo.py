@@ -21,8 +21,8 @@ class CenaTitulo(Cena):
         ])
 
     def _jogar(self):
-        from jogo.cenas.selecao import CenaSelecao
-        self.app.trocar(CenaSelecao(self.app))
+        from jogo.cenas.personalizacao import CenaPersonalizacao
+        self.app.trocar(CenaPersonalizacao(self.app))
 
     def _treino(self):
         from jogo.cenas.treino import CenaTreino
