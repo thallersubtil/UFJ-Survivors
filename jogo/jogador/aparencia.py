@@ -207,8 +207,37 @@ def hsv_para_rgb(h, s, v):
     return rgb + m[..., None]
 
 
+def crescer(semente, permitido):
+    """Região conectada (vizinhança de 4) a partir da semente, andando só por pixels permitidos."""
+    regiao = semente & permitido
+    while True:
+        vizinhos = regiao.copy()
+        vizinhos[1:, :] |= regiao[:-1, :]
+        vizinhos[:-1, :] |= regiao[1:, :]
+        vizinhos[:, 1:] |= regiao[:, :-1]
+        vizinhos[:, :-1] |= regiao[:, 1:]
+        vizinhos &= permitido
+        if (vizinhos == regiao).all():
+            return regiao
+        regiao = vizinhos
+
+
+def preencher_buracos(mascara):
+    """Inclui os pixels cercados pela máscara (ex.: os reflexos claros no meio do cabelo)."""
+    fora = np.zeros_like(mascara)
+    fora[0, :] = fora[-1, :] = True
+    fora[:, 0] = fora[:, -1] = True
+    fora = crescer(fora, ~mascara)
+    return mascara | ~fora
+
+
 def classificar(rgb, alfa, moletom_original="verde", cabelo_natural=True):
-    """Máscaras booleanas de cada parte do aluno, pela cor original de cada pixel.
+    """Máscaras booleanas de cada parte do aluno.
+
+    A cor sozinha confunde partes parecidas (olhos e sobrancelhas têm o tom do cabelo; bochecha e
+    sombra da pele têm o tom do moletom laranja). Por isso cada parte é a REGIÃO CONECTADA de pixels
+    da sua cor que nasce no lugar certo do corpo: o cabelo a partir do topo da cabeça, o moletom a
+    partir do tronco, a calça a partir das pernas. O rosto fica separado pelo contorno e pela pele.
 
     Os arrays vêm de pygame.surfarray, então o primeiro eixo é x e o segundo é y.
     """
@@ -218,18 +247,38 @@ def classificar(rgb, alfa, moletom_original="verde", cabelo_natural=True):
     y = np.broadcast_to(np.arange(altura)[None, :] / altura, alfa.shape)
     contorno = v < 0.08
     base = visivel & ~contorno
-    calca = base & (h >= 190) & (h < 250) & (s > 0.2)
+    topo = visivel.any(0).argmax() / altura          # primeira linha com pixel visível
+
+    tom_de_pele = (h >= 5) & (h < 40) & (s >= 0.2) & (s < 0.8) & (v > 0.55)
+    cor_de_bone = base & ((h < 12) | (h >= 330)) & (s >= 0.55) & (v > 0.2) & (y < 0.45)
+    bone = crescer(cor_de_bone & (y < topo + 0.1), cor_de_bone)   # só o boné, não a boca nem a bochecha
+
+    calca_cor = base & (h >= 190) & (h < 250) & (s > 0.2)
+    calca = crescer(calca_cor & (y > 0.7), calca_cor & (y > 0.5))
+
     if moletom_original == "verde":
-        moletom = base & (h >= 90) & (h < 180) & (s > 0.2)
+        moletom_cor = base & (h >= 90) & (h < 180) & (s > 0.2)
+        sombra_do_moletom = moletom_cor
     else:   # laranja: bem mais saturado que a pele
-        moletom = base & (h >= 5) & (h < 45) & (s >= 0.85) & (v > 0.4) & (y > 0.35)
-    bone = base & ((h < 12) | (h >= 330)) & (s >= 0.55) & (v > 0.2) & (y < 0.45)
-    dourado = (h >= 38) & (h < 65) & (s > 0.6)
-    pele = base & (h >= 5) & (h < 40) & (s >= 0.25) & (s < 0.85) & (v > 0.5) & ~moletom & ~dourado
+        moletom_cor = base & (h >= 5) & (h < 45) & (s >= 0.85) & (v > 0.4)
+        sombra_do_moletom = base & (h >= 5) & (h < 45) & (s >= 0.6) & (v > 0.3)
+    tronco = (y > 0.5) & (y < 0.65)
+    capuz = (y > 0.35) & (y < 0.5) & (s >= 0.95)    # o capuz fica atrás da alça da mochila, separado do tronco
+    moletom = crescer(moletom_cor & (tronco | capuz), (moletom_cor | sombra_do_moletom) & (y > 0.22))   # inclui o capuz
+
     cabelo = np.zeros_like(base)
     if cabelo_natural:
-        escuro = ((h >= 270) | (h < 55)) & (s >= 0.12) & (s < 0.62) & (v < 0.5) & (y < 0.42)
-        reflexo = (h >= 10) & (h < 55) & (v >= 0.5) & (s < 0.85) & (y < 0.16)
-        cabelo = base & (escuro | reflexo) & ~bone
-        pele &= ~cabelo
-    return {"pele": pele, "cabelo": cabelo, "moletom": moletom & ~pele, "calca": calca, "bone": bone}
+        cor_de_cabelo = base & ~bone & ((h >= 270) | (h < 55)) & (s >= 0.1) & (v < 0.45) & (y < 0.5) \
+            & ~tom_de_pele
+        cabelo = crescer(cor_de_cabelo & (y < topo + 0.08), cor_de_cabelo)
+        cabelo = preencher_buracos(cabelo) & base & ~bone & (y < 0.5)
+        cabelo &= ~moletom
+
+    livre = base & tom_de_pele & ~moletom & ~cabelo & ~bone & ~calca
+    rosto_e_maos = ((y > topo + 0.2) & (y < 0.45)) | ((y > 0.5) & (y < 0.8))
+    pele = crescer(livre & rosto_e_maos, livre)
+    if cabelo_natural:   # pontas claras do cabelo, encostadas nele e longe do rosto
+        pontas = base & ~pele & ~moletom & ~bone & ~calca & ((h < 60) | (h >= 300)) & (y < topo + 0.2)
+        cabelo = crescer(cabelo, cabelo | pontas)
+    pele &= ~cabelo
+    return {"pele": pele, "cabelo": cabelo, "moletom": moletom, "calca": calca, "bone": bone}

@@ -116,3 +116,44 @@ def test_personalizacao_aleatoria_e_voltar(app):
     app.passo(1 / 60, [tecla(pygame.K_r)])
     app.passo(1 / 60, [tecla(pygame.K_ESCAPE)])
     assert isinstance(app.cena_atual, CenaSelecao)
+
+
+def _partes(pasta, moletom, animacao="parado"):
+    imagem = Recursos.animacoes(pasta)[animacao].quadros[0]
+    rgb = pygame.surfarray.array3d(imagem) / 255
+    return classificar(rgb, pygame.surfarray.array_alpha(imagem), moletom), imagem.get_height()
+
+
+@pytest.mark.parametrize("pasta, moletom", [("aluno1", "verde"), ("aluno2", "laranja")])
+def test_cabelo_e_moletom_nao_invadem_o_rosto(pasta, moletom):
+    """Olhos e sobrancelhas têm o tom do cabelo, e a bochecha tem o tom do moletom laranja:
+    nenhum deles pode entrar na máscara errada. O rosto é a pele entre a franja e o queixo."""
+    import numpy as np
+    for animacao in ("parado", "andar"):
+        mascaras, altura = _partes(pasta, moletom, animacao)
+        pele = mascaras["pele"]
+        xs, ys = np.where(pele & (np.arange(altura)[None, :] < altura * 0.42))
+        meio = int(ys.mean())
+        for linha in range(meio + 2, ys.max() + 1):   # abaixo dos olhos: bochecha, boca, queixo
+            colunas = np.where(pele[:, linha])[0]
+            if len(colunas) < 2:
+                continue
+            faixa = slice(colunas.min(), colunas.max() + 1)
+            assert not mascaras["moletom"][faixa, linha].any(), (animacao, linha)
+            assert not mascaras["cabelo"][faixa, linha].any(), (animacao, linha)
+
+
+def test_aluno_sem_bone_nao_tem_mascara_de_bone():
+    mascaras, _ = _partes("aluno1", "verde")
+    assert not mascaras["bone"].any()
+
+
+def test_capuz_do_aluno2_andando_entra_no_moletom():
+    import numpy as np
+    from jogo.jogador.aparencia import rgb_para_hsv
+    imagem = Recursos.animacoes("aluno2")["andar"].quadros[0]
+    rgb = pygame.surfarray.array3d(imagem) / 255
+    mascaras = classificar(rgb, pygame.surfarray.array_alpha(imagem), "laranja")
+    h, s, v = rgb_para_hsv(rgb)
+    laranja_forte = (pygame.surfarray.array_alpha(imagem) > 128) & (h >= 5) & (h < 45) & (s >= 0.95) & (v > 0.5)
+    assert (laranja_forte & ~mascaras["moletom"]).sum() <= 0.05 * laranja_forte.sum()
