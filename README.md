@@ -10,6 +10,8 @@ Sobreviva às provas do semestre na UFJ. Jogo 2D em Pygame no estilo "survivors"
 
 No chefe de duas matérias, quando a vida da primeira zera, a segunda (mais difícil) possui o professor e a luta continua com a vida cheia.
 
+**Grupo:** Filipe Duarte de Freitas Oliveira, Gabriel Gomes Borges, Gustavo do Nascimento Silva e Thaller Subtil de Carvalho.
+
 ![Captura de tela](docs/entregas/captura_combate.png)
 
 > **Vai trabalhar no projeto (você ou sua IA)?** Leia primeiro o [AGENTS.md](AGENTS.md) e a lista de [pendências](docs/PENDENCIAS.md).
