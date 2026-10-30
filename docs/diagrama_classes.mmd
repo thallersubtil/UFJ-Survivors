@@ -135,6 +135,27 @@ classDiagram
         +aplicar(jogador)*
     }
     class InstintoOtaku
+    class Rolamento {
+        +rolando: bool
+        +iniciar(direcao) bool
+        +atualizar(dt, mult_recarga)
+    }
+    class Melhoria {
+        <<abstract>>
+        +custo(nivel)$ int
+        +aplicar(jogador)*
+    }
+    class Progresso {
+        +moedas: int
+        +comprar_melhoria(m) bool
+        +desbloquear(classe) bool
+    }
+    class JogoDeAposta {
+        <<abstract>>
+        +jogar(aposta, escolha, rng)*
+    }
+    class MaquinaDeSalgadinho
+    class DadoDoMestre
     class Jogo {
         +entidades: list~Entidade~
         +fases: list~Fase~
@@ -284,6 +305,11 @@ classDiagram
     Jogador *-- Item
     Jogador *-- Especial
     Jogador *-- Passiva
+    Jogador *-- Rolamento
+    Jogador o-- Melhoria
+    Progresso ..> Melhoria : compra
+    JogoDeAposta <|-- MaquinaDeSalgadinho
+    JogoDeAposta <|-- DadoDoMestre
     Jogador o-- Aparencia
     OpcoesDePartida o-- Aparencia
     Jogo ..> OpcoesDePartida : a_partir_de

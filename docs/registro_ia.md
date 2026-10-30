@@ -36,4 +36,5 @@ Segue o formato pedido no enunciado: uma tabela por etapa, com onde a IA foi usa
 
 | Etapa | Onde usamos IA | O que precisamos corrigir ou entender |
 |---|---|---|
-| | | |
+| 4 | Comparação com a engenharia reversa do HoloCure; rolamento com invencibilidade, velocidade que evolui, Centro Acadêmico com loja, desbloqueios e cassino (Claude Code, com testes) | A referência foi usada só para estudar mecânicas (números do dash, níveis de velocidade dos inimigos, loja); o conteúdo é nosso (Pequi, Wi-Fi Eduroam, Máquina de Salgadinho, Dado do Mestre). Conferimos que o cassino perde no longo prazo e que o semestre no simulador continua chegando aos chefes nos níveis 13, 34 e 49. |
+| 4 | Ícones novos e fundo do Centro Acadêmico com o Nano Banana 2 (via Cloudinary) | Ícones de objetos do HoloCure serviram só de referência de traço; o fundo usou o nosso título como referência. Os ícones vieram numa folha 4x2 que recortamos e reduzimos para 64 px sem suavizar. |

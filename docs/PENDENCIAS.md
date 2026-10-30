@@ -1,6 +1,6 @@
 # Pendências
 
-O jogo está completo e jogável (três provas de 5 minutos no mapa do Campus Jatobá, pixel art animada, 8 lacaios, 3 chefes possuídos por 5 matérias, 6 armas, 3 colabs, 7 itens, 3 classes com passiva, todas as telas, 262 testes passando). Esta é a lista do que ainda vale fazer, mais ou menos em ordem de prioridade. Ao terminar um item, apague-o daqui no mesmo commit.
+O jogo está completo e jogável (três provas de 5 minutos no mapa do Campus Jatobá, pixel art animada, 8 lacaios, 3 chefes possuídos por 5 matérias, 8 armas (2 compradas na loja), 3 colabs, 9 itens (2 comprados na loja), 3 classes com passiva, rolamento com invencibilidade, Centro Acadêmico com loja e cassino, todas as telas, 301 testes passando). Esta é a lista do que ainda vale fazer, mais ou menos em ordem de prioridade. Ao terminar um item, apague-o daqui no mesmo commit.
 
 ## Para o grupo decidir ou fazer
 
@@ -24,6 +24,14 @@ Cada uma deve vir com um teste que falha antes da correção.
 - [ ] O bando de Bugs é sempre de 6; a especificação pede de 5 a 8.
 - [ ] O nome `ArmaDeContato` engana (o Claude e o Fusca não atacam por contato). Na defesa, explicar como "arma que não usa café", ou renomear para algo como `ArmaSemMunicao` (atualizando diagrama e docs).
 
+## Centro Acadêmico, rolamento e velocidade (novos em 30/10)
+
+- [ ] **Calibrar a economia.** Preços em `jogo/loja/melhorias.py` e `PRECO_DESBLOQUEIO` das armas e itens novos; ganhos em `Inimigo.CHANCE_MOEDA`, `MOEDAS_GIGANTE`, `Jogo.MOEDAS_POR_PROVA` e `MOEDAS_POR_MINUTO`. Joguem algumas partidas e vejam quantas são precisas para comprar algo.
+- [ ] **Calibrar rolamento e velocidade.** `Rolamento.DURACAO`, `IMPULSO`, `RECARGA`; `Inimigo.GANHO_VELOCIDADE` e `TETO_VELOCIDADE`; `Jogador.GANHO_VELOCIDADE_POR_NIVEL`. O robô do simulador não rola.
+- [ ] Animação própria de rolamento (hoje o sprite gira) e arte própria do projétil do Wi-Fi.
+- [ ] Atualizar `docs/entregas/diagrama_classes.png` a partir do `docs/diagrama_classes.mmd` (já tem `Rolamento`, `Melhoria`, `Progresso` e `JogoDeAposta`).
+- [ ] Ideias tiradas da referência, em ordem de valor: `docs/referencia_holocure.md`.
+
 ## Visual e mapa
 
 - [ ] Ícones das armas e itens no HUD e nas cartas ainda usam a arte antiga (alta resolução, suavizada); trocar por versões em pixel art para combinar com o resto.
@@ -38,4 +46,4 @@ Cada uma deve vir com um teste que falha antes da correção.
 
 ## Ideias para depois (fora do escopo atual)
 
-Fases 2 em diante com outros professores, loja de melhorias permanentes, música, cooperativo local.
+Fases 2 em diante com outros professores, música, cooperativo local.

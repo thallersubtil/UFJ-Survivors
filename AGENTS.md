@@ -4,12 +4,13 @@ Leia este arquivo inteiro antes de mexer no projeto. Ele vale para qualquer pess
 
 ## O que é este projeto
 
-**UFJ Survivors** é o trabalho prático de Programação Orientada a Objetos da UFJ (Profª Emília Alves Nogueira). É um jogo 2D em Pygame no estilo "survivors" (Vampire Survivors, HoloCure): o herói anda pelo Campus Jatobá da UFJ (mapa gerado a partir de satélite e OpenStreetMap), as armas atacam sozinhas, as ondas de inimigos crescem e, no fim de cada uma das três provas de 5 minutos, chega um professor possuído pela própria matéria (Cálculo I; Arquitetura de Computadores e depois ED em C; Transformação Digital e depois POO). O jogador escolhe uma classe (Otaku, Programador, Mestre de RPG), cada uma com ativa, passiva e especial próprios, e personaliza o aluno (pele, cabelo, moletom, calça). Carrega no máximo 4 armas e 4 itens; há um modo treino para enfrentar um chefe escolhido. A arte é ilustrada e animada, no estilo Disgaea (contorno grosso, cores saturadas). Os inimigos são objetos das matérias do semestre que ganharam vida; as armas misturam memes, IAs e anime.
+**UFJ Survivors** é o trabalho prático de Programação Orientada a Objetos da UFJ (Profª Emília Alves Nogueira). É um jogo 2D em Pygame no estilo "survivors" (Vampire Survivors, HoloCure): o herói anda pelo Campus Jatobá da UFJ (mapa gerado a partir de satélite e OpenStreetMap), as armas atacam sozinhas, as ondas de inimigos crescem e, no fim de cada uma das três provas de 5 minutos, chega um professor possuído pela própria matéria (Cálculo I; Arquitetura de Computadores e depois ED em C; Transformação Digital e depois POO). O jogador escolhe uma classe (Otaku, Programador, Mestre de RPG), cada uma com ativa, passiva e especial próprios, e personaliza o aluno (pele, cabelo, moletom, calça). Carrega no máximo 4 armas e 4 itens, rola para esquivar (invencível durante o rolamento) e fica mais rápido aos poucos, enquanto os inimigos também aceleram com a prova; há um modo treino para enfrentar um chefe escolhido. Entre as partidas, o Centro Acadêmico (menu principal) tem a loja de melhorias permanentes e desbloqueios, paga com as moedas das provas, e um cassino com essas moedas. A arte é ilustrada e animada, no estilo Disgaea (contorno grosso, cores saturadas). Os inimigos são objetos das matérias do semestre que ganharam vida; as armas misturam memes, IAs e anime.
 
 - O enunciado do trabalho está resumido em `docs/superpowers/specs/2026-10-10-ufj-survivors-design.md` (seções 1 e 12). **A especificação é a referência**: se algo aqui ou no código contradizer a especificação, siga a especificação ou converse com o grupo.
 - O plano de implementação que gerou o código está em `docs/superpowers/plans/2026-10-10-ufj-survivors.md`.
 - Animação, pixel art e mapa da UFJ (a partida de 8 minutos descrita ali foi trocada pelas três provas de 5 minutos, veja abaixo): `docs/superpowers/specs/2026-10-14-animacao-mapa-ufj-design.md` (vale sobre a especificação original onde divergirem).
 - O que ainda falta fazer está em `docs/PENDENCIAS.md`. **Comece por lá.**
+- Comparação com o HoloCure (estrutura de referência) e lista do que ainda dá para melhorar: `docs/referencia_holocure.md`. A referência serve só para estudar mecânicas; nada da arte, dos sons ou do código dela entra no repositório.
 
 ## Como rodar e testar
 
@@ -32,7 +33,7 @@ A nota depende de estes pontos continuarem verdadeiros e fáceis de mostrar na d
 | Classe abstrata `Entidade` com `atualizar()` e `desenhar()` | `jogo/nucleo/entidade.py` |
 | 3+ inimigos herdando de `Inimigo` | `jogo/inimigos/` (8 lacaios + 3 chefes possuídos) |
 | **Um único laço** `for e in self.entidades: e.atualizar(dt, self)` **sem `if`/`isinstance` por tipo** | `Jogo.atualizar()` em `jogo/jogo.py` |
-| `vida`, `pontos`, `municao` com `@property` e validação | `SerVivo`, `Placar`, `ArmaDeDisparo` |
+| `vida`, `pontos`, `municao` com `@property` e validação | `SerVivo`, `Placar`, `ArmaDeDisparo` (também `moedas` em `Placar` e `Progresso`) |
 | `Jogo` contém `Jogador`, `Fase`, `Placar`; `Jogador` contém `Arma` | `jogo/jogo.py`, `jogo/jogador/jogador.py` |
 | `__str__`, `__eq__`, `__lt__` | `RegistroRanking` em `jogo/ranking.py` |
 | `@classmethod` (fábrica) e `@staticmethod` (colisão) | `FabricaDeInimigos`, `Colisao` |
@@ -53,11 +54,13 @@ jogo/mapa.py           Mapa (abstrata), MapaUFJ, Predio (obstáculo), Decoracao;
 jogo/nucleo/animacao.py  Animacao e Animador (composição: personagens contêm um Animador)
 jogo/nucleo/           Entidade, SerVivo, Colisao, Camera, GradeEspacial, Recursos (arte/som com substitutos), desenho
 jogo/jogador/          Jogador (abstrata), classes.py (Otaku, Programador, MestreDeRPG), Passiva e passivas,
-                       especiais, BonusTemporario, Aparencia (recoloração dos sprites dos alunos)
+                       especiais, Rolamento (esquiva), BonusTemporario, Aparencia (recoloração dos sprites dos alunos)
+jogo/loja/             Centro Acadêmico: Progresso (moedas e compras salvas), Melhoria (abstrata) e as melhorias
+                       permanentes, JogoDeAposta (abstrata) e os jogos do cassino
 jogo/inimigos/         Inimigo (abstrata), FabricaDeInimigos, um arquivo por lacaio, Chefe, ChefePossuido e os três chefes
 jogo/inimigos/materias/  Materia (abstrata) e as cinco matérias: os ataques de cada chefe
 jogo/armas/            Arma, ArmaDeDisparo (usa café), ArmaDeContato (não usa café), uma arma por arquivo, colabs.py
-jogo/itens/            Item (abstrata) e os 7 itens passivos
+jogo/itens/            Item (abstrata) e os 9 itens passivos (2 só depois de comprados na loja)
 jogo/projeteis/  jogo/ajudantes/  jogo/coletaveis/  jogo/efeitos.py   o que as armas e inimigos colocam na arena
 jogo/progressao.py     cartas de nível e prêmio do baú
 jogo/cenas/            telas (Cena abstrata) e o HUD
@@ -78,6 +81,12 @@ docs/                  entregas, diagrama, registro de uso de IA, especificaçã
 
 **Item novo**: herde de `Item`, implemente `aplicar(jogador)` somando ao modificador do jogador conforme `self.nivel`, e acrescente em `ITENS` (`jogo/itens/itens.py`).
 
+**Arma ou item que se compra na loja**: igual aos de cima, com `PRECO_DESBLOQUEIO = <moedas>`. Ele aparece sozinho na aba Desbloqueios do Centro Acadêmico e só entra nas cartas depois de comprado (`liberada()` em `Arma`/`Item`, filtro em `Progressao.candidatas`).
+
+**Melhoria permanente nova**: herde de `Melhoria` (`jogo/loja/melhorias.py`) com `CHAVE` única (é o nome salvo no arquivo; não mude depois), `NOME`, `DESCRICAO`, `ICONE`, `NIVEL_MAXIMO`, `CUSTO_BASE` e `aplicar(jogador)`; acrescente em `MELHORIAS`. A loja lista sozinha.
+
+**Jogo novo no cassino**: herde de `JogoDeAposta` (`jogo/loja/cassino.py`), implemente `jogar(aposta, escolha, rng)` devolvendo um `ResultadoDaAposta` e acrescente em `JOGOS_DE_APOSTA`. Teste que o retorno esperado fica abaixo de 100% (veja `testes/test_cassino.py`).
+
 **Arte animada (estilo ilustrado, tipo Disgaea)**: os personagens são ilustrações de anime com contorno preto grosso, cores saturadas e cel shading, NÃO pixel art (o gerador de imagens não faz pixel art de verdade; testamos e ficou ruim). Cada personagem tem uma pasta `assets/sprites/<nome>/` com tiras `<animacao>-<n>.png` (`parado` com piscar no 3º quadro, `andar` com 4 quadros: passada, passagem, passada, passagem), já no tamanho de tela (herói ~76 px). A classe aponta para a pasta em `PASTA_SPRITE` e contém um `Animador`. Para criar ou trocar uma animação:
 1. Gere a folha com a ferramenta de imagens do ChatGPT (`edit_image`), passando uma folha existente de `arte_bruta/disgaea/` como referência de estilo e o personagem como referência de design. Prompt que funcionou: "4-frame walk cycle ... in ONE horizontal row ... clean hand-drawn anime game illustration in the style of Disgaea character art, NOT pixel art: smooth bold black outlines, vivid saturated colors, crisp two-tone cel shading with rim light, chibi proportions ... 4 equal cells, clear empty space between frames, same baseline and scale ... transparent background".
 2. Salve em `arte_bruta/disgaea/` (fora do git) e acrescente uma linha em `RECEITA` de `ferramentas/montar_sprites.py` (folha, pasta, animação, quadros, altura na tela; extras como `gigante`, `linha`, `faixa` estão documentados no topo do arquivo).
@@ -95,7 +104,7 @@ Se a pasta não existir, o jogo usa a imagem estática `IMAGEM` ou um círculo c
 - **Tudo em português**: nomes de classes, métodos, variáveis, comentários, textos do jogo e mensagens de commit. Textos do jogo sem emojis.
 - Siga o estilo do código vizinho: docstrings curtas, constantes de classe em MAIÚSCULAS, um arquivo por inimigo/arma.
 - **Teste primeiro**: para comportamento novo ou correção de defeito, escreva o teste em `testes/`, veja falhar, implemente, veja passar, rode a suíte inteira.
-- Não versione `arte_bruta/`, `.venv/` nem `dados/ranking.json` (já estão no `.gitignore`).
+- Não versione `arte_bruta/`, `.venv/`, `dados/ranking.json` nem `dados/progresso.json` (já estão no `.gitignore`).
 
 ## Processo do trabalho (vale nota)
 
