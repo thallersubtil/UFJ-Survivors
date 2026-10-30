@@ -29,6 +29,11 @@ class Hud:
         desenhar_texto(tela, j.NOME, 18, Cor.TEXTO, topo_esquerda=(78, 32))
         desenhar_barra(tela, pygame.Rect(78, 58, 160, 16), j.vida / j.vida_maxima, Cor.VIDA)
         desenhar_texto(tela, f"{round(j.vida)}/{round(j.vida_maxima)}", 14, Cor.TEXTO, centro=(158, 66))
+        rolamento = j.rolamento
+        desenhar_barra(tela, pygame.Rect(78, 80, 100, 5), rolamento.progresso,
+                       Cor.DESTAQUE if rolamento.pronto else Cor.TEXTO_FRACO)
+        desenhar_texto(tela, "SHIFT" if rolamento.pronto else "ROLAR", 10,
+                       Cor.DESTAQUE if rolamento.pronto else Cor.TEXTO_FRACO, topo_esquerda=(184, 76))
         especial = j.especial
         centro = pygame.Vector2(274, 59)
         icone = Recursos.icone(especial.ICONE, 40)

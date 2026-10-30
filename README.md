@@ -40,6 +40,7 @@ py -3.12 -m venv .venv
 | Mouse | Mirar as armas de disparo e o especial |
 | Clique esquerdo | Alterna entre mira no mouse e mira automática (inimigo mais próximo) |
 | Espaço | Especial |
+| Shift ou clique direito | Rolar: esquiva rápida, invencível enquanto dura (recarga de ~1 s) |
 | Esc | Pausar |
 | 1, 2, 3 ou Enter | Escolher carta ao subir de nível |
 | R / P | Sortear as cartas de novo / pular a escolha |

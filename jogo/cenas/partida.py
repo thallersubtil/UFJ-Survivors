@@ -24,6 +24,9 @@ class CenaPartida(Cena):
         self._espera_fim = self.ESPERA_FIM
 
     def tratar_evento(self, evento):
+        if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 3:
+            self.jogo.jogador.rolar()
+            return
         if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
             modo = self.app.alternar_mira()
             self.jogo.anunciar("Mira automática" if modo == "automatica" else "Mira no mouse", 1.2)
@@ -34,6 +37,8 @@ class CenaPartida(Cena):
             self.app.empilhar(CenaPausa(self.app, self))
         elif evento.key == pygame.K_SPACE:
             self.jogo.jogador.usar_especial(self.jogo)
+        elif evento.key in (pygame.K_LSHIFT, pygame.K_RSHIFT):
+            self.jogo.jogador.rolar()
 
     def _ler_entrada(self):
         teclas = pygame.key.get_pressed()

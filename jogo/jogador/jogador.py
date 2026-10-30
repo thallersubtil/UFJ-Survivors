@@ -8,6 +8,7 @@ from jogo.config import ESCALA_PIXEL, INVENCIBILIDADE_APOS_DANO
 from jogo.nucleo.animacao import Animador
 from jogo.nucleo.desenho import desenhar_sprite
 from jogo.jogador.aparencia import vestir_animacoes
+from jogo.jogador.rolamento import Rolamento
 from jogo.nucleo.recursos import Recursos
 from jogo.nucleo.ser_vivo import SerVivo
 
@@ -39,6 +40,8 @@ class Jogador(SerVivo, ABC):
         self.bonus = []
         self.armas_em_colab = set()
         self.direcao_mira = pygame.Vector2(1, 0)
+        self.direcao_movimento = pygame.Vector2(1, 0)
+        self.rolamento = Rolamento()
         self.movendo = False
         self.olhando_esquerda = False
         self.invencivel = 0.0
@@ -71,6 +74,7 @@ class Jogador(SerVivo, ABC):
         self.mult_velocidade = 1.0
         self.mult_recarga = 1.0
         self.mult_especial = 1.0
+        self.mult_rolamento = 1.0     # fator da recarga do rolamento (menor é mais rápido)
         self.chance_critico = 0.0
         self.mult_cafe = 1.0
         self.regeneracao = 0.0
@@ -165,7 +169,14 @@ class Jogador(SerVivo, ABC):
 
     @property
     def pode_levar_dano(self):
-        return self.invencivel <= 0 and self.esta_vivo and not self.imortal
+        return self.invencivel <= 0 and not self.rolamento.protegido and self.esta_vivo and not self.imortal
+
+    def rolar(self):
+        """Esquiva (Shift ou botão direito): rola na direção do movimento, invencível enquanto dura."""
+        if not self.esta_vivo or not self.rolamento.iniciar(self.direcao_movimento):
+            return False
+        Recursos.tocar("rolar", 0.35)
+        return True
 
     def receber_dano(self, quantidade):
         morreu = super().receber_dano(quantidade)
@@ -205,12 +216,16 @@ class Jogador(SerVivo, ABC):
         self.invencivel = max(0.0, self.invencivel - dt)
         direcao = pygame.Vector2(jogo.entrada.direcao)
         self.movendo = direcao.length_squared() > 0
-        if self.movendo:
+        if self.rolamento.rolando:
+            self.posicao += self.rolamento.direcao * self.velocidade * self.rolamento.fator_velocidade * dt
+        elif self.movendo:
             direcao.normalize_ip()
             self.posicao += direcao * self.velocidade * dt
             self.direcao_mira = pygame.Vector2(direcao)
+            self.direcao_movimento = pygame.Vector2(direcao)
             if abs(direcao.x) > 0.01:
                 self.olhando_esquerda = direcao.x < 0
+        self.rolamento.atualizar(dt, self.mult_rolamento)
         self.posicao = jogo.resolver_obstaculos(self.posicao, self.raio)
         arena = jogo.arena
         self.posicao.x = max(arena.left + self.raio, min(self.posicao.x, arena.right - self.raio))
@@ -237,5 +252,9 @@ class Jogador(SerVivo, ABC):
         else:
             pulo = abs(math.sin(self.tempo * 10)) * 4 if self.movendo else (1 + math.sin(self.tempo * 2)) * 0.8
         alfa = 130 if self.invencivel > 0 and int(self.invencivel * 20) % 2 else 255
+        angulo = 0.0
+        if self.rolamento.rolando:     # uma cambalhota inteira durante o rolamento
+            angulo = 360 * self.rolamento.fracao * (1 if self.olhando_esquerda else -1)
+            alfa = 200
         desenhar_sprite(tela, camera, imagem, self.posicao, espelhar=self.olhando_esquerda,
-                        piscar=self.piscar > 0, deslocamento_y=pulo, alfa=alfa)
+                        piscar=self.piscar > 0, deslocamento_y=pulo, alfa=alfa, angulo=angulo)
