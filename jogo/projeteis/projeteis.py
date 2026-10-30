@@ -186,3 +186,22 @@ class CobraGemea(MovimentoSerpente, ProjetilDivisivel):
     PASTA_SPRITE = "cobra"
     ALTURA = 22
     DURACAO = 1.6
+
+
+class PequiArremessado(ProjetilDoHeroi):
+    """Pequi que estoura no primeiro inimigo, espalhando espinhos em volta (Pequi Explosivo)."""
+
+    IMAGEM = "icones/pequi.png"
+    ALTURA = 24
+    DURACAO = 1.4
+
+    def __init__(self, posicao, velocidade, dano, raio_explosao):
+        super().__init__(posicao, velocidade, dano, perfuracao=1, raio=12)
+        self.raio_explosao = raio_explosao
+
+    def angulo_desenho(self):
+        return self.tempo * 360
+
+    def ao_acertar(self, inimigo, jogo):
+        from jogo.efeitos import EstouroDePequi
+        jogo.adicionar(EstouroDePequi(self.posicao, self.raio_explosao, self.dano * 0.8, excluir=inimigo))

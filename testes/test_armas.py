@@ -6,10 +6,12 @@ from jogo.armas.chatgpt import MascoteChatGPT
 from jogo.armas.claude import MascoteClaude
 from jogo.armas.fusca import FuscaAzul
 from jogo.armas.gemini import Gemini
+from jogo.armas.pequi import PequiExplosivo
+from jogo.armas.wifi import WifiEduroam
 from jogo.inimigos.bug import Bug
 from jogo.projeteis.projeteis import EstrelaGemini, TiroChatGPT
 
-NOVAS = [MascoteChatGPT, MascoteClaude, Gemini, FuscaAzul]
+NOVAS = [MascoteChatGPT, MascoteClaude, Gemini, FuscaAzul, PequiExplosivo, WifiEduroam]
 
 
 def parado(bug):
@@ -120,3 +122,40 @@ def test_possuido_soca_outro_inimigo(jogo_limpo):
     for _ in range(60):
         jogo.atualizar(1 / 60)
     assert vitima.vida < vitima.vida_maxima
+
+
+def test_pequi_estoura_e_fere_quem_esta_em_volta(jogo_limpo):
+    jogo = jogo_limpo()
+    jogo.jogador.armas.clear()
+    alvo = parado(Bug(jogo.jogador.posicao + (150, 0)))
+    vizinho = parado(Bug(jogo.jogador.posicao + (150, 40)))
+    longe = parado(Bug(jogo.jogador.posicao + (150, 400)))
+    for bug in (alvo, vizinho, longe):
+        bug.vida_maxima = bug.vida = 1000
+        jogo.adicionar(bug)
+    jogo._incorporar_novas()
+    jogo.grade.reconstruir(jogo.inimigos)
+    assert PequiExplosivo().disparar(jogo, jogo.jogador)
+    for _ in range(40):
+        jogo.atualizar(1 / 60)
+    assert alvo.vida < 1000 and vizinho.vida < 1000 and longe.vida == 1000
+    assert not PequiExplosivo().disparar(jogo_limpo(), jogo.jogador)   # sem alvo perto, não arremessa
+
+
+def test_wifi_fere_quem_esta_no_sinal_e_some_ao_remover(jogo_limpo, monkeypatch):
+    monkeypatch.setattr(WifiEduroam, "ATRIBUTOS", {**WifiEduroam.ATRIBUTOS, "queda": (0.0,) * 7})
+    jogo = jogo_limpo()
+    jogo.jogador.armas.clear()
+    arma = WifiEduroam()
+    jogo.jogador.adicionar_arma(arma)
+    perto = parado(Bug(jogo.jogador.posicao + (50, 0)))
+    longe = parado(Bug(jogo.jogador.posicao + (400, 0)))
+    for bug in (perto, longe):
+        bug.vida_maxima = bug.vida = 1000
+        jogo.adicionar(bug)
+    for _ in range(60):
+        jogo.atualizar(1 / 60)
+    assert perto.vida < 1000 and longe.vida == 1000
+    sinal = arma.sinal
+    jogo.jogador.remover_arma(arma, jogo)
+    assert not sinal.ativo

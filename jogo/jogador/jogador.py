@@ -49,6 +49,8 @@ class Jogador(SerVivo, ABC):
         self.invencivel = 0.0
         self.aparencia = None         # Aparencia escolhida na personalização
         self.imortal = False          # modo treino
+        self.melhorias = []           # melhorias permanentes compradas no Centro Acadêmico
+        self.desbloqueios = frozenset()   # armas e itens comprados que podem aparecer nas cartas
         self.tempo = 0.0
         self.transformado = False
         self.animador = Animador(self._animacoes(), inicial="parado")
@@ -83,17 +85,26 @@ class Jogador(SerVivo, ABC):
         self.regeneracao = 0.0
         self.alcance_coleta = self.ALCANCE_COLETA_BASE
         self.vida_maxima_extra = 0
+        self.mult_experiencia = 1.0
+        self.mult_moedas = 1.0
 
     def recalcular_atributos(self):
-        """Zera os modificadores e deixa a passiva e cada item aplicarem o seu (polimorfismo)."""
+        """Zera os modificadores e deixa a passiva, cada item e cada melhoria aplicarem o seu (polimorfismo)."""
         maxima_antes = self.vida_maxima
         self._redefinir_atributos()
         self.passiva.aplicar(self)
         for item in self.itens:
             item.aplicar(self)
+        for melhoria in self.melhorias:
+            melhoria.aplicar(self)
         self.vida_maxima = self.VIDA + self.vida_maxima_extra
         if self.vida_maxima > maxima_antes:
             self.curar(self.vida_maxima - maxima_antes)
+
+    def receber_melhorias(self, melhorias):
+        """Começa a partida com as melhorias permanentes da loja."""
+        self.melhorias = list(melhorias)
+        self.recalcular_atributos()
 
     def multiplicador(self, atributo):
         resultado = 1.0
