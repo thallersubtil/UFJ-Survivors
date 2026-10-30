@@ -1,7 +1,8 @@
 """Janela do jogo e pilha de cenas."""
 import pygame
 
-from jogo.config import ALTURA, ARQUIVO_RANKING, FPS, LARGURA, TITULO
+from jogo.config import ALTURA, ARQUIVO_PROGRESSO, ARQUIVO_RANKING, FPS, LARGURA, TITULO
+from jogo.loja.progresso import Progresso
 from jogo.ranking import Ranking
 
 
@@ -50,6 +51,7 @@ class Aplicacao:
         self.tela = tela
         self.relogio = pygame.time.Clock()
         self.ranking = Ranking(ARQUIVO_RANKING)
+        self.progresso = Progresso(ARQUIVO_PROGRESSO)
         self.aparencia = None        # última aparência escolhida, para a próxima partida
         self.modo_mira = "mouse"     # "mouse": mira no cursor; "automatica": no inimigo mais próximo
         self.cenas = []

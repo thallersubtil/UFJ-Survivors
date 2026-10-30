@@ -21,7 +21,7 @@ class CenaTreino(Cena):
 
     def _comecar(self, prova):
         from jogo.cenas.selecao import CenaSelecao
-        opcoes = OpcoesDePartida.treino_contra(prova, self.direto_no_chefe, self.imortal)
+        opcoes = OpcoesDePartida.treino_contra(prova, self.direto_no_chefe, self.imortal).com_progresso(self.app.progresso)
         self.app.trocar(CenaSelecao(self.app, opcoes))
 
     def tratar_evento(self, evento):

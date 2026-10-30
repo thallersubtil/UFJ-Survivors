@@ -14,15 +14,21 @@ class CenaTitulo(Cena):
         self.tempo = 0.0
         meio = LARGURA // 2
         self.menu = MenuDeBotoes([
-            Botao("JOGAR", (meio, 410), self._jogar),
-            Botao("TREINO", (meio, 480), self._treino),
-            Botao("RANKING", (meio, 550), self._ranking),
-            Botao("SAIR", (meio, 620), app.sair),
+            Botao("JOGAR", (meio, 360), self._jogar),
+            Botao("CENTRO ACADÊMICO", (meio, 430), self._centro_academico),
+            Botao("TREINO", (meio, 500), self._treino),
+            Botao("RANKING", (meio, 570), self._ranking),
+            Botao("SAIR", (meio, 640), app.sair),
         ])
 
     def _jogar(self):
         from jogo.cenas.selecao import CenaSelecao
-        self.app.trocar(CenaSelecao(self.app))
+        from jogo.opcoes import OpcoesDePartida
+        self.app.trocar(CenaSelecao(self.app, OpcoesDePartida().com_progresso(self.app.progresso)))
+
+    def _centro_academico(self):
+        from jogo.cenas.centro_academico import CenaCentroAcademico
+        self.app.trocar(CenaCentroAcademico(self.app))
 
     def _treino(self):
         from jogo.cenas.treino import CenaTreino
@@ -40,7 +46,7 @@ class CenaTitulo(Cena):
 
     def desenhar(self, tela):
         desenhar_fundo(tela, "cenario/titulo_fundo.png", escuro=60)
-        y = 200 + math.sin(self.tempo * 2) * 6
+        y = 170 + math.sin(self.tempo * 2) * 6
         if (Recursos.pasta / self.LOGO).exists():
             logo = Recursos.imagem(self.LOGO, 220)
             tela.blit(logo, logo.get_rect(center=(LARGURA // 2, y)))

@@ -11,6 +11,7 @@ from jogo.cenas.ranking import CenaRanking
 from jogo.cenas.selecao import CenaSelecao
 from jogo.cenas.titulo import CenaTitulo
 from jogo.jogador.classes import Programador, Otaku
+from jogo.loja.progresso import Progresso
 from jogo.ranking import Ranking
 
 
@@ -26,6 +27,7 @@ def texto(t):
 def app(tmp_path):
     a = Aplicacao(pygame.Surface((1280, 720)))
     a.ranking = Ranking(tmp_path / "ranking.json")
+    a.progresso = Progresso(tmp_path / "progresso.json")
     return a
 
 
@@ -38,7 +40,7 @@ def test_titulo_jogar_leva_a_selecao(app):
 
 def test_titulo_ranking_e_sair(app):
     app.trocar(CenaTitulo(app))
-    app.passo(1 / 60, [tecla(pygame.K_DOWN), tecla(pygame.K_DOWN), tecla(pygame.K_RETURN)])
+    app.passo(1 / 60, [tecla(pygame.K_DOWN), tecla(pygame.K_DOWN), tecla(pygame.K_DOWN), tecla(pygame.K_RETURN)])
     assert isinstance(app.cena_atual, CenaRanking)
     app.passo(1 / 60, [tecla(pygame.K_ESCAPE)])
     assert isinstance(app.cena_atual, CenaTitulo)

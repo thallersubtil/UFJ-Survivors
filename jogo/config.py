@@ -5,6 +5,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 PASTA_ASSETS = RAIZ / "assets"
 PASTA_DADOS = RAIZ / "dados"
 ARQUIVO_RANKING = PASTA_DADOS / "ranking.json"
+ARQUIVO_PROGRESSO = PASTA_DADOS / "progresso.json"   # moedas e compras do Centro Acadêmico
 
 TITULO = "UFJ Survivors"
 LARGURA, ALTURA = 1280, 720

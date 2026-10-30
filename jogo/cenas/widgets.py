@@ -107,6 +107,14 @@ class MenuDeBotoes:
             botao.desenhar(tela, i == self.indice)
 
 
+def desenhar_moedas(tela, moedas, topo_direita=None):
+    """Saldo de moedas do Centro Acadêmico, com o ícone da moeda (canto de cima, à direita)."""
+    direita, topo = topo_direita or (tela.get_width() - 30, 30)
+    texto = desenhar_texto(tela, f"{moedas}", 30, Cor.DESTAQUE, topo_direita=(direita, topo))
+    icone = Recursos.icone("icones/moeda.png", 34)
+    tela.blit(icone, icone.get_rect(midright=(texto.left - 8, texto.centery)))
+
+
 def desenhar_fundo(tela, caminho, escuro=0):
     """Fundo de tela cheia; sem o arquivo, pinta a cor de fundo do jogo."""
     if (Recursos.pasta / caminho).exists():
