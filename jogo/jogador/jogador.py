@@ -32,6 +32,8 @@ class Jogador(SerVivo, ABC):
     MAX_ITENS = 4                # habilidades passivas
     ALCANCE_COLETA_BASE = 90
     MULT_CRITICO = 2.0           # quanto o acerto crítico multiplica o dano
+    GANHO_VELOCIDADE_POR_NIVEL = 0.006   # o aluno pega ritmo: +0,6% de velocidade por nível
+    TETO_GANHO_VELOCIDADE = 0.30
 
     def __init__(self, posicao):
         super().__init__(posicao, self.RAIO, self.VIDA)
@@ -71,7 +73,8 @@ class Jogador(SerVivo, ABC):
 
     def _redefinir_atributos(self):
         self.mult_dano = 1.0
-        self.mult_velocidade = 1.0
+        self.mult_velocidade = 1.0 + min(self.TETO_GANHO_VELOCIDADE,
+                                         (self.nivel - 1) * self.GANHO_VELOCIDADE_POR_NIVEL)
         self.mult_recarga = 1.0
         self.mult_especial = 1.0
         self.mult_rolamento = 1.0     # fator da recarga do rolamento (menor é mais rápido)

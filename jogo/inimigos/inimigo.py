@@ -32,6 +32,9 @@ class Inimigo(SerVivo, ABC):
     CHANCE_CAFE = 0.03
     CHANCE_POCAO = 0.006
 
+    GANHO_VELOCIDADE = 0.10   # por ponto de dificuldade: a prova vai ficando mais corrida
+    TETO_VELOCIDADE = 1.6     # nunca mais que 60% acima da velocidade base
+
     ESCALA_GIGANTE = 3
     VIDA_GIGANTE = 30
     PONTOS_GIGANTE = 20
@@ -40,7 +43,7 @@ class Inimigo(SerVivo, ABC):
     def __init__(self, posicao, escala=1.0):
         super().__init__(posicao, self.RAIO, self.VIDA * escala)
         self.escala = escala
-        self.velocidade = self.VELOCIDADE * (1 + (escala - 1) * 0.08)
+        self.velocidade = self.VELOCIDADE * self.fator_de_velocidade(escala)
         self.tempo = 0.0
         self.possuido = 0.0
         self._espera_soco = 0.0
@@ -50,6 +53,11 @@ class Inimigo(SerVivo, ABC):
         self.solta_bau = False
         self.reposiciona = True
         self.animador = Animador(Recursos.animacoes_ou_imagem(self.PASTA_SPRITE, self.IMAGEM, self.ALTURA))
+
+    @classmethod
+    def fator_de_velocidade(cls, escala):
+        """Quanto a dificuldade acelera este inimigo, de 1 até TETO_VELOCIDADE."""
+        return min(cls.TETO_VELOCIDADE, 1 + max(0.0, escala - 1) * cls.GANHO_VELOCIDADE)
 
     def tornar_gigante(self):
         self.gigante = True
