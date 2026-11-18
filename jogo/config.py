@@ -26,8 +26,8 @@ CURA_AO_PULAR = 20
 LIMITE_COLETAVEIS = 400
 LIMITE_EFEITOS = 150
 
-FONTE = "fontes/pixelify-sans-latin-700-normal.ttf"
-FONTE_MEDIA = "fontes/pixelify-sans-latin-500-normal.ttf"
+FONTE = "fontes/pixelify-sans-ufj-700.ttf"      # Pixelify Sans com o C mais aberto (ferramentas/ajustar_fonte.py)
+FONTE_MEDIA = "fontes/pixelify-sans-ufj-500.ttf"
 
 
 class Cor:
