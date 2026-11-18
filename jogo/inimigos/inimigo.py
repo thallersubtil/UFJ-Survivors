@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 import pygame
 
-from jogo.coletaveis.coletaveis import Bau, CopoDeCafe, PocaoDeVida
+from jogo.coletaveis.coletaveis import Bau, CopoDeCafe, Moeda, PocaoDeVida
 from jogo.config import DISTANCIA_REPOSICIONAR, Cor
 from jogo.nucleo.animacao import Animador
 from jogo.efeitos import TextoFlutuante
@@ -31,6 +31,11 @@ class Inimigo(SerVivo, ABC):
     TAMANHO_GRUPO = 1
     CHANCE_CAFE = 0.03
     CHANCE_POCAO = 0.006
+    CHANCE_MOEDA = 0.05
+    MOEDAS_GIGANTE = 15
+
+    GANHO_VELOCIDADE = 0.10   # por ponto de dificuldade: a prova vai ficando mais corrida
+    TETO_VELOCIDADE = 1.6     # nunca mais que 60% acima da velocidade base
 
     ESCALA_GIGANTE = 3
     VIDA_GIGANTE = 30
@@ -40,7 +45,7 @@ class Inimigo(SerVivo, ABC):
     def __init__(self, posicao, escala=1.0):
         super().__init__(posicao, self.RAIO, self.VIDA * escala)
         self.escala = escala
-        self.velocidade = self.VELOCIDADE * (1 + (escala - 1) * 0.08)
+        self.velocidade = self.VELOCIDADE * self.fator_de_velocidade(escala)
         self.tempo = 0.0
         self.possuido = 0.0
         self._espera_soco = 0.0
@@ -50,6 +55,11 @@ class Inimigo(SerVivo, ABC):
         self.solta_bau = False
         self.reposiciona = True
         self.animador = Animador(Recursos.animacoes_ou_imagem(self.PASTA_SPRITE, self.IMAGEM, self.ALTURA))
+
+    @classmethod
+    def fator_de_velocidade(cls, escala):
+        """Quanto a dificuldade acelera este inimigo, de 1 até TETO_VELOCIDADE."""
+        return min(cls.TETO_VELOCIDADE, 1 + max(0.0, escala - 1) * cls.GANHO_VELOCIDADE)
 
     def tornar_gigante(self):
         self.gigante = True
@@ -163,13 +173,17 @@ class Inimigo(SerVivo, ABC):
                 self.posicao += afastar / distancia * (soma - distancia) * 0.25
 
     def ao_morrer(self, jogo):
-        """O que acontece quando morre. Por padrão solta nota e, às vezes, café ou poção."""
+        """O que acontece quando morre. Por padrão solta nota e, às vezes, café, poção ou moeda."""
         jogo.soltar_nota(self.posicao, self.valor_em_experiencia)
         sorte = jogo.rng.random()
         if sorte < self.CHANCE_POCAO:
             jogo.adicionar(PocaoDeVida(self.posicao + (10, 0)))
         elif sorte < self.CHANCE_POCAO + self.CHANCE_CAFE:
             jogo.adicionar(CopoDeCafe(self.posicao + (10, 0)))
+        if self.gigante:
+            jogo.adicionar(Moeda(self.posicao - (12, 0), self.MOEDAS_GIGANTE))
+        elif jogo.rng.random() < self.CHANCE_MOEDA:
+            jogo.adicionar(Moeda(self.posicao - (10, 0)))
         if self.solta_bau:
             jogo.adicionar(Bau(self.posicao))
 

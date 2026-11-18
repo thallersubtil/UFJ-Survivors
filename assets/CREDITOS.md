@@ -10,3 +10,7 @@
 ## Professora (chefe da 3ª prova) e professor de computação (chefe da 2ª prova)
 
 `assets/sprites/professora/` e `assets/sprites/professor_computacao/` (parado e andar, 4 quadros cada): gerada em 19/10/2026 com a ferramenta de imagens do ChatGPT, seguindo a receita do `AGENTS.md`, com as folhas do professor como referência de estilo. Personagens genéricos (não retratam pessoas reais). Os quadros foram recortados, alinhados pela base e reduzidos para 124 px de altura.
+
+## Centro Acadêmico (30/10/2026)
+
+`assets/icones/{moeda,pequi,wifi,tenis,oculos,pao_de_queijo,loja_vida,rolamento}.png` e `assets/cenario/centro_academico.png`: gerados com o Nano Banana 2 (via Cloudinary). Para os ícones, a referência de estilo foi uma folha com seis ícones de objetos do HoloCure (moeda, curativo, doce, pena, peixe, chapéu), só para o traço de pixel art; os desenhos são novos e nenhum sprite do HoloCure foi copiado para o projeto. Para o fundo, a referência foi o nosso `titulo_fundo.png`. A folha de ícones foi recortada em 8 e reduzida para 64x64 sem suavizar; o fundo passou por `ferramentas/preparar_arte.py --tela 1280x720`.

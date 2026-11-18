@@ -1,4 +1,4 @@
-"""Coisas que o herói pega no chão: notas (experiência), café, poção e baú."""
+"""Coisas que o herói pega no chão: notas (experiência), café, poção, moedas e baú."""
 import math
 from abc import ABC, abstractmethod
 
@@ -92,6 +92,24 @@ class PocaoDeVida(Coletavel):
         jogo.jogador.curar(self.CURA)
         jogo.adicionar(TextoFlutuante(f"+{self.CURA}", self.posicao, Cor.CURA, 18))
         Recursos.tocar("coleta", 0.4)
+
+
+class Moeda(Coletavel):
+    """Moeda do Centro Acadêmico: gasta na loja e no cassino, entre as partidas."""
+
+    IMAGEM = "icones/moeda.png"
+    ALTURA = 20
+
+    def __init__(self, posicao, valor=1):
+        super().__init__(posicao, raio=10)
+        self.valor = valor
+
+    def ao_coletar(self, jogo):
+        jogo.ganhar_moedas(self.valor)
+        Recursos.tocar("moeda", 0.25)
+
+    def altura_desenho(self):
+        return 28 if self.valor >= 5 else self.ALTURA
 
 
 class Bau(Coletavel):

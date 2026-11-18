@@ -43,5 +43,7 @@ class CenaPausa(Cena):
         escurecer(tela, 160)
         desenhar_texto(tela, "PAUSADO", 56, Cor.DESTAQUE, centro=(LARGURA // 2, 180))
         self.menu.desenhar(tela)
-        desenhar_texto(tela, "WASD ou setas: andar    Mouse: mirar (clique alterna mira automática)    Espaço: especial    Esc: pausar", 16, Cor.TEXTO_FRACO,
-                       centro=(LARGURA // 2, ALTURA - 40))
+        desenhar_texto(tela, "WASD ou setas: andar    Mouse: mirar (clique alterna mira automática)", 16, Cor.TEXTO_FRACO,
+                       centro=(LARGURA // 2, ALTURA - 62))
+        desenhar_texto(tela, "Espaço: especial    Shift ou botão direito: rolar (invencível)    Esc: pausar", 16,
+                       Cor.TEXTO_FRACO, centro=(LARGURA // 2, ALTURA - 38))

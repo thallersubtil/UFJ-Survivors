@@ -13,6 +13,9 @@ class CenaFimDeJogo(Cena):
         self.jogo = jogo
         self.nome = ""
         self.tempo = 0.0
+        self.moedas = jogo.moedas_ganhas()
+        if self.moedas:
+            app.progresso.ganhar(self.moedas)
         pygame.key.start_text_input()
 
     @staticmethod
@@ -59,7 +62,7 @@ class CenaFimDeJogo(Cena):
         frase = "Você passou em todas as provas do semestre!" if venceu else self.motivo(self.jogo)
         desenhar_texto(tela, titulo, 72, Cor.APROVADO if venceu else Cor.REPROVADO, centro=(LARGURA // 2, 110))
         desenhar_texto(tela, frase, 22, Cor.TEXTO, centro=(LARGURA // 2, 170))
-        painel = pygame.Rect(0, 0, 560, 250)
+        painel = pygame.Rect(0, 0, 640, 290)
         painel.center = (LARGURA // 2, 340)
         desenhar_painel(tela, painel)
         placar = self.jogo.placar
@@ -69,6 +72,7 @@ class CenaFimDeJogo(Cena):
             ("Eliminações", str(placar.eliminacoes)),
             ("Nível", str(self.jogo.jogador.nivel)),
             ("Combos 67", str(placar.combos_67)),
+            ("Moedas para o Centro Acadêmico", f"+{self.moedas}"),
         )
         for i, (rotulo, valor) in enumerate(linhas):
             y = painel.top + 26 + i * 42

@@ -80,6 +80,11 @@ def main():
     gravar("claude", tom(1400, 300, 0.18, "senoidal", 0.5, ruido=0.2))
     gravar("vitoria", arpejo([523, 523, 784, 1046], 0.16, "quadrada", 0.35) + tom(1046, 1046, 0.5, "triangular", 0.4))
     gravar("derrota", arpejo([392, 370, 349], 0.22, "quadrada", 0.35) + tom(330, 160, 0.7, "triangular", 0.4))
+    gravar("rolar", tom(520, 160, 0.14, "senoidal", 0.35, ruido=0.55))
+    gravar("moeda", arpejo([1318, 1760], 0.05, "quadrada", 0.25))
+    gravar("giro", tom(1500, 1500, 0.015, "quadrada", 0.15))
+    gravar("premio", arpejo([659, 784, 1046, 1318, 1568], 0.06, "quadrada", 0.35))
+    gravar("compra", arpejo([784, 1175], 0.07, "triangular", 0.4))
     gerar_67()
     print(f"sons gravados em {PASTA}")
 

@@ -73,4 +73,27 @@ class GarrafaTermica(Item):
         jogador.mult_cafe *= 1 + 0.25 * self.nivel
 
 
-ITENS = (CadernoDeResumos, Energetico, MarmitaDoRU, MochilaPesada, FoneDeOuvido, RelogioDePulso, GarrafaTermica)
+class TenisDeCorrida(Item):
+    NOME = "Tênis de Corrida"
+    DESCRICAO = "O rolamento recarrega 15% mais rápido por nível."
+    ICONE = "icones/tenis.png"
+    MELHORIAS = ("-15% de recarga do rolamento.", "-15% de recarga do rolamento.")
+    PRECO_DESBLOQUEIO = 250
+
+    def aplicar(self, jogador):
+        jogador.mult_rolamento *= 1 - 0.15 * self.nivel
+
+
+class OculosDeGrau(Item):
+    NOME = "Óculos de Grau"
+    DESCRICAO = "Enxerga o ponto fraco: +5% de chance de crítico por nível."
+    ICONE = "icones/oculos.png"
+    MELHORIAS = ("+5% de crítico.", "+5% de crítico.")
+    PRECO_DESBLOQUEIO = 300
+
+    def aplicar(self, jogador):
+        jogador.chance_critico += 0.05 * self.nivel
+
+
+ITENS = (CadernoDeResumos, Energetico, MarmitaDoRU, MochilaPesada, FoneDeOuvido, RelogioDePulso, GarrafaTermica,
+         TenisDeCorrida, OculosDeGrau)

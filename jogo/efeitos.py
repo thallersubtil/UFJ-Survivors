@@ -189,3 +189,34 @@ class RaioDebate(Efeito):
         pygame.draw.line(tela, (240, 130, 60), inicio, fim, int(8 + tremor))
         pygame.draw.line(tela, (120, 240, 200), inicio, fim, 4)
         pygame.draw.line(tela, (255, 255, 255), inicio, fim, 2)
+
+
+class EstouroDePequi(Efeito):
+    """Explosão de espinhos do Pequi: fere uma vez cada inimigo na área (menos o que já levou o pequi)."""
+
+    def __init__(self, posicao, raio, dano, excluir=None):
+        super().__init__(posicao, 0.3, raio)
+        self.dano = dano
+        self.excluir = excluir
+        self._feriu = False
+
+    def ao_atualizar(self, dt, jogo):
+        if self._feriu:
+            return
+        self._feriu = True
+        for inimigo in jogo.inimigos_proximos(self.posicao, self.raio):
+            if inimigo is not self.excluir:
+                jogo.causar_dano(inimigo, self.dano, inimigo.posicao - self.posicao)
+
+    def desenhar(self, tela, camera):
+        c = camera.para_tela(self.posicao)
+        r = self.raio * (0.5 + 0.5 * self.fracao)
+        alfa = int(230 * (1 - self.fracao))
+        lado = int(self.raio * 2.4)
+        sup = pygame.Surface((lado, lado), pygame.SRCALPHA)
+        meio = pygame.Vector2(lado / 2, lado / 2)
+        pygame.draw.circle(sup, (250, 200, 40, alfa // 3), meio, int(r))
+        for i in range(12):
+            direcao = pygame.Vector2(1, 0).rotate(i * 30 + 15 * self.fracao)
+            pygame.draw.line(sup, (120, 170, 40, alfa), meio + direcao * r * 0.3, meio + direcao * r, 3)
+        tela.blit(sup, sup.get_rect(center=(round(c.x), round(c.y))))

@@ -10,9 +10,15 @@ class Arma(ABC):
     NIVEL_MAXIMO = 7
     ATRIBUTOS = {}
     MELHORIAS = ()
+    PRECO_DESBLOQUEIO = 0      # > 0: só aparece nas cartas depois de comprado no Centro Acadêmico
 
     def __init__(self):
         self._nivel = 1
+
+    @classmethod
+    def liberada(cls, desbloqueios):
+        """Se pode aparecer nas cartas, dado o conjunto de nomes de classes desbloqueadas."""
+        return cls.PRECO_DESBLOQUEIO <= 0 or cls.__name__ in desbloqueios
 
     @property
     def nivel(self):

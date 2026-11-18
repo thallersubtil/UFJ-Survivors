@@ -10,6 +10,7 @@ from jogo.cenas.treino import CenaTreino
 from jogo.fase import PROVAS, ProvaDeArquiteturaEED, ProvaDeTDEPOO
 from jogo.jogador.classes import Programador
 from jogo.opcoes import OpcoesDePartida
+from jogo.loja.progresso import Progresso
 from jogo.ranking import Ranking
 
 
@@ -21,6 +22,7 @@ def tecla(k):
 def app(tmp_path):
     a = Aplicacao(pygame.Surface((1280, 720)))
     a.ranking = Ranking(tmp_path / "ranking.json")
+    a.progresso = Progresso(tmp_path / "progresso.json")
     return a
 
 
@@ -42,7 +44,7 @@ def test_opcoes_de_treino_com_um_chefe_e_direto_nele():
 
 def test_titulo_tem_botao_de_treino(app):
     app.trocar(CenaTitulo(app))
-    app.passo(1 / 60, [tecla(pygame.K_DOWN), tecla(pygame.K_RETURN)])
+    app.passo(1 / 60, [tecla(pygame.K_DOWN), tecla(pygame.K_DOWN), tecla(pygame.K_RETURN)])
     assert isinstance(app.cena_atual, CenaTreino)
 
 

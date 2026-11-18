@@ -179,3 +179,52 @@ class FuscaCircular(Ajudante):
         imagem = self.animador.quadro_atual
         desenhar_sprite(tela, camera, imagem, self.posicao, espelhar=self.olhando_esquerda,
                         deslocamento_y=abs(math.sin(self.tempo * 30)) * 2)
+
+
+class SinalWifi(Ajudante):
+    """Campo do Wi-Fi Eduroam: a cada pulso fere todos dentro do raio, se o sinal não cair."""
+
+    camada = 0
+
+    def __init__(self, dono, arma):
+        super().__init__(dono.posicao, arma.valor("raio"))
+        self.dono = dono
+        self.arma = arma
+        self.tempo = 0.0
+        self._espera = 0.0
+        self.sem_sinal = 0.0
+
+    def atualizar(self, dt, jogo):
+        self.tempo += dt
+        self.posicao = pygame.Vector2(self.dono.posicao)
+        self.raio = self.arma.valor("raio")
+        self.sem_sinal = max(0.0, self.sem_sinal - dt)
+        self._espera -= dt * (1 / self.dono.multiplicador_recarga)
+        if self._espera > 0:
+            return
+        self._espera = self.arma.valor("intervalo")
+        if self.sem_sinal > 0:
+            return
+        if jogo.rng.random() < self.arma.valor("queda") * 0.2:
+            self.sem_sinal = 1.0          # o sinal caiu por um segundo
+            return
+        dano = self.arma.valor("dano") * self.dono.multiplicador_dano
+        for inimigo in jogo.inimigos_proximos(self.posicao, self.raio):
+            jogo.causar_dano(inimigo, dano)
+
+    def esta_visivel(self, camera):
+        return True
+
+    def desenhar(self, tela, camera):
+        c = camera.para_tela(self.posicao)
+        lado = int(self.raio * 2 + 8)
+        sup = pygame.Surface((lado, lado), pygame.SRCALPHA)
+        meio = (lado // 2, lado // 2)
+        if self.sem_sinal > 0:
+            pygame.draw.circle(sup, (160, 160, 170, 40), meio, int(self.raio), 2)
+        else:
+            pulso = (self.tempo * 1.5) % 1.0
+            pygame.draw.circle(sup, (90, 200, 255, 28), meio, int(self.raio))
+            pygame.draw.circle(sup, (140, 220, 255, 110), meio, int(self.raio), 2)
+            pygame.draw.circle(sup, (180, 240, 255, int(140 * (1 - pulso))), meio, max(2, int(self.raio * pulso)), 2)
+        tela.blit(sup, sup.get_rect(center=(round(c.x), round(c.y))))

@@ -34,6 +34,8 @@ class Jogo:
     MARGEM_BUSCA = 64
 
     CURA_ENTRE_PROVAS = 0.5      # fração da vida máxima recuperada ao passar de prova
+    MOEDAS_POR_PROVA = 150       # bônus de moedas a cada prova aprovada
+    MOEDAS_POR_MINUTO = 6        # bolsa pelo tempo sobrevivido, paga no fim
 
     def __init__(self, classe_jogador, fase=None, semente=None, mapa=None, fases=None, aparencia=None):
         self.rng = random.Random(semente)
@@ -75,6 +77,8 @@ class Jogo:
         jogo = cls(classe_jogador, fases=opcoes.criar_fases(), semente=semente, aparencia=opcoes.aparencia)
         jogo.treino = opcoes.treino
         jogo.jogador.imortal = opcoes.imortal
+        jogo.jogador.desbloqueios = opcoes.desbloqueios
+        jogo.jogador.receber_melhorias(opcoes.melhorias)
         if opcoes.direto_no_chefe:
             jogo.evoluir_jogador(jogo.fase.NIVEL_TREINO - 1)
         return jogo
@@ -214,8 +218,18 @@ class Jogo:
         return True
 
     def dar_experiencia(self, quantidade):
-        niveis = self.jogador.ganhar_experiencia(quantidade)
+        niveis = self.jogador.ganhar_experiencia(quantidade * self.jogador.mult_experiencia)
         self.niveis_pendentes += niveis
+
+    def ganhar_moedas(self, quantidade):
+        self.placar.adicionar_moedas(round(quantidade * self.jogador.mult_moedas))
+
+    def moedas_ganhas(self):
+        """Moedas que vão para o Centro Acadêmico: as pegas mais a bolsa pelo tempo. Treino não paga."""
+        if self.treino:
+            return 0
+        bolsa = round(self.placar.tempo / 60 * self.MOEDAS_POR_MINUTO * self.jogador.mult_moedas)
+        return self.placar.moedas + bolsa
 
     def soltar_nota(self, posicao, valor):
         """Solta uma nota; acima do limite, soma o valor na última nota solta."""
@@ -244,6 +258,7 @@ class Jogo:
         concluida = self.fase
         self.chefe = None
         self._incorporar_novas()     # o que nasceu neste quadro também sai
+        self.ganhar_moedas(self.MOEDAS_POR_PROVA)
         if self.ultima_fase:
             self.terminar(venceu=True)
             return

@@ -8,3 +8,4 @@ arte_bruta/
 
 # estado de trabalho local
 .claude/trabalho/
+dados/progresso.json
