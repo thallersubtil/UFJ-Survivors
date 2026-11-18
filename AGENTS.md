@@ -60,7 +60,7 @@ jogo/loja/             Centro Acadêmico: Progresso (moedas e compras salvas), M
 jogo/inimigos/         Inimigo (abstrata), FabricaDeInimigos, um arquivo por lacaio, Chefe, ChefePossuido e os três chefes
 jogo/inimigos/materias/  Materia (abstrata) e as cinco matérias: os ataques de cada chefe
 jogo/armas/            Arma, ArmaDeDisparo (usa café), ArmaSemMunicao (não usa café), uma arma por arquivo, colabs.py
-jogo/itens/            Item (abstrata) e os 9 itens passivos (2 só depois de comprados na loja)
+jogo/itens/            Item (abstrata) e os 10 itens passivos (2 só depois de comprados na loja; a Cola só aparece ao subir de nível)
 jogo/projeteis/  jogo/ajudantes/  jogo/coletaveis/  jogo/efeitos.py   o que as armas e inimigos colocam na arena
 jogo/progressao.py     cartas de nível e prêmio do baú
 jogo/cenas/            telas (Cena abstrata) e o HUD

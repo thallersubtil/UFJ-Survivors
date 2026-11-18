@@ -218,8 +218,12 @@ class Jogo:
         return True
 
     def dar_experiencia(self, quantidade):
-        niveis = self.jogador.ganhar_experiencia(quantidade * self.jogador.mult_experiencia)
+        heroi = self.jogador
+        niveis = heroi.ganhar_experiencia(quantidade * heroi.mult_experiencia * heroi.fator_experiencia)
         self.niveis_pendentes += niveis
+        for _ in range(niveis):
+            for item in list(heroi.itens):
+                item.ao_subir_de_nivel(heroi, self)
 
     def ganhar_moedas(self, quantidade):
         self.placar.adicionar_moedas(round(quantidade * self.jogador.mult_moedas))

@@ -22,6 +22,7 @@ class Opcao:
     rotulo: str
     tipo: str
     acao: Callable
+    so_nas_cartas: bool = False     # não sai no baú (ex.: Cola)
 
     def aplicar(self, jogador, jogo):
         self.acao(jogador, jogo)
@@ -50,13 +51,15 @@ class Progressao:
         for item in jogador.itens:
             if not item.no_maximo:
                 opcoes.append(Opcao(item.NOME, item.descricao_proxima(), item.ICONE, f"nível {item.nivel + 1}",
-                                    "melhoria", lambda j, jogo, i=item: j.subir_nivel_item(i)))
+                                    "melhoria", lambda j, jogo, i=item: j.subir_nivel_item(i),
+                                    item.SO_AO_SUBIR_DE_NIVEL))
         if len(jogador.itens) < jogador.MAX_ITENS:
             tem = {type(i) for i in jogador.itens}
             for classe in Progressao.ITENS:
                 if classe not in tem and classe.liberada(jogador.desbloqueios):
                     opcoes.append(Opcao(classe.NOME, classe.DESCRICAO, classe.ICONE, "NOVO", "nova",
-                                        lambda j, jogo, c=classe: j.adicionar_item(c())))
+                                        lambda j, jogo, c=classe: j.adicionar_item(c()),
+                                        classe.SO_AO_SUBIR_DE_NIVEL))
         return opcoes
 
     @staticmethod
@@ -74,7 +77,7 @@ class Progressao:
 
     @staticmethod
     def premio_bau(jogador, rng):
-        candidatas = Progressao.candidatas(jogador)
+        candidatas = [o for o in Progressao.candidatas(jogador) if not o.so_nas_cartas]
         melhorias = [o for o in candidatas if o.tipo in ("melhoria", "colab")]
         if melhorias:
             return rng.choice(melhorias)

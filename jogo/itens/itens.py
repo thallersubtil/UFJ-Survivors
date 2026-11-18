@@ -95,5 +95,60 @@ class OculosDeGrau(Item):
         jogador.chance_critico += 0.05 * self.nivel
 
 
+class Cola(Item):
+    """Notas mais rápido colando, com vida máxima menor e risco de ser pego.
+
+    Pego colando, a cola é confiscada por alguns níveis: sem o bônus e sem o custo, e as notas
+    rendem só metade até a punição acabar. Só aparece nas cartas de nível, nunca no baú.
+    """
+    NOME = "Cola"
+    DESCRICAO = "1,5x de experiência, -15% de vida máxima. Cuidado para não ser pego!"
+    ICONE = "sprites/nota.png"
+    NIVEL_MAXIMO = 2
+    MELHORIAS = ("2x de experiência, -20% de vida máxima.",)
+    SO_AO_SUBIR_DE_NIVEL = True
+    EXPERIENCIA = (1.5, 2.0)
+    CUSTO_VIDA = (0.15, 0.20)
+    CHANCE_FLAGRA = (0.02, 0.03)        # por nível que o herói sobe
+    EXPERIENCIA_PUNIDO = 0.5
+    NIVEIS_DE_PUNICAO = 2
+    REDUCAO_POR_OCULOS = 0.25           # cada nível do Óculos de Grau esconde melhor a cola
+
+    def __init__(self):
+        super().__init__()
+        self._castigo = 0
+
+    @property
+    def punido(self):
+        return self._castigo > 0
+
+    def aplicar(self, jogador):
+        if self.punido:
+            jogador.fator_experiencia *= self.EXPERIENCIA_PUNIDO
+            return
+        jogador.fator_experiencia *= self.EXPERIENCIA[self.nivel - 1]
+        jogador.mult_vida_maxima *= 1 - self.CUSTO_VIDA[self.nivel - 1]
+
+    def chance_de_flagra(self, jogador, jogo):
+        chance = self.CHANCE_FLAGRA[self.nivel - 1]
+        if jogo.chefe is not None and jogo.chefe.ativo:
+            chance *= 2                  # o professor está olhando
+        for item in jogador.itens:
+            if isinstance(item, OculosDeGrau):
+                chance *= max(0.0, 1 - self.REDUCAO_POR_OCULOS * item.nivel)
+        return chance
+
+    def ao_subir_de_nivel(self, jogador, jogo):
+        if self.punido:
+            self._castigo -= 1
+            if not self.punido:
+                jogo.anunciar("Cola devolvida")
+                jogador.recalcular_atributos()
+        elif jogo.rng.random() < self.chance_de_flagra(jogador, jogo):
+            self._castigo = self.NIVEIS_DE_PUNICAO
+            jogo.anunciar("PEGO COLANDO!", 3)
+            jogador.recalcular_atributos()
+
+
 ITENS = (CadernoDeResumos, Energetico, MarmitaDoRU, MochilaPesada, FoneDeOuvido, RelogioDePulso, GarrafaTermica,
-         TenisDeCorrida, OculosDeGrau)
+         TenisDeCorrida, OculosDeGrau, Cola)

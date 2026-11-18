@@ -88,6 +88,8 @@ class Jogador(SerVivo, ABC):
         self.alcance_coleta = self.ALCANCE_COLETA_BASE
         self.vida_maxima_extra = 0
         self.mult_experiencia = 1.0
+        self.fator_experiencia = 1.0  # multiplica tudo (Cola); mult_experiencia soma as melhorias
+        self.mult_vida_maxima = 1.0
         self.mult_moedas = 1.0
 
     def recalcular_atributos(self):
@@ -99,7 +101,7 @@ class Jogador(SerVivo, ABC):
             item.aplicar(self)
         for melhoria in self.melhorias:
             melhoria.aplicar(self)
-        self.vida_maxima = self.VIDA + self.vida_maxima_extra
+        self.vida_maxima = (self.VIDA + self.vida_maxima_extra) * self.mult_vida_maxima
         if self.vida_maxima > maxima_antes:
             self.curar(self.vida_maxima - maxima_antes)
 

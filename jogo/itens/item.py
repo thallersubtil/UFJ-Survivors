@@ -9,6 +9,7 @@ class Item(ABC):
     NIVEL_MAXIMO = 3
     MELHORIAS = ()
     PRECO_DESBLOQUEIO = 0      # > 0: só aparece nas cartas depois de comprado no Centro Acadêmico
+    SO_AO_SUBIR_DE_NIVEL = False   # True: só nas cartas de nível, nunca como prêmio do baú
 
     def __init__(self):
         self._nivel = 1
@@ -39,6 +40,9 @@ class Item(ABC):
 
     def descricao_proxima(self):
         return "" if self.no_maximo else self.MELHORIAS[self._nivel - 1]
+
+    def ao_subir_de_nivel(self, jogador, jogo):
+        """Chamado a cada nível que o herói sobe. A maioria dos itens não faz nada."""
 
     @abstractmethod
     def aplicar(self, jogador):
