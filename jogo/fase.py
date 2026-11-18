@@ -33,6 +33,8 @@ class Fase(ABC):
         self._apresentados = 0
         self._espera = 0.0
         self.chefe_apareceu = False
+        self.greve = 0.0              # segundos de greve restantes: sem inimigos novos, chuva de notas
+        self._espera_nota = 0.0
         self.eventos = sorted(self.criar_eventos(), key=lambda e: e.tempo)
 
     @abstractmethod
@@ -59,8 +61,9 @@ class Fase(ABC):
             if not evento.executado and evento.tempo <= self.tempo:
                 evento.executado = True
                 evento.acao(jogo)
+        self._atualizar_greve(dt, jogo)
         self._espera -= dt
-        if self._espera <= 0 and self.ativos:
+        if self._espera <= 0 and self.ativos and self.greve <= 0:
             self._espera = self.INTERVALO_NASCIMENTO
             if len(jogo.inimigos) < self.alvo_de_inimigos():
                 self.nascer(jogo, jogo.rng.choice(self.ativos))
@@ -109,6 +112,38 @@ class Fase(ABC):
             jogo.adicionar(FabricaDeInimigos.criar(nome, (x, y), self.escala_dificuldade))
         jogo.anunciar("Lá vem a turma!", 1.5)
 
+    DURACAO_GREVE = 30.0
+    INTERVALO_NOTA_GREVE = 0.5
+    VALOR_NOTA_GREVE = 2
+
+    def iniciar_greve(self, jogo):
+        """Evento Greve: sem aula por um tempo. Ninguém novo aparece e chovem notas."""
+        self.greve = self.DURACAO_GREVE
+        self._espera_nota = 0.0
+        for inimigo in jogo.inimigos:
+            inimigo.assustar(4.0)
+        jogo.anunciar("GREVE! Sem aula por 30 s", 3)
+
+    def _atualizar_greve(self, dt, jogo):
+        if self.greve <= 0:
+            return
+        self.greve -= dt
+        if self.greve <= 0:
+            jogo.anunciar("Fim da greve: volta às aulas", 2.5)
+            return
+        self._espera_nota -= dt
+        if self._espera_nota <= 0:
+            self._espera_nota = self.INTERVALO_NOTA_GREVE
+            angulo = jogo.rng.uniform(0, 2 * math.pi)
+            distancia = jogo.rng.uniform(120, 380)
+            posicao = jogo.jogador.posicao + pygame.Vector2(math.cos(angulo), math.sin(angulo)) * distancia
+            jogo.soltar_nota(jogo.mapa.empurrar(posicao, 12), self.VALOR_NOTA_GREVE)
+
+    def chamar_monitor(self, jogo):
+        monitor = FabricaDeInimigos.criar("monitor_possuido", self.posicao_de_nascimento(jogo), self.escala_dificuldade)
+        jogo.adicionar(monitor)
+        jogo.anunciar("Mini-chefe: Monitor Possuído!", 3)
+
     def chamar_mini_chefe(self, jogo, nome):
         gigante = FabricaDeInimigos.criar_gigante(nome, self.posicao_de_nascimento(jogo), self.escala_dificuldade)
         jogo.adicionar(gigante)
@@ -134,11 +169,17 @@ class Prova(Fase):
     NIVEL_TREINO = 1             # nível típico do aluno quando o chefe chega (treino direto no chefe)
     FORMACOES = ()               # um lacaio por minuto, alternando círculo e parede
     MINI_CHEFES = ()             # (segundos, nome do lacaio que vira gigante)
+    GREVE = None                 # segundos em que começa a greve (None: sem greve)
+    MONITOR = None               # segundos em que chega o Monitor Possuído (None: não vem)
 
     def criar_eventos(self):
         eventos = [EventoDaFase(tempo, lambda jogo, n=nome: self.chamar_mini_chefe(jogo, n), f"{nome} gigante")
                    for tempo, nome in self.MINI_CHEFES]
         eventos.append(EventoDaFase(self.DURACAO, lambda jogo: self.chamar_chefe(jogo, self.CHEFE), "Chefe"))
+        if self.GREVE is not None:
+            eventos.append(EventoDaFase(self.GREVE, self.iniciar_greve, "Greve"))
+        if self.MONITOR is not None:
+            eventos.append(EventoDaFase(self.MONITOR, self.chamar_monitor, "Monitor Possuído"))
         for i, nome in enumerate(self.FORMACOES):
             if i % 2 == 0:
                 acao = lambda jogo, n=nome: self.formacao_circulo(jogo, n, 24)
@@ -168,6 +209,7 @@ class ProvaDeCalculo(Prova):
     )
     FORMACOES = ("bug", "calculadora", "pi", "calculadora")
     MINI_CHEFES = ((150, "calculadora"),)
+    GREVE = 200
 
 
 class ProvaDeArquiteturaEED(Prova):
@@ -187,6 +229,8 @@ class ProvaDeArquiteturaEED(Prova):
     )
     FORMACOES = ("mouse", "ponteiro", "pente_ram", "pilha")
     MINI_CHEFES = ((150, "pente_ram"),)
+    GREVE = 210
+    MONITOR = 100
 
 
 class ProvaDeTDEPOO(Prova):
@@ -208,6 +252,8 @@ class ProvaDeTDEPOO(Prova):
     )
     FORMACOES = ("caixinha", "bug", "ponteiro", "caixinha")
     MINI_CHEFES = ((120, "caixinha"), (210, "ponteiro"))
+    GREVE = 165
+    MONITOR = 75
 
 
 PROVAS = (ProvaDeCalculo, ProvaDeArquiteturaEED, ProvaDeTDEPOO)

@@ -47,6 +47,11 @@ py -3.12 -m venv .venv
 | 1, 2, 3 ou Enter | Escolher carta ao subir de nível |
 | R / P | Sortear as cartas de novo / pular a escolha |
 
+## Eventos das provas
+
+- **Greve:** uma vez por prova (3:20 na 1ª, 3:30 na 2ª, 2:45 na 3ª), por 30 s não chega ninguém novo, os inimigos em campo se assustam e chovem notas em volta do aluno.
+- **Monitor Possuído:** mini-chefe da 2ª e da 3ª prova. Persegue o aluno e arremessa listas de exercícios (três de cada vez); ao morrer solta baú e moedas. Usa a arte do aluno tingida de roxo até ter arte própria.
+
 ## Centro Acadêmico
 
 No menu principal. As moedas pegas nas provas (mais um bônus por prova aprovada e pelo tempo sobrevivido) ficam salvas em `dados/progresso.json` e são gastas na **loja** (melhorias permanentes de vida, dano, velocidade, recarga, rolamento, crítico, coleta, experiência e moedas; e desbloqueio do Pequi Explosivo, do Wi-Fi Eduroam, do Tênis de Corrida e dos Óculos de Grau) ou no **cassino** (Máquina de Salgadinho e Dado do Mestre, só com moedas do jogo). O treino não paga moedas.
