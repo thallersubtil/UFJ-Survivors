@@ -112,6 +112,29 @@ class Moeda(Coletavel):
         return 28 if self.valor >= 5 else self.ALTURA
 
 
+class Bigorna(Coletavel):
+    """Bigorna: afia uma arma (+15% de dano, até 3 vezes por arma). Prefere as que já estão no nível máximo."""
+
+    IMAGEM = "icones/bigorna.png"
+    ALTURA = 40
+    MAGNETICO = False
+
+    def __init__(self, posicao):
+        super().__init__(posicao, raio=20)
+
+    def ao_coletar(self, jogo):
+        afiaveis = [a for a in jogo.jogador.armas if a.pode_afiar]
+        if not afiaveis:
+            jogo.jogador.curar(30)
+            jogo.anunciar("Bigorna: nada para afiar, +30 de vida", 2.5)
+            return
+        no_maximo = [a for a in afiaveis if a.no_maximo]
+        arma = jogo.rng.choice(no_maximo or afiaveis)
+        arma.carimbos += 1
+        jogo.anunciar(f"Bigorna: {arma.NOME} +{round(arma.BONUS_CARIMBO * 100 * arma.carimbos)}% de dano", 3)
+        Recursos.tocar("bau", 0.6)
+
+
 class Bau(Coletavel):
     IMAGEM = "legado/itens/chest_f0.png"
     ALTURA = 52

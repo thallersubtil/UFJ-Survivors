@@ -45,7 +45,16 @@ py -3.12 -m venv .venv
 | Shift ou clique direito | Rolar: esquiva rápida, invencível enquanto dura (recarga de ~1 s) |
 | Esc | Pausar |
 | 1, 2, 3 ou Enter | Escolher carta ao subir de nível |
-| R / P | Sortear as cartas de novo / pular a escolha |
+| R / B / P | Sortear as cartas de novo / banir a carta destacada pelo resto da partida (3 por partida) / pular a escolha |
+
+## Mecânicas inspiradas no HoloCure
+
+- **Aviso antes das formações:** setas vermelhas piscam na borda da tela por 1,2 s antes de um cerco ou de uma parede (dá para sair rolando).
+- **Dano com variação de ±10%** e crítico acima de 100% de chance virando dano extra.
+- **Cartas com peso:** a Cola e o que foi comprado na loja aparecem menos. **B** bane uma carta; sem nada para oferecer, aparecem cartas de atributo (Estudo Extra, Café Reforçado, Fôlego, Lanche da Cantina).
+- **Inimigos com peso por prova:** os da matéria de cada prova aparecem mais.
+- **Moedas por prova:** a 2ª paga 1,2x e a 3ª 1,4x.
+- **Bigorna:** o Monitor Possuído deixa uma bigorna que afia uma arma (+15% de dano, até 3 vezes por arma).
 
 ## Eventos das provas
 

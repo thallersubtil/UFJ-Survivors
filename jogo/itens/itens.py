@@ -110,6 +110,7 @@ class Cola(Item):
     NIVEL_MAXIMO = 2
     MELHORIAS = ("2x de experiência, -20% de vida máxima.",)
     SO_AO_SUBIR_DE_NIVEL = True
+    PESO = 0.5                          # aparece menos que os outros
     EXPERIENCIA = (1.5, 2.0)
     CUSTO_VIDA = (0.15, 0.20)
     CHANCE_FLAGRA = (0.02, 0.03)        # por nível que o herói sobe

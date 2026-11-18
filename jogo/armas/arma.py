@@ -12,8 +12,13 @@ class Arma(ABC):
     MELHORIAS = ()
     PRECO_DESBLOQUEIO = 0      # > 0: só aparece nas cartas depois de comprado no Centro Acadêmico
 
+    PESO = 1.0                 # chance relativa de aparecer nas cartas
+    MAX_CARIMBOS = 3           # vezes que a Bigorna pode afiar esta arma
+    BONUS_CARIMBO = 0.15       # +15% de dano por carimbo
+
     def __init__(self):
         self._nivel = 1
+        self.carimbos = 0
 
     @classmethod
     def liberada(cls, desbloqueios):
@@ -44,7 +49,14 @@ class Arma(ABC):
         """Gancho para armas que precisam reagir à melhoria."""
 
     def valor(self, atributo):
-        return self.ATRIBUTOS[atributo][self._nivel - 1]
+        valor = self.ATRIBUTOS[atributo][self._nivel - 1]
+        if atributo == "dano":
+            valor *= 1 + self.BONUS_CARIMBO * self.carimbos
+        return valor
+
+    @property
+    def pode_afiar(self):
+        return self.carimbos < self.MAX_CARIMBOS
 
     def descricao_proxima(self):
         return "" if self.no_maximo else self.MELHORIAS[self._nivel - 1]

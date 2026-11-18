@@ -244,3 +244,45 @@ class OndaDoGrito(Efeito):
         pygame.draw.circle(sup, (255, 200, 60, alfa // 4), meio, raio)
         pygame.draw.circle(sup, (255, 230, 120, alfa), meio, raio, 4)
         tela.blit(sup, sup.get_rect(center=(round(c.x), round(c.y))))
+
+
+class AvisoDeFormacao(Efeito):
+    """Setas piscando na borda da tela antes de um cerco ou de uma parede; no fim, chama a formação.
+
+    `lados`: -1 esquerda, 1 direita, -2 em cima, 2 embaixo.
+    """
+
+    camada = 4
+
+    def __init__(self, lados, duracao, ao_terminar):
+        super().__init__(pygame.Vector2(), duracao)
+        self.lados = tuple(lados)
+        self.ao_terminar = ao_terminar
+
+    def atualizar(self, dt, jogo):
+        self.tempo += dt
+        if self.tempo >= self.duracao:
+            self.remover()
+            self.ao_terminar()
+
+    def esta_visivel(self, camera):
+        return True
+
+    def desenhar(self, tela, camera):
+        if int(self.tempo * 8) % 2:
+            return
+        largura, altura = tela.get_size()
+        for lado in self.lados:
+            for i in (-1, 0, 1):
+                if abs(lado) == 1:
+                    x = 26 if lado < 0 else largura - 26
+                    y = altura // 2 + i * 120
+                    base = x - 16 * lado
+                    pontos = [(x, y), (base, y - 18), (base, y + 18)]
+                else:
+                    y = 26 if lado < 0 else altura - 26
+                    x = largura // 2 + i * 200
+                    base = y - 16 * (1 if lado > 0 else -1)
+                    pontos = [(x, y), (x - 18, base), (x + 18, base)]
+                pygame.draw.polygon(tela, (235, 70, 60), pontos)
+                pygame.draw.polygon(tela, Cor.BORDA_ESCURA, pontos, 3)

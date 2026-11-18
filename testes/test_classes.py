@@ -93,7 +93,7 @@ def test_sem_chance_de_critico_o_dano_e_o_normal(jogo_limpo):
     jogo._incorporar_novas()
     vida = bug.vida
     jogo.causar_dano(bug, 10)
-    assert vida - bug.vida == 10
+    assert 9 <= vida - bug.vida <= 11            # variação de ±10%, sem crítico
 
 
 def test_virada_de_noite_enche_o_cafe_e_acelera_as_armas(jogo_limpo):

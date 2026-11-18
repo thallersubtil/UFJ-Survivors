@@ -2,7 +2,7 @@ import math
 
 import pygame
 
-from jogo.coletaveis.coletaveis import Moeda
+from jogo.coletaveis.coletaveis import Bigorna, Moeda
 from jogo.inimigos.fabrica import FabricaDeInimigos
 from jogo.inimigos.inimigo import Inimigo
 from jogo.nucleo.animacao import Animador
@@ -67,6 +67,7 @@ class MonitorPossuido(Inimigo):
     def ao_morrer(self, jogo):
         super().ao_morrer(jogo)
         jogo.adicionar(Moeda(self.posicao - (16, 0), self.MOEDAS))
+        jogo.adicionar(Bigorna(self.posicao + (30, 10)))
 
     def desenhar_corpo(self, tela, camera):
         c = camera.para_tela(self.posicao)

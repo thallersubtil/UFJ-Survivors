@@ -9,7 +9,7 @@ import pygame
 from jogo.cenario import Cenario
 from jogo.coletaveis.coletaveis import Moeda, Nota
 from jogo.config import (ALTURA, BONUS_67_DURACAO, BONUS_67_VELOCIDADE, LARGURA,
-                         LIMITE_COLETAVEIS, LIMITE_EFEITOS, SORTEIOS_POR_PARTIDA, Cor)
+                         LIMITE_COLETAVEIS, LIMITE_EFEITOS, SORTEIOS_POR_PARTIDA, BANIMENTOS_POR_PARTIDA, Cor)
 from jogo.efeitos import TextoFlutuante
 from jogo.fase import semestre
 from jogo.jogador.bonus import BonusTemporario
@@ -60,6 +60,7 @@ class Jogo:
         self.niveis_pendentes = 0
         self.baus_pendentes = 0
         self.sorteios_restantes = SORTEIOS_POR_PARTIDA
+        self.banimentos_restantes = BANIMENTOS_POR_PARTIDA
         self.chefe = None
         self.terminou = False
         self.venceu = False
@@ -174,8 +175,8 @@ class Jogo:
             return False
         critico = self._rolar_critico()
         if critico:
-            dano *= self.jogador.MULT_CRITICO
-        dano = max(1, round(dano))
+            dano *= self.jogador.MULT_CRITICO + max(0.0, self.jogador.chance_critico - 1)   # passou de 100%: crítico mais forte
+        dano = max(1, round(dano * self.rng.uniform(1 - self.VARIACAO_DANO, 1 + self.VARIACAO_DANO)))
         morreu = inimigo.receber_dano(dano)
         if direcao is not None:
             inimigo.empurrar(direcao)
@@ -191,6 +192,8 @@ class Jogo:
         if morreu:
             self._registrar_morte(inimigo)
         return morreu
+
+    VARIACAO_DANO = 0.10          # cada golpe varia ±10%, para os números não repetirem
 
     def _rolar_critico(self):
         """Sorteia um acerto crítico com a chance do herói (só gasta o sorteio se a chance existir)."""
@@ -228,7 +231,7 @@ class Jogo:
                 item.ao_subir_de_nivel(heroi, self)
 
     def ganhar_moedas(self, quantidade):
-        self.placar.adicionar_moedas(round(quantidade * self.jogador.mult_moedas))
+        self.placar.adicionar_moedas(round(quantidade * self.jogador.mult_moedas * self.fase.MULT_MOEDAS))
 
     def moedas_ganhas(self):
         """Moedas que vão para o Centro Acadêmico: as pegas mais a bolsa pelo tempo. Treino não paga."""

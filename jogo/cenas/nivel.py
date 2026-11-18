@@ -6,7 +6,7 @@ from jogo.config import ALTURA, CURA_AO_PULAR, LARGURA, Cor
 from jogo.nucleo.recursos import Recursos
 from jogo.progressao import Progressao
 
-CORES_ROTULO = {"colab": Cor.DESTAQUE, "nova": Cor.APROVADO, "melhoria": Cor.EXPERIENCIA, "lanche": Cor.CURA}
+CORES_ROTULO = {"colab": Cor.DESTAQUE, "nova": Cor.APROVADO, "melhoria": Cor.EXPERIENCIA, "lanche": Cor.CURA, "atributo": Cor.CURA}
 
 
 class CenaNivel(Cena):
@@ -35,6 +35,15 @@ class CenaNivel(Cena):
             self.jogo.sorteios_restantes -= 1
             self._sortear()
 
+    def banir(self):
+        """Tira a carta destacada das cartas pelo resto da partida e sorteia de novo (sem gastar sorteio)."""
+        opcao = self.opcoes[self.indice]
+        if self.jogo.banimentos_restantes <= 0 or opcao.origem is None:
+            return
+        self.jogo.banimentos_restantes -= 1
+        self.jogo.jogador.banir(opcao.origem)
+        self._sortear()
+
     def pular(self):
         self.jogo.jogador.curar(CURA_AO_PULAR)
         self._fechar()
@@ -56,6 +65,8 @@ class CenaNivel(Cena):
                 self.escolher(self.indice)
             elif evento.key == pygame.K_r:
                 self.sortear_de_novo()
+            elif evento.key == pygame.K_b:
+                self.banir()
             elif evento.key == pygame.K_p:
                 self.pular()
         elif evento.type == pygame.MOUSEMOTION:
@@ -92,5 +103,5 @@ class CenaNivel(Cena):
                 desenhar_texto(tela, linha, 16, Cor.TEXTO_FRACO, centro=(r.centerx, y))
                 y += 20
         rodape = (f"[1] [2] [3] ou Enter: escolher    [R] sortear de novo ({self.jogo.sorteios_restantes})    "
-                  f"[P] pular (+{CURA_AO_PULAR} de vida)")
+                  f"[B] banir a destacada ({self.jogo.banimentos_restantes})    [P] pular (+{CURA_AO_PULAR} de vida)")
         desenhar_texto(tela, rodape, 16, Cor.TEXTO, centro=(LARGURA // 2, ALTURA - 60))

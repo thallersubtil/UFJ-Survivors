@@ -9,6 +9,7 @@ class Item(ABC):
     NIVEL_MAXIMO = 3
     MELHORIAS = ()
     PRECO_DESBLOQUEIO = 0      # > 0: só aparece nas cartas depois de comprado no Centro Acadêmico
+    PESO = 1.0                 # chance relativa de aparecer nas cartas
     SO_AO_SUBIR_DE_NIVEL = False   # True: só nas cartas de nível, nunca como prêmio do baú
 
     def __init__(self):

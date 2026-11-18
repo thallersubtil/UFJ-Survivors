@@ -52,6 +52,8 @@ class Jogador(SerVivo, ABC):
         self.aparencia = None         # Aparencia escolhida na personalização
         self.imortal = False          # modo treino
         self.melhorias = []           # melhorias permanentes compradas no Centro Acadêmico
+        self.banidos = set()              # classes de arma e item banidas das cartas nesta partida
+        self.atributos_extras = {"dano": 0.0, "recarga": 0.0, "vida": 0}   # cartas de atributo
         self.desbloqueios = frozenset()   # armas e itens comprados que podem aparecer nas cartas
         self.tempo = 0.0
         self.transformado = False
@@ -104,6 +106,10 @@ class Jogador(SerVivo, ABC):
             item.aplicar(self)
         for melhoria in self.melhorias:
             melhoria.aplicar(self)
+        extras = self.atributos_extras
+        self.mult_dano += extras["dano"]
+        self.mult_recarga *= 1 - extras["recarga"]
+        self.vida_maxima_extra += extras["vida"]
         self.vida_maxima = (self.VIDA + self.vida_maxima_extra) * self.mult_vida_maxima
         if getattr(self, "especial", None) is not None:
             self.especial.cargas_maximas = self.cargas_especial
@@ -162,6 +168,15 @@ class Jogador(SerVivo, ABC):
         if len(self.itens) >= self.MAX_ITENS:
             raise ValueError("o herói já carrega o máximo de itens")
         self.itens.append(item)
+        self.recalcular_atributos()
+
+    def banir(self, classe):
+        """Tira uma arma ou item das cartas pelo resto da partida."""
+        self.banidos.add(classe)
+
+    def ganhar_atributo(self, atributo, valor):
+        """Carta de atributo: soma um bônus permanente nesta partida."""
+        self.atributos_extras[atributo] += valor
         self.recalcular_atributos()
 
     def subir_nivel_item(self, item):

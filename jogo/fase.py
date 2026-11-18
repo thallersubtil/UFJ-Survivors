@@ -25,11 +25,13 @@ class Fase(ABC):
     APRESENTACOES = ()
     INTERVALO_NASCIMENTO = 0.5
     INICIO_DIFICULDADE = 0        # segundos "já jogados": provas seguintes começam mais difíceis
+    MULT_MOEDAS = 1.0             # provas mais adiantadas pagam mais moedas
     PASSO_DIFICULDADE = 180       # segundos para a dificuldade subir 1 ponto
 
     def __init__(self):
         self.tempo = 0.0
         self.ativos = []
+        self.pesos = []               # peso de cada nome em `ativos` no sorteio de quem nasce
         self._apresentados = 0
         self._espera = 0.0
         self.chefe_apareceu = False
@@ -55,7 +57,9 @@ class Fase(ABC):
         self.tempo += dt
         while self._apresentados < len(self.APRESENTACOES) and \
                 self.APRESENTACOES[self._apresentados][0] <= self.tempo:
-            self.ativos.append(self.APRESENTACOES[self._apresentados][1])
+            apresentacao = self.APRESENTACOES[self._apresentados]
+            self.ativos.append(apresentacao[1])
+            self.pesos.append(apresentacao[2] if len(apresentacao) > 2 else 1.0)
             self._apresentados += 1
         for evento in self.eventos:
             if not evento.executado and evento.tempo <= self.tempo:
@@ -66,7 +70,7 @@ class Fase(ABC):
         if self._espera <= 0 and self.ativos and self.greve <= 0:
             self._espera = self.INTERVALO_NASCIMENTO
             if len(jogo.inimigos) < self.alvo_de_inimigos():
-                self.nascer(jogo, jogo.rng.choice(self.ativos))
+                self.nascer(jogo, jogo.rng.choices(self.ativos, weights=self.pesos)[0])
 
     def adiantar_para(self, tempo):
         """Pula a linha do tempo até `tempo` sem executar o que ficou para trás (modo treino)."""
@@ -97,20 +101,32 @@ class Fase(ABC):
                 return p
         return jogo.mapa.empurrar(p, 30)
 
+    def avisar_formacao(self, jogo, tipo, nome, quantidade):
+        """Mostra setas na borda da tela e só depois de AVISO s cria o cerco ou a parede."""
+        from jogo.efeitos import AvisoDeFormacao
+        if tipo == "parede":
+            lado = jogo.rng.choice((-1, 1))
+            jogo.adicionar(AvisoDeFormacao((lado,), self.AVISO, lambda: self.formacao_parede(jogo, nome, quantidade, lado)))
+            jogo.anunciar("Lá vem a turma!", 1.5)
+        else:
+            jogo.adicionar(AvisoDeFormacao((-1, 1, -2, 2), self.AVISO,
+                                           lambda: self.formacao_circulo(jogo, nome, quantidade)))
+            jogo.anunciar("Vão te cercar!", 1.5)
+
+    AVISO = 1.2
+
     def formacao_circulo(self, jogo, nome, quantidade, raio=560):
         for i in range(quantidade):
             direcao = pygame.Vector2(1, 0).rotate(360 * i / quantidade)
             jogo.adicionar(FabricaDeInimigos.criar(nome, jogo.jogador.posicao + direcao * raio,
                                                    self.escala_dificuldade))
-        jogo.anunciar("Cercado!", 1.5)
 
-    def formacao_parede(self, jogo, nome, quantidade):
-        lado = jogo.rng.choice((-1, 1))
+    def formacao_parede(self, jogo, nome, quantidade, lado=None):
+        lado = lado or jogo.rng.choice((-1, 1))
         x = jogo.jogador.posicao.x + lado * (LARGURA / 2 + 60)
         for i in range(quantidade):
             y = jogo.jogador.posicao.y + (i - (quantidade - 1) / 2) * 36
             jogo.adicionar(FabricaDeInimigos.criar(nome, (x, y), self.escala_dificuldade))
-        jogo.anunciar("Lá vem a turma!", 1.5)
 
     DURACAO_GREVE = 30.0
     INTERVALO_NOTA_GREVE = 0.5
@@ -182,10 +198,10 @@ class Prova(Fase):
             eventos.append(EventoDaFase(self.MONITOR, self.chamar_monitor, "Monitor Possuído"))
         for i, nome in enumerate(self.FORMACOES):
             if i % 2 == 0:
-                acao = lambda jogo, n=nome: self.formacao_circulo(jogo, n, 24)
+                acao = lambda jogo, n=nome: self.avisar_formacao(jogo, "circulo", n, 24)
             else:
-                acao = lambda jogo, n=nome: self.formacao_parede(jogo, n, 20)
-            eventos.append(EventoDaFase(60 * (i + 1), acao, f"Formação de {nome}"))
+                acao = lambda jogo, n=nome: self.avisar_formacao(jogo, "parede", n, 20)
+            eventos.append(EventoDaFase(60 * (i + 1) - self.AVISO, acao, f"Formação de {nome}"))
         return eventos
 
     def adiantar_para_o_chefe(self):
@@ -200,12 +216,12 @@ class ProvaDeCalculo(Prova):
     ROTULO = "Cálculo I"
     NIVEL_TREINO = 13
     INICIO_DIFICULDADE = 0
-    APRESENTACOES = (
-        (0, "bug"),
-        (30, "calculadora"),
-        (70, "pi"),
-        (110, "caixinha"),
-        (170, "mouse"),
+    APRESENTACOES = (          # (segundos, inimigo, peso no sorteio): os da matéria aparecem mais
+        (0, "bug", 2.0),
+        (30, "calculadora", 3.0),
+        (70, "pi", 3.0),
+        (110, "caixinha", 1.0),
+        (170, "mouse", 1.0),
     )
     FORMACOES = ("bug", "calculadora", "pi", "calculadora")
     MINI_CHEFES = ((150, "calculadora"),)
@@ -219,13 +235,14 @@ class ProvaDeArquiteturaEED(Prova):
     ROTULO = "Arquitetura -> Estrutura de Dados em C"
     NIVEL_TREINO = 34
     INICIO_DIFICULDADE = 240
+    MULT_MOEDAS = 1.2
     APRESENTACOES = (
-        (0, "bug"),
-        (0, "mouse"),
-        (30, "pente_ram"),
-        (70, "ponteiro"),
-        (110, "pilha"),
-        (170, "calculadora"),
+        (0, "bug", 2.0),
+        (0, "mouse", 2.0),
+        (30, "pente_ram", 3.0),
+        (70, "ponteiro", 3.0),
+        (110, "pilha", 2.0),
+        (170, "calculadora", 0.5),
     )
     FORMACOES = ("mouse", "ponteiro", "pente_ram", "pilha")
     MINI_CHEFES = ((150, "pente_ram"),)
@@ -240,15 +257,16 @@ class ProvaDeTDEPOO(Prova):
     ROTULO = "Transformação Digital -> POO"
     NIVEL_TREINO = 50
     INICIO_DIFICULDADE = 480
+    MULT_MOEDAS = 1.4
     APRESENTACOES = (
-        (0, "bug"),
-        (0, "caixinha"),
-        (30, "pi"),
-        (60, "ponteiro"),
-        (90, "pilha"),
-        (120, "mouse"),
-        (150, "pente_ram"),
-        (180, "calculadora"),
+        (0, "bug", 2.0),
+        (0, "caixinha", 3.0),
+        (30, "pi", 1.0),
+        (60, "ponteiro", 2.0),
+        (90, "pilha", 1.0),
+        (120, "mouse", 1.0),
+        (150, "pente_ram", 1.0),
+        (180, "calculadora", 1.0),
     )
     FORMACOES = ("caixinha", "bug", "ponteiro", "caixinha")
     MINI_CHEFES = ((120, "caixinha"), (210, "ponteiro"))
