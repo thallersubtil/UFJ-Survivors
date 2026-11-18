@@ -9,10 +9,10 @@ class Apostila(ArmaSemMunicao):
     DESCRICAO = "Folhas da apostila giram em volta de você de tempos em tempos e ferem quem encosta."
     ATRIBUTOS = {
         "folhas": (1, 1, 2, 2, 2, 3, 3),
-        "dano": (8, 9, 10, 12, 13, 15, 18),
+        "dano": (11, 12, 13, 15, 17, 19, 23),
         "raio": (70, 75, 80, 85, 90, 95, 105),
         "duracao": (3.0, 3.0, 3.5, 3.5, 4.0, 4.0, 5.0),
-        "pausa": (3.0, 3.0, 2.5, 2.5, 2.0, 2.0, 1.5),
+        "pausa": (2.0, 2.0, 1.8, 1.8, 1.5, 1.5, 1.0),
     }
     MELHORIAS = (
         "Mais dano e folhas mais afastadas.",

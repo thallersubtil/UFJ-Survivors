@@ -291,3 +291,49 @@ class FolhaDaApostila(Ajudante):
         if self.duracao - self.tempo < 0.4:          # pisca antes de sumir
             imagem.set_alpha(120 if int(self.tempo * 20) % 2 else 255)
         tela.blit(imagem, imagem.get_rect(center=(round(c.x), round(c.y))))
+
+
+class QuadroBrancoNoChao(Ajudante):
+    """Área do Quadro Branco: quem está dentro anda devagar e leva dano a cada pulso."""
+
+    camada = 0
+    INTERVALO = 0.5
+
+    def __init__(self, dono, arma, posicao):
+        super().__init__(posicao, arma.valor("raio"))
+        self.dono = dono
+        self.arma = arma
+        self.duracao = arma.valor("duracao")
+        self.tempo = 0.0
+        self._espera = 0.0
+
+    def atualizar(self, dt, jogo):
+        self.tempo += dt
+        if self.tempo >= self.duracao:
+            self.remover()
+            return
+        self._espera -= dt
+        pulso = self._espera <= 0
+        if pulso:
+            self._espera = self.INTERVALO
+        dano = self.arma.valor("dano") * self.dono.multiplicador_dano
+        for inimigo in jogo.inimigos_proximos(self.posicao, self.raio):
+            inimigo.atrasar(0.3)
+            if pulso:
+                jogo.causar_dano(inimigo, dano)
+
+    def esta_visivel(self, camera):
+        return True
+
+    def desenhar(self, tela, camera):
+        c = camera.para_tela(self.posicao)
+        lado = int(self.raio * 2 + 8)
+        sup = pygame.Surface((lado, lado), pygame.SRCALPHA)
+        meio = (lado // 2, lado // 2)
+        alfa = 1.0 if self.duracao - self.tempo > 0.5 else (self.duracao - self.tempo) / 0.5
+        pygame.draw.circle(sup, (235, 240, 250, int(70 * alfa)), meio, int(self.raio))
+        pygame.draw.circle(sup, (60, 110, 200, int(170 * alfa)), meio, int(self.raio), 3)
+        for i in range(3):                # rabiscos de pincel atômico
+            y = meio[1] - 18 + i * 18
+            pygame.draw.line(sup, (60, 110, 200, int(120 * alfa)), (meio[0] - 30 + i * 6, y), (meio[0] + 26 - i * 4, y), 3)
+        tela.blit(sup, sup.get_rect(center=(round(c.x), round(c.y))))

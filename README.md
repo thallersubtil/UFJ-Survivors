@@ -58,6 +58,12 @@ No menu principal. As moedas pegas nas provas (mais um bônus por prova aprovada
 | Otaku | Caramelo | Instinto Otaku: chance de crítico (dano em dobro) que cresce a cada nível | Super Saiyajin |
 | Programador | Cobra Python | Cafeinado: armas recarregam 1% mais rápido por nível e o café rende mais | Virada de Noite: café cheio e armas 2,5x mais rápidas por 8 s |
 | Mestre de RPG | Gemini | Rolagem de Iniciativa: o especial recarrega 2% mais rápido por nível | Zoltraak |
+| Monitor | Quadro Branco: área no chão que atrasa e fere | Plantão de Dúvidas: regenera vida e puxa notas de mais longe, crescendo por nível | Revisão para Prova: puxa todas as notas e cura 30% |
+| Gamer | Controle: ricocheteia entre inimigos | Reflexo: rolamento recarrega mais rápido, crescendo por nível | Speedrun: 6 s de velocidade alta e invencibilidade |
+| Calouro | Apostila | Sede de Aprender: +10% de experiência e +1% por nível | Trote Reverso: inimigos em volta levam dano e fogem por 5 s |
+| Cara da Carona | Fusca Azul | Carona Solidária: quem morre possuído pode deixar moeda | Lotação: 4 fuscas cruzam a tela |
+
+As quatro últimas ainda usam a arte do Programador ou do Otaku (provisória). Na tela de escolha, as classes aparecem num carrossel.
 
 **Cola:** item que só aparece nas cartas ao subir de nível (nunca no baú). Nível 1: 1,5x de experiência e -15% de vida máxima; nível 2: 2x e -20%. A cada nível que o aluno sobe há uma chance pequena (2% e 3%) de ser pego colando: a cola é confiscada e as notas rendem só 0,5x pelos 2 níveis seguintes. Com o chefe em campo a chance dobra (o professor está olhando); o Óculos de Grau esconde melhor a cola.
 

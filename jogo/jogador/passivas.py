@@ -33,3 +33,51 @@ class RolagemDeIniciativa(Passiva):
 
     def aplicar(self, jogador):
         jogador.mult_especial *= 1 - min(self.MAXIMO, self.POR_NIVEL * (jogador.nivel - 1))
+
+
+class PlantaoDeDuvidas(Passiva):
+    NOME = "Plantão de Dúvidas"
+    DESCRICAO = "Recupera vida aos poucos e puxa as notas de mais longe; os dois crescem a cada nível."
+    REGENERACAO_BASE = 0.1
+    REGENERACAO_POR_NIVEL = 0.02
+    REGENERACAO_MAXIMA = 0.7
+    COLETA_POR_NIVEL = 0.02
+    COLETA_MAXIMA = 0.6
+
+    def aplicar(self, jogador):
+        n = jogador.nivel - 1
+        jogador.regeneracao += min(self.REGENERACAO_MAXIMA, self.REGENERACAO_BASE + self.REGENERACAO_POR_NIVEL * n)
+        jogador.alcance_coleta *= 1 + min(self.COLETA_MAXIMA, self.COLETA_POR_NIVEL * n)
+
+
+class Reflexo(Passiva):
+    NOME = "Reflexo"
+    DESCRICAO = "O rolamento recarrega 10% mais rápido, e mais 1,5% a cada nível (até 55%)."
+    BASE = 0.10
+    POR_NIVEL = 0.015
+    MAXIMO = 0.55
+
+    def aplicar(self, jogador):
+        jogador.mult_rolamento *= 1 - min(self.MAXIMO, self.BASE + self.POR_NIVEL * (jogador.nivel - 1))
+
+
+class SedeDeAprender(Passiva):
+    NOME = "Sede de Aprender"
+    DESCRICAO = "+10% de experiência, e mais 1% a cada nível (até +40%)."
+    BASE = 0.10
+    POR_NIVEL = 0.01
+    MAXIMO = 0.40
+
+    def aplicar(self, jogador):
+        jogador.mult_experiencia += min(self.MAXIMO, self.BASE + self.POR_NIVEL * (jogador.nivel - 1))
+
+
+class CaronaSolidaria(Passiva):
+    NOME = "Carona Solidária"
+    DESCRICAO = "Inimigo que morre possuído (atropelado) pode deixar uma moeda: 10%, e mais 1% por nível (até 40%)."
+    BASE = 0.10
+    POR_NIVEL = 0.01
+    MAXIMO = 0.40
+
+    def aplicar(self, jogador):
+        jogador.chance_carona += min(self.MAXIMO, self.BASE + self.POR_NIVEL * (jogador.nivel - 1))

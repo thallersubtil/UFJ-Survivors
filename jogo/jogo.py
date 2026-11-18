@@ -7,7 +7,7 @@ from typing import Optional
 import pygame
 
 from jogo.cenario import Cenario
-from jogo.coletaveis.coletaveis import Nota
+from jogo.coletaveis.coletaveis import Moeda, Nota
 from jogo.config import (ALTURA, BONUS_67_DURACAO, BONUS_67_VELOCIDADE, LARGURA,
                          LIMITE_COLETAVEIS, LIMITE_EFEITOS, SORTEIOS_POR_PARTIDA, Cor)
 from jogo.efeitos import TextoFlutuante
@@ -199,6 +199,8 @@ class Jogo:
 
     def _registrar_morte(self, inimigo):
         inimigo.remover()
+        if inimigo.possuido > 0 and self.jogador.chance_carona > 0 and self.rng.random() < self.jogador.chance_carona:
+            self.adicionar(Moeda(inimigo.posicao + (12, 0)))     # Carona Solidária
         if self.placar.registrar_eliminacao(inimigo.valor_em_pontos):
             self._combo_67()
         inimigo.ao_morrer(self)

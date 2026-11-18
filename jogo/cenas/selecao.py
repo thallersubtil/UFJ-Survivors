@@ -21,11 +21,15 @@ class CenaSelecao(Cena):
         for exemplo in self.exemplos:            # o aluno personalizado, caracterizado para cada classe
             if self.opcoes.aparencia is not None:
                 exemplo.vestir(self.opcoes.aparencia)
-        self.cartoes = []
-        for i in range(len(CLASSES)):
+        self.cartoes = []                        # três posições: anterior, escolhida, próxima
+        for deslocamento in (-1, 0, 1):
             r = pygame.Rect(0, 0, 390, 540)
-            r.center = (LARGURA // 2 + (i - (len(CLASSES) - 1) / 2) * 410, 400)
+            r.center = (LARGURA // 2 + deslocamento * 410, 400)
             self.cartoes.append(r)
+
+    def _classe_no_cartao(self, posicao):
+        """Índice da classe mostrada no cartão `posicao` (0, 1 ou 2) do carrossel."""
+        return (self.indice + posicao - 1) % len(CLASSES)
 
     def _comecar(self):
         from jogo.cenas.partida import CenaPartida
@@ -45,15 +49,13 @@ class CenaSelecao(Cena):
                 self._comecar()
             elif evento.key == pygame.K_ESCAPE:
                 self._voltar()
-        elif evento.type == pygame.MOUSEMOTION:
-            for i, r in enumerate(self.cartoes):
-                if r.collidepoint(evento.pos):
-                    self.indice = i
         elif evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
-            for i, r in enumerate(self.cartoes):
+            for posicao, r in enumerate(self.cartoes):
                 if r.collidepoint(evento.pos):
-                    self.indice = i
-                    self._comecar()
+                    if posicao == 1:
+                        self._comecar()
+                    else:
+                        self.indice = self._classe_no_cartao(posicao)
 
     def atualizar(self, dt):
         self.tempo += dt
@@ -63,8 +65,12 @@ class CenaSelecao(Cena):
         desenhar_texto(tela, "ESCOLHA SUA CLASSE", 44, Cor.DESTAQUE, centro=(LARGURA // 2, 70))
         if self.opcoes.treino:
             desenhar_texto(tela, "MODO TREINO", 18, Cor.TEXTO_FRACO, centro=(LARGURA // 2, 112))
-        for i, (heroi, r) in enumerate(zip(self.exemplos, self.cartoes)):
-            self._cartao(tela, heroi, r, i == self.indice)
+        for posicao, r in enumerate(self.cartoes):
+            self._cartao(tela, self.exemplos[self._classe_no_cartao(posicao)], r, posicao == 1)
+        for i in range(len(CLASSES)):            # bolinhas: qual das classes está escolhida
+            cor = Cor.DESTAQUE if i == self.indice else Cor.TEXTO_FRACO
+            pygame.draw.circle(tela, cor, (LARGURA // 2 + (i - (len(CLASSES) - 1) / 2) * 22, ALTURA - 50),
+                               6 if i == self.indice else 4)
         desenhar_texto(tela, "[<- ->] escolher    [Enter] começar    [Esc] voltar", 16, Cor.TEXTO_FRACO,
                        centro=(LARGURA // 2, ALTURA - 24))
 

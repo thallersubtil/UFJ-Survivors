@@ -92,6 +92,7 @@ class Jogador(SerVivo, ABC):
         self.fator_experiencia = 1.0  # multiplica tudo (Cola); mult_experiencia soma as melhorias
         self.mult_vida_maxima = 1.0
         self.cargas_especial = 1
+        self.chance_carona = 0.0       # Cara da Carona: moeda extra de quem morre possuído
         self.mult_moedas = 1.0
 
     def recalcular_atributos(self):

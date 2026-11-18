@@ -35,6 +35,10 @@ classDiagram
     class Otaku
     class Programador
     class MestreDeRPG
+    class Monitor
+    class Gamer
+    class Calouro
+    class CaraDaCarona
     class Inimigo {
         <<abstract>>
         +mover(dt, jogo)*
@@ -262,6 +266,10 @@ classDiagram
     Jogador <|-- Otaku
     Jogador <|-- Programador
     Jogador <|-- MestreDeRPG
+    Jogador <|-- Monitor
+    Jogador <|-- Gamer
+    Jogador <|-- Calouro
+    Jogador <|-- CaraDaCarona
     Passiva <|-- InstintoOtaku
     Inimigo <|-- Bug
     Inimigo <|-- CalculadoraBrava

@@ -8,9 +8,11 @@ from jogo.armas.chatgpt import MascoteChatGPT
 from jogo.armas.claude import MascoteClaude
 from jogo.armas.cobra_python import CobraPython
 from jogo.armas.colabs import Colab
+from jogo.armas.controle import Controle
 from jogo.armas.fusca import FuscaAzul
 from jogo.armas.gemini import Gemini
 from jogo.armas.pequi import PequiExplosivo
+from jogo.armas.quadro_branco import QuadroBranco
 from jogo.armas.wifi import WifiEduroam
 from jogo.itens.itens import ITENS
 
@@ -31,7 +33,7 @@ class Opcao:
 
 class Progressao:
     ARMAS = (CobraPython, Caramelo, MascoteChatGPT, MascoteClaude, Gemini, FuscaAzul, PequiExplosivo, WifiEduroam,
-             Apostila)
+             Apostila, QuadroBranco, Controle)
     ITENS = ITENS
 
     @staticmethod

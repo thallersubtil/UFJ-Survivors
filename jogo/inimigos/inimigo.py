@@ -28,6 +28,7 @@ class Inimigo(SerVivo, ABC):
     DANO = 5
     PONTOS = 10
     EXPERIENCIA = 1
+    FATOR_LENTO = 0.6
     TAMANHO_GRUPO = (1, 1)       # (mínimo, máximo) de inimigos que nascem juntos
     CHANCE_CAFE = 0.03
     CHANCE_POCAO = 0.006
@@ -54,6 +55,8 @@ class Inimigo(SerVivo, ABC):
         self.gigante = False
         self.solta_bau = False
         self.reposiciona = True
+        self.assustado = 0.0
+        self.lento = 0.0
         self.animador = Animador(Recursos.animacoes_ou_imagem(self.PASTA_SPRITE, self.IMAGEM, self.ALTURA))
 
     @classmethod
@@ -117,12 +120,19 @@ class Inimigo(SerVivo, ABC):
         if self.reposiciona and \
                 self.posicao.distance_squared_to(jogo.jogador.posicao) > DISTANCIA_REPOSICIONAR ** 2:
             self.posicao = jogo.fase.posicao_de_nascimento(jogo)
-        if self.possuido > 0:
+        antes = pygame.Vector2(self.posicao)
+        if self.assustado > 0:
+            self.assustado -= dt
+            self._fugir(dt, jogo)
+        elif self.possuido > 0:
             self.possuido -= dt
             self._agir_possuido(dt, jogo)
         else:
             self.mover(dt, jogo)
             self.tocar_jogador(jogo)
+        if self.lento > 0:            # Quadro Branco: anda só uma fração do que andaria
+            self.lento -= dt
+            self.posicao = antes + (self.posicao - antes) * self.FATOR_LENTO
         if self.empurrao.length_squared() > 1:
             self.posicao += self.empurrao * dt
             self.empurrao *= max(0.0, 1 - 8 * dt)
@@ -146,6 +156,18 @@ class Inimigo(SerVivo, ABC):
     def tocar_jogador(self, jogo):
         if Colisao.circulos_colidem(self, jogo.jogador):
             jogo.ferir_jogador(self.DANO)
+
+    def assustar(self, duracao):
+        """Trote Reverso: por um tempo, foge do aluno em vez de atacar."""
+        self.assustado = max(self.assustado, duracao)
+
+    def atrasar(self, duracao):
+        """Quadro Branco: por um tempo, anda mais devagar."""
+        self.lento = max(self.lento, duracao)
+
+    def _fugir(self, dt, jogo):
+        longe = self.posicao + (self.posicao - jogo.jogador.posicao)
+        self.ir_em_direcao(longe, dt, self.velocidade * 1.2)
 
     def possuir(self, duracao):
         """Efeito do Fusca Azul: por um tempo, ataca outros inimigos."""

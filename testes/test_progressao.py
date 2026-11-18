@@ -175,4 +175,4 @@ def test_colab_funde_as_armas_e_libera_vaga_para_uma_nova(jogo_limpo):
     colab.aplicar(j, jogo)
     assert len(j.armas) == 3
     novas = {o.titulo for o in Progressao.candidatas(j) if o.rotulo == "NOVA"}
-    assert novas == {"Caramelo", "Fusca Azul", "Apostila"}
+    assert novas == {"Caramelo", "Fusca Azul", "Apostila", "Quadro Branco", "Controle"}
