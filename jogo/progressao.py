@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 from typing import Callable
 
+from jogo.armas.apostila import Apostila
 from jogo.armas.caramelo import Caramelo
 from jogo.armas.chatgpt import MascoteChatGPT
 from jogo.armas.claude import MascoteClaude
@@ -29,7 +30,8 @@ class Opcao:
 
 
 class Progressao:
-    ARMAS = (CobraPython, Caramelo, MascoteChatGPT, MascoteClaude, Gemini, FuscaAzul, PequiExplosivo, WifiEduroam)
+    ARMAS = (CobraPython, Caramelo, MascoteChatGPT, MascoteClaude, Gemini, FuscaAzul, PequiExplosivo, WifiEduroam,
+             Apostila)
     ITENS = ITENS
 
     @staticmethod

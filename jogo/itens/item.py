@@ -41,6 +41,9 @@ class Item(ABC):
     def descricao_proxima(self):
         return "" if self.no_maximo else self.MELHORIAS[self._nivel - 1]
 
+    def atualizar(self, dt, jogador, jogo):
+        """Chamado a cada quadro. Só itens com efeito ativo (ex.: Convite da Atlética) usam."""
+
     def ao_subir_de_nivel(self, jogador, jogo):
         """Chamado a cada nível que o herói sobe. A maioria dos itens não faz nada."""
 

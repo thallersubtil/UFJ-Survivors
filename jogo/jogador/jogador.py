@@ -61,6 +61,7 @@ class Jogador(SerVivo, ABC):
         self.passiva = self.criar_passiva()
         self.recalcular_atributos()
         self.especial = self.criar_especial()
+        self.especial.cargas_maximas = self.cargas_especial
         self.adicionar_arma(self.criar_arma_inicial())
 
     @abstractmethod
@@ -90,6 +91,7 @@ class Jogador(SerVivo, ABC):
         self.mult_experiencia = 1.0
         self.fator_experiencia = 1.0  # multiplica tudo (Cola); mult_experiencia soma as melhorias
         self.mult_vida_maxima = 1.0
+        self.cargas_especial = 1
         self.mult_moedas = 1.0
 
     def recalcular_atributos(self):
@@ -102,6 +104,8 @@ class Jogador(SerVivo, ABC):
         for melhoria in self.melhorias:
             melhoria.aplicar(self)
         self.vida_maxima = (self.VIDA + self.vida_maxima_extra) * self.mult_vida_maxima
+        if getattr(self, "especial", None) is not None:
+            self.especial.cargas_maximas = self.cargas_especial
         if self.vida_maxima > maxima_antes:
             self.curar(self.vida_maxima - maxima_antes)
 
@@ -270,6 +274,8 @@ class Jogador(SerVivo, ABC):
         self.especial.atualizar(dt, self.mult_recarga * self.mult_especial)
         for arma in list(self.armas):
             arma.atualizar(dt, jogo, self)
+        for item in list(self.itens):
+            item.atualizar(dt, self, jogo)
 
     def desenhar(self, tela, camera):
         imagem = self.animador.quadro_atual

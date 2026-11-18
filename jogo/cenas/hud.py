@@ -45,6 +45,9 @@ class Hud:
             tela.blit(veu, veu.get_rect(center=centro))
         else:
             desenhar_texto(tela, "ESPAÇO", 11, Cor.DESTAQUE, centro=(centro.x, centro.y + 26))
+        if especial.cargas_maximas > 1:         # Pendrive: quantas cargas estão guardadas
+            desenhar_texto(tela, f"x{especial.cargas}", 13, Cor.DESTAQUE if especial.cargas else Cor.TEXTO_FRACO,
+                           topo_direita=(centro.x + 24, centro.y - 26))
 
     def _armas_e_itens(self, tela, jogo):
         j = jogo.jogador

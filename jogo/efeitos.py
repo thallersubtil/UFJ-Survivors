@@ -220,3 +220,27 @@ class EstouroDePequi(Efeito):
             direcao = pygame.Vector2(1, 0).rotate(i * 30 + 15 * self.fracao)
             pygame.draw.line(sup, (120, 170, 40, alfa), meio + direcao * r * 0.3, meio + direcao * r, 3)
         tela.blit(sup, sup.get_rect(center=(round(c.x), round(c.y))))
+
+
+class OndaDoGrito(Efeito):
+    """Anel que se abre em volta do herói no grito de guerra da Atlética."""
+
+    camada = 1
+
+    def __init__(self, dono, raio, duracao=0.45):
+        super().__init__(dono.posicao, duracao)
+        self.dono = dono
+        self.raio_final = raio
+
+    def ao_atualizar(self, dt, jogo):
+        self.posicao = pygame.Vector2(self.dono.posicao)
+
+    def desenhar(self, tela, camera):
+        c = camera.para_tela(self.posicao)
+        raio = max(4, int(self.raio_final * (0.25 + 0.75 * self.fracao)))
+        alfa = int(200 * (1 - self.fracao))
+        sup = pygame.Surface((raio * 2 + 8, raio * 2 + 8), pygame.SRCALPHA)
+        meio = (raio + 4, raio + 4)
+        pygame.draw.circle(sup, (255, 200, 60, alfa // 4), meio, raio)
+        pygame.draw.circle(sup, (255, 230, 120, alfa), meio, raio, 4)
+        tela.blit(sup, sup.get_rect(center=(round(c.x), round(c.y))))

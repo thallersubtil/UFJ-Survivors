@@ -1,4 +1,7 @@
 """Itens passivos. Cada um soma seu efeito em Jogador.recalcular_atributos()."""
+import pygame
+
+from jogo.config import Cor
 from jogo.itens.item import Item
 
 
@@ -150,5 +153,66 @@ class Cola(Item):
             jogador.recalcular_atributos()
 
 
+class ConviteDaAtletica(Item):
+    """Chamado para a Atlética: de tempos em tempos solta um grito de guerra que fere e empurra os inimigos."""
+    NOME = "Convite da Atlética"
+    DESCRICAO = "A cada 12 s, um grito de guerra fere e empurra os inimigos em volta."
+    ICONE = "icones/atletica.png"
+    MELHORIAS = ("Grita a cada 10 s, mais forte e mais longe.", "Grita a cada 8 s, mais forte e mais longe.")
+    INTERVALO = (12.0, 10.0, 8.0)
+    RAIO = (160, 190, 220)
+    DANO = (10, 14, 18)
+    FORCA = 520
+
+    def __init__(self):
+        super().__init__()
+        self._espera = self.INTERVALO[0]
+
+    @property
+    def intervalo(self):
+        return self.INTERVALO[self.nivel - 1]
+
+    @property
+    def raio(self):
+        return self.RAIO[self.nivel - 1]
+
+    def aplicar(self, jogador):
+        """O efeito é ativo (o grito); não mexe nos atributos."""
+
+    def atualizar(self, dt, jogador, jogo):
+        self._espera -= dt
+        if self._espera > 0:
+            return
+        self._espera = self.intervalo
+        self.gritar(jogador, jogo)
+
+    def gritar(self, jogador, jogo):
+        from jogo.efeitos import OndaDoGrito, TextoFlutuante
+        from jogo.nucleo.recursos import Recursos
+        dano = self.DANO[self.nivel - 1] * jogador.multiplicador_dano
+        for inimigo in jogo.inimigos_proximos(jogador.posicao, self.raio):
+            direcao = inimigo.posicao - jogador.posicao
+            if direcao.length_squared() == 0:
+                direcao = pygame.Vector2(1, 0)
+            jogo.causar_dano(inimigo, dano, direcao)
+            inimigo.empurrar(direcao, self.FORCA)
+        jogo.adicionar(OndaDoGrito(jogador, self.raio))
+        jogo.adicionar(TextoFlutuante("VAI, ATLÉTICA!", jogador.posicao - (0, 70), Cor.DESTAQUE, 20, duracao=1.0))
+        Recursos.tocar("especial", 0.3)
+
+
+class Pendrive(Item):
+    """Guarda o especial: mais cargas para usar seguidas."""
+    NOME = "Pendrive"
+    DESCRICAO = "Guarda um especial a mais (2 cargas)."
+    ICONE = "icones/pendrive.png"
+    MELHORIAS = ("O especial recarrega 15% mais rápido.", "Mais uma carga (3 no total).")
+
+    def aplicar(self, jogador):
+        jogador.cargas_especial += 1 if self.nivel < 3 else 2
+        if self.nivel >= 2:
+            jogador.mult_especial *= 0.85
+
+
 ITENS = (CadernoDeResumos, Energetico, MarmitaDoRU, MochilaPesada, FoneDeOuvido, RelogioDePulso, GarrafaTermica,
-         TenisDeCorrida, OculosDeGrau, Cola)
+         TenisDeCorrida, OculosDeGrau, Cola, ConviteDaAtletica, Pendrive)

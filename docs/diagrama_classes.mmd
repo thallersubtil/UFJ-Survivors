@@ -127,9 +127,13 @@ classDiagram
     class Item {
         <<abstract>>
         +aplicar(jogador)*
+        +atualizar(dt, jogador, jogo)
+        +ao_subir_de_nivel(jogador, jogo)
     }
     class Especial {
         <<abstract>>
+        +cargas: int
+        +cargas_maximas: int «property»
         +ativar(dono, jogo)*
     }
     class Passiva {

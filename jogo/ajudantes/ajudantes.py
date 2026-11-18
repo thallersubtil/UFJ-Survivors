@@ -228,3 +228,66 @@ class SinalWifi(Ajudante):
             pygame.draw.circle(sup, (140, 220, 255, 110), meio, int(self.raio), 2)
             pygame.draw.circle(sup, (180, 240, 255, int(140 * (1 - pulso))), meio, max(2, int(self.raio * pulso)), 2)
         tela.blit(sup, sup.get_rect(center=(round(c.x), round(c.y))))
+
+
+class FolhaDaApostila(Ajudante):
+    """Folha da Apostila: gira em volta do herói por um tempo e fere quem encosta."""
+
+    VELOCIDADE_ANGULAR = 3.4       # radianos por segundo
+    RAIO_ACERTO = 16
+    ESPERA_ACERTO = 0.6            # o mesmo inimigo só leva de novo depois disso (uma vez por volta)
+    _imagem = None
+
+    def __init__(self, dono, arma, indice, total, duracao):
+        super().__init__(dono.posicao, self.RAIO_ACERTO)
+        self.dono = dono
+        self.arma = arma
+        self.fase = 2 * math.pi * indice / total
+        self.duracao = duracao
+        self.tempo = 0.0
+        self._acertados = {}
+        self._posicionar()
+
+    def _posicionar(self):
+        angulo = self.fase + self.tempo * self.VELOCIDADE_ANGULAR
+        raio = self.arma.valor("raio")
+        self.posicao = self.dono.posicao + pygame.Vector2(math.cos(angulo), math.sin(angulo)) * raio
+
+    def atualizar(self, dt, jogo):
+        self.tempo += dt
+        if self.tempo >= self.duracao:
+            self.remover()
+            return
+        self._posicionar()
+        for inimigo in list(self._acertados):
+            self._acertados[inimigo] -= dt
+            if self._acertados[inimigo] <= 0:
+                del self._acertados[inimigo]
+        dano = self.arma.valor("dano") * self.dono.multiplicador_dano
+        for inimigo in jogo.inimigos_proximos(self.posicao, self.raio):
+            if inimigo in self._acertados:
+                continue
+            self._acertados[inimigo] = self.ESPERA_ACERTO
+            jogo.causar_dano(inimigo, dano, inimigo.posicao - self.dono.posicao)
+
+    @classmethod
+    def imagem(cls):
+        """Folha de papel em pixel art (desenhada uma vez): contorno escuro, linhas azuis."""
+        if cls._imagem is None:
+            sup = pygame.Surface((14, 18), pygame.SRCALPHA)
+            sup.fill((30, 26, 40))
+            sup.fill((250, 248, 236), pygame.Rect(1, 1, 12, 16))
+            sup.fill((214, 210, 196), pygame.Rect(1, 15, 12, 2))
+            for y in (5, 8, 11):
+                sup.fill((110, 150, 220), pygame.Rect(3, y, 8, 1))
+            sup.fill((220, 80, 80), pygame.Rect(3, 2, 1, 14))
+            cls._imagem = pygame.transform.scale(sup, (28, 36))
+        return cls._imagem
+
+    def desenhar(self, tela, camera):
+        c = camera.para_tela(self.posicao)
+        angulo = round(math.degrees(self.fase + self.tempo * self.VELOCIDADE_ANGULAR) / 30) * 30
+        imagem = pygame.transform.rotate(self.imagem(), -angulo)
+        if self.duracao - self.tempo < 0.4:          # pisca antes de sumir
+            imagem.set_alpha(120 if int(self.tempo * 20) % 2 else 255)
+        tela.blit(imagem, imagem.get_rect(center=(round(c.x), round(c.y))))

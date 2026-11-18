@@ -61,6 +61,8 @@ No menu principal. As moedas pegas nas provas (mais um bônus por prova aprovada
 
 **Cola:** item que só aparece nas cartas ao subir de nível (nunca no baú). Nível 1: 1,5x de experiência e -15% de vida máxima; nível 2: 2x e -20%. A cada nível que o aluno sobe há uma chance pequena (2% e 3%) de ser pego colando: a cola é confiscada e as notas rendem só 0,5x pelos 2 níveis seguintes. Com o chefe em campo a chance dobra (o professor está olhando); o Óculos de Grau esconde melhor a cola.
 
+**Convite da Atlética:** a cada 12 s (10 e 8 nos níveis seguintes) solta um grito de guerra que fere e empurra os inimigos em volta. **Pendrive:** o especial guarda 2 cargas (3 no nível máximo) e recarrega mais rápido. **Apostila** (arma): 1 a 3 folhas giram em volta do aluno por alguns segundos, somem e voltam.
+
 O aluno carrega no máximo **4 armas e 4 itens**. Com as vagas cheias, as cartas só oferecem melhorias do que ele já tem. Uma colab funde duas armas no nível máximo numa só e libera uma vaga para uma arma nova.
 
 ## Personalização do aluno

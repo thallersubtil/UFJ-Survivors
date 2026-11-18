@@ -1,6 +1,6 @@
 # Pendências
 
-O jogo está completo e jogável (três provas de 5 minutos no mapa do Campus Jatobá, pixel art animada, 8 lacaios, 3 chefes possuídos por 5 matérias, 8 armas (2 compradas na loja), 3 colabs, 10 itens (2 comprados na loja, a Cola só nas cartas de nível), 3 classes com passiva, rolamento com invencibilidade, Centro Acadêmico com loja e cassino, todas as telas, 350 testes passando). Esta é a lista do que ainda vale fazer, mais ou menos em ordem de prioridade. Ao terminar um item, apague-o daqui no mesmo commit.
+O jogo está completo e jogável (três provas de 5 minutos no mapa do Campus Jatobá, pixel art animada, 8 lacaios, 3 chefes possuídos por 5 matérias, 9 armas (2 compradas na loja), 3 colabs, 12 itens (2 comprados na loja, a Cola só nas cartas de nível), 3 classes com passiva, rolamento com invencibilidade, Centro Acadêmico com loja e cassino, todas as telas, 356 testes passando). Esta é a lista do que ainda vale fazer, mais ou menos em ordem de prioridade. Ao terminar um item, apague-o daqui no mesmo commit.
 
 ## Para o grupo decidir ou fazer
 
