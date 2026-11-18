@@ -128,5 +128,5 @@ class ArmaDeDisparo(Arma, ABC):
         """Cria os projéteis. Retorna False se não havia em que atirar."""
 
 
-class ArmaDeContato(Arma, ABC):
-    """Arma que machuca encostando (ajudantes, veículos, golpes). Não usa café."""
+class ArmaSemMunicao(Arma, ABC):
+    """Arma que não gasta café: ajudantes, veículos, golpes e campos (Caramelo, Claude, Fusca, Wi-Fi)."""

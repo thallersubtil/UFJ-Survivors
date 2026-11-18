@@ -58,9 +58,9 @@ class ProjetilDoHeroi(Projetil):
 
     def verificar_colisao(self, jogo):
         for inimigo in jogo.inimigos_proximos(self.posicao, self.raio):
-            if id(inimigo) in self.atingidos:
+            if inimigo in self.atingidos:
                 continue
-            self.atingidos.add(id(inimigo))
+            self.atingidos.add(inimigo)
             jogo.causar_dano(inimigo, self.dano, self.velocidade)
             self.ao_acertar(inimigo, jogo)
             self.perfuracao -= 1

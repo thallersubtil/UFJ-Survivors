@@ -28,7 +28,7 @@ class Inimigo(SerVivo, ABC):
     DANO = 5
     PONTOS = 10
     EXPERIENCIA = 1
-    TAMANHO_GRUPO = 1
+    TAMANHO_GRUPO = (1, 1)       # (mínimo, máximo) de inimigos que nascem juntos
     CHANCE_CAFE = 0.03
     CHANCE_POCAO = 0.006
     CHANCE_MOEDA = 0.05
@@ -55,6 +55,12 @@ class Inimigo(SerVivo, ABC):
         self.solta_bau = False
         self.reposiciona = True
         self.animador = Animador(Recursos.animacoes_ou_imagem(self.PASTA_SPRITE, self.IMAGEM, self.ALTURA))
+
+    @classmethod
+    def sortear_tamanho_do_grupo(cls, rng):
+        """Quantos deste inimigo nascem juntos, entre o mínimo e o máximo de TAMANHO_GRUPO."""
+        minimo, maximo = cls.TAMANHO_GRUPO
+        return rng.randint(minimo, maximo)
 
     @classmethod
     def fator_de_velocidade(cls, escala):

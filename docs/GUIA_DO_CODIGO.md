@@ -69,7 +69,7 @@ Entidade (abstrata: atualizar, desenhar)            jogo/nucleo/entidade.py
 Arma (abstrata: atualizar; nivel 1 a 7 com @property)    jogo/armas/arma.py
 ├─ ArmaDeDisparo (gasta café: municao com @property)
 │  └─ CobraPython, MascoteChatGPT, Gemini
-├─ ArmaDeContato (não gasta café)
+├─ ArmaSemMunicao (não gasta café)
 │  └─ Caramelo, MascoteClaude, FuscaAzul
 └─ Colab (duas armas no nível 7 viram uma)               jogo/armas/colabs.py
    └─ CarameloNoFusca, CobrasGemeas, DebateDasIAs  (herança múltipla: Colab + família da arma)

@@ -4,7 +4,7 @@ from abc import ABC
 import pygame
 
 from jogo.ajudantes.ajudantes import FuscaCircular, MascoteFlutuante
-from jogo.armas.arma import Arma, ArmaDeContato, ArmaDeDisparo
+from jogo.armas.arma import Arma, ArmaSemMunicao, ArmaDeDisparo
 from jogo.armas.caramelo import Caramelo
 from jogo.armas.chatgpt import MascoteChatGPT
 from jogo.armas.claude import MascoteClaude
@@ -37,7 +37,7 @@ class Colab(Arma, ABC):
         return [a for a in armas if type(a) in receita.INGREDIENTES]
 
 
-class CarameloNoFusca(ArmaDeContato, Colab):
+class CarameloNoFusca(ArmaSemMunicao, Colab):
     NOME = "Caramelo no Fusca"
     ICONE = "sprites/caramelo_no_fusca.png"
     DESCRICAO = "O Caramelo assume o volante e dá voltas na arena atropelando e possuindo inimigos."
@@ -78,7 +78,7 @@ class CobrasGemeas(ArmaDeDisparo, Colab):
         return True
 
 
-class DebateDasIAs(ArmaDeContato, Colab):
+class DebateDasIAs(ArmaSemMunicao, Colab):
     NOME = "Debate das IAs"
     ICONE = "icones/debate.png"
     DESCRICAO = "ChatGPT e Claude discutem em volta de você, e o raio entre eles acerta tudo no meio."

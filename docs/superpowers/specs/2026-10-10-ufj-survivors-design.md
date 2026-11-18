@@ -181,7 +181,7 @@ Entidade (abstrata: atualizar(dt, jogo), desenhar(tela, camera))
 Arma (abstrata; nivel 1..7 com @property e validação; atualizar(dt, jogo, dono); __str__)
 ├── ArmaDeDisparo (abstrata; municao e municao_maxima com @property e validação)
 │   └── CobraPython, MascoteChatGPT, Gemini
-├── ArmaDeContato (abstrata) → Caramelo, MascoteClaude, FuscaAzul
+├── ArmaSemMunicao (abstrata) → Caramelo, MascoteClaude, FuscaAzul
 └── Colab (abstrata; RECEITAS; @staticmethod colabs_disponiveis(armas))
     └── CarameloNoFusca, CobrasGemeas, DebateDasIAs
 

@@ -12,18 +12,6 @@ O jogo está completo e jogável (três provas de 5 minutos no mapa do Campus Ja
 - [ ] **Registro de IA.** Revisar e completar `docs/registro_ia.md` com as próprias palavras (etapas 1 e 2 estão adiantadas).
 - [ ] **Entrega 1 (22/10).** Preencher a linha "Integrantes" em `docs/entregas/etapa1_proposta.md` e entregar a proposta com o diagrama.
 
-## Correções pequenas (apontadas na revisão de código)
-
-Cada uma deve vir com um teste que falha antes da correção.
-
-- [ ] Memória de acertos usa `id(inimigo)` (`jogo/projeteis/projeteis.py`, `jogo/ajudantes/ajudantes.py`); um id reaproveitado depois da coleta de lixo pode fazer um inimigo novo ser ignorado. Guardar os próprios objetos no conjunto (entidades já usam igualdade por identidade).
-- [ ] Limite de notas (`Jogo.soltar_nota`) soma `len(self._novas)`, que conta qualquer entidade na fila; contar só coletáveis.
-- [ ] A tela de nível ou de baú pode abrir sobre uma partida que acabou no mesmo quadro: em `CenaPartida.atualizar`, checar `jogo.terminou` antes de empilhar.
-- [ ] A barra de vida do chefe fica embaixo; a especificação pede no topo (`jogo/cenas/hud.py`).
-- [ ] O HUD mostra `67` fixo; usar `COMBO_ESPECIAL` de `jogo/config.py`.
-- [ ] O bando de Bugs é sempre de 6; a especificação pede de 5 a 8.
-- [ ] O nome `ArmaDeContato` engana (o Claude e o Fusca não atacam por contato). Na defesa, explicar como "arma que não usa café", ou renomear para algo como `ArmaSemMunicao` (atualizando diagrama e docs).
-
 ## Centro Acadêmico, rolamento e velocidade (novos em 30/10)
 
 - [ ] **Calibrar a economia.** Preços em `jogo/loja/melhorias.py` e `PRECO_DESBLOQUEIO` das armas e itens novos; ganhos em `Inimigo.CHANCE_MOEDA`, `MOEDAS_GIGANTE`, `Jogo.MOEDAS_POR_PROVA` e `MOEDAS_POR_MINUTO`. Joguem algumas partidas e vejam quantas são precisas para comprar algo.

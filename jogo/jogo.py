@@ -233,7 +233,7 @@ class Jogo:
 
     def soltar_nota(self, posicao, valor):
         """Solta uma nota; acima do limite, soma o valor na última nota solta."""
-        if len(self.grupos["coletavel"]) + len(self._novas) >= LIMITE_COLETAVEIS and \
+        if len(self.grupos["coletavel"]) + sum(e.grupo == "coletavel" for e in self._novas) >= LIMITE_COLETAVEIS and \
                 self._ultima_nota is not None and self._ultima_nota.ativo:
             self._ultima_nota.valor += valor
             return

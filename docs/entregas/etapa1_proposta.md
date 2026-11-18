@@ -85,7 +85,7 @@ Principais decisões de design:
 - **`Mapa` é abstrata**, com duas implementações: `MapaUFJ` (o campus, lido de um arquivo gerado) e `Cenario` (um pátio genérico). O `Jogo` não sabe qual está usando. Os prédios são `Predio`, entidades com o contorno real como polígono de colisão.
 - **Animação por composição:** heróis, inimigos e ajudantes contêm um `Animador`, que guarda as `Animacao`s (parado, andar) e sabe qual quadro desenhar; cada classe só diz qual animação quer.
 - **Composição:** o `Jogo` contém o `Jogador`, a `Fase`, o `Placar` e o `Mapa`. O `Jogador` contém suas `Arma`s, seus `Item`s e um `Especial`. As armas não são entidades: elas criam entidades (projéteis e ajudantes) na arena.
-- **`Arma`** tem duas famílias: `ArmaDeDisparo` (com munição de café) e `ArmaDeContato`. `Colab` é uma arma criada a partir de duas outras.
+- **`Arma`** tem duas famílias: `ArmaDeDisparo` (com munição de café) e `ArmaSemMunicao`. `Colab` é uma arma criada a partir de duas outras.
 - **`FabricaDeInimigos`** cria qualquer inimigo pelo nome (`@classmethod`). Cada classe de inimigo se registra com um decorador; criar um inimigo novo exige só um arquivo novo, sem alterar nenhuma classe existente.
 - **`Colisao`** reúne testes de colisão como `@staticmethod` (círculo com círculo, segmento com círculo).
 

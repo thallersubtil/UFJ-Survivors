@@ -1,7 +1,7 @@
 """Informações da partida desenhadas por cima do jogo."""
 import pygame
 
-from jogo.config import LARGURA, Cor
+from jogo.config import COMBO_ESPECIAL, LARGURA, Cor
 from jogo.cenas.widgets import desenhar_barra, desenhar_painel, desenhar_texto
 from jogo.nucleo.recursos import Recursos
 
@@ -75,16 +75,17 @@ class Hud:
         desenhar_texto(tela, jogo.fase.NOME, 14, Cor.TEXTO_FRACO, centro=(LARGURA // 2, 66))
         desenhar_texto(tela, f"{jogo.placar.pontos} pts", 20, Cor.DESTAQUE, topo_direita=(LARGURA - 14, 38))
         desenhar_texto(tela, f"{jogo.placar.eliminacoes} eliminações", 14, Cor.TEXTO, topo_direita=(LARGURA - 14, 62))
-        combo = jogo.placar.combo % 67
-        desenhar_texto(tela, f"COMBO {combo}/67", 14, Cor.DESTAQUE if combo > 50 else Cor.TEXTO_FRACO,
+        combo = jogo.placar.combo % COMBO_ESPECIAL
+        desenhar_texto(tela, f"COMBO {combo}/{COMBO_ESPECIAL}", 14,
+                       Cor.DESTAQUE if combo > COMBO_ESPECIAL * 3 // 4 else Cor.TEXTO_FRACO,
                        topo_direita=(LARGURA - 14, 80))
 
     def _chefe(self, tela, jogo):
         chefe = jogo.chefe
         if chefe is None or not chefe.ativo:
             return
-        retangulo = pygame.Rect(0, 0, 640, 18)
-        retangulo.midbottom = (LARGURA // 2, tela.get_height() - 24)
+        retangulo = pygame.Rect(0, 0, 560, 16)
+        retangulo.midtop = (LARGURA // 2, 104)      # no topo, logo abaixo do relógio e do nome da prova
         desenhar_barra(tela, retangulo, chefe.vida / chefe.vida_maxima, Cor.VIDA)
         desenhar_texto(tela, chefe.rotulo_da_barra, 18, Cor.TEXTO, centro=(LARGURA // 2, retangulo.top - 14))
 

@@ -59,6 +59,8 @@ class CenaPartida(Cena):
             return
         self._ler_entrada()
         self.jogo.atualizar(dt)
+        if self.jogo.terminou:
+            return
         if self.jogo.niveis_pendentes > 0:
             self.app.empilhar(CenaNivel(self.app, self.jogo))
         elif self.jogo.baus_pendentes > 0:

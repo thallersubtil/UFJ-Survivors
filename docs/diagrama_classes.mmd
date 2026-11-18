@@ -117,7 +117,7 @@ classDiagram
         +municao: float «property»
         +disparar(jogo, dono)* bool
     }
-    class ArmaDeContato {
+    class ArmaSemMunicao {
         <<abstract>>
     }
     class Colab {
@@ -285,7 +285,7 @@ classDiagram
     Projetil <|-- ProjetilDoHeroi
     Projetil <|-- ProjetilInimigo
     Arma <|-- ArmaDeDisparo
-    Arma <|-- ArmaDeContato
+    Arma <|-- ArmaSemMunicao
     Arma <|-- Colab
     Fase <|-- Prova
     Prova <|-- ProvaDeCalculo

@@ -1,9 +1,9 @@
 from jogo.ajudantes.ajudantes import FuscaVeiculo
-from jogo.armas.arma import ArmaDeContato
+from jogo.armas.arma import ArmaSemMunicao
 from jogo.nucleo.recursos import Recursos
 
 
-class FuscaAzul(ArmaDeContato):
+class FuscaAzul(ArmaSemMunicao):
     NOME = "Fusca Azul"
     ICONE = "sprites/fusca.png"
     DESCRICAO = "Um fusca azul atravessa a tela. Quem é atropelado sai socando os outros inimigos."

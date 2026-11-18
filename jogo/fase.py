@@ -74,7 +74,7 @@ class Fase(ABC):
 
     def nascer(self, jogo, nome, quantidade=None):
         classe = FabricaDeInimigos.classe(nome)
-        quantidade = quantidade or classe.TAMANHO_GRUPO
+        quantidade = quantidade or classe.sortear_tamanho_do_grupo(jogo.rng)
         centro = self.posicao_de_nascimento(jogo)
         for _ in range(quantidade):
             espalhar = pygame.Vector2(jogo.rng.uniform(-40, 40), jogo.rng.uniform(-40, 40))

@@ -59,7 +59,7 @@ jogo/loja/             Centro Acadêmico: Progresso (moedas e compras salvas), M
                        permanentes, JogoDeAposta (abstrata) e os jogos do cassino
 jogo/inimigos/         Inimigo (abstrata), FabricaDeInimigos, um arquivo por lacaio, Chefe, ChefePossuido e os três chefes
 jogo/inimigos/materias/  Materia (abstrata) e as cinco matérias: os ataques de cada chefe
-jogo/armas/            Arma, ArmaDeDisparo (usa café), ArmaDeContato (não usa café), uma arma por arquivo, colabs.py
+jogo/armas/            Arma, ArmaDeDisparo (usa café), ArmaSemMunicao (não usa café), uma arma por arquivo, colabs.py
 jogo/itens/            Item (abstrata) e os 9 itens passivos (2 só depois de comprados na loja)
 jogo/projeteis/  jogo/ajudantes/  jogo/coletaveis/  jogo/efeitos.py   o que as armas e inimigos colocam na arena
 jogo/progressao.py     cartas de nível e prêmio do baú
@@ -77,7 +77,7 @@ docs/                  entregas, diagrama, registro de uso de IA, especificaçã
 
 **Matéria ou chefe novo**: uma classe que herda de `Materia` em `jogo/inimigos/materias/` com `ataques()` combinando os ataques prontos (`leque`, `anel`, `rajada`, `chamada`, `chefe.investir`); o chefe é uma classe que herda de `ChefePossuido`, registrada na fábrica, com `MATERIAS = (...)` na ordem das fases. Exemplo no `README.md`.
 
-**Arma nova**: herde de `ArmaDeDisparo` (implemente `disparar()`, que retorna `False` se não havia alvo) ou de `ArmaDeContato` (implemente `atualizar()`). Defina `NOME`, `DESCRICAO`, `ICONE`, `ATRIBUTOS` (uma tupla de 7 valores por atributo, um por nível) e `MELHORIAS` (6 textos). Acrescente a classe em `Progressao.ARMAS` para ela aparecer nas cartas.
+**Arma nova**: herde de `ArmaDeDisparo` (implemente `disparar()`, que retorna `False` se não havia alvo) ou de `ArmaSemMunicao` (implemente `atualizar()`). Defina `NOME`, `DESCRICAO`, `ICONE`, `ATRIBUTOS` (uma tupla de 7 valores por atributo, um por nível) e `MELHORIAS` (6 textos). Acrescente a classe em `Progressao.ARMAS` para ela aparecer nas cartas.
 
 **Item novo**: herde de `Item`, implemente `aplicar(jogador)` somando ao modificador do jogador conforme `self.nivel`, e acrescente em `ITENS` (`jogo/itens/itens.py`).
 

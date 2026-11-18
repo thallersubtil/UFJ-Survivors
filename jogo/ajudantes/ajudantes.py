@@ -54,9 +54,9 @@ class CachorroCaramelo(Ajudante):
             if self._mordidos[chave] <= 0:
                 del self._mordidos[chave]
         for inimigo in jogo.inimigos_proximos(self.posicao, self.raio):
-            if id(inimigo) in self._mordidos:
+            if inimigo in self._mordidos:
                 continue
-            self._mordidos[id(inimigo)] = self.ESPERA_MORDIDA
+            self._mordidos[inimigo] = self.ESPERA_MORDIDA
             jogo.causar_dano(inimigo, self.arma.valor("dano") * self.dono.multiplicador_dano,
                              inimigo.posicao - self.dono.posicao)
 
@@ -122,9 +122,9 @@ class FuscaVeiculo(Ajudante):
         self.animador.atualizar(dt)
         self.posicao.x += self.sentido * self.VELOCIDADE * dt
         for inimigo in jogo.inimigos_proximos(self.posicao, self.raio):
-            if id(inimigo) in self._atingidos:
+            if inimigo in self._atingidos:
                 continue
-            self._atingidos.add(id(inimigo))
+            self._atingidos.add(inimigo)
             inimigo.possuir(self.possessao)
             jogo.causar_dano(inimigo, self.dano, pygame.Vector2(self.sentido, -0.3))
         if self.tempo > 0.5 and not jogo.camera.visivel(self.posicao, 300):
@@ -168,9 +168,9 @@ class FuscaCircular(Ajudante):
             if self._atropelados[chave] <= 0:
                 del self._atropelados[chave]
         for inimigo in jogo.inimigos_proximos(self.posicao, self.raio):
-            if id(inimigo) in self._atropelados:
+            if inimigo in self._atropelados:
                 continue
-            self._atropelados[id(inimigo)] = self.ESPERA_ATROPELO
+            self._atropelados[inimigo] = self.ESPERA_ATROPELO
             inimigo.possuir(self.arma.valor("possessao"))
             jogo.causar_dano(inimigo, self.arma.valor("dano") * self.dono.multiplicador_dano,
                              inimigo.posicao - self.dono.posicao)

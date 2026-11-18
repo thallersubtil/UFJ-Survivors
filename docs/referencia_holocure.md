@@ -16,8 +16,8 @@ Comparação feita em 30/10/2026 com a engenharia reversa do HoloCure v0.7 (paco
 
 | Sistema | HoloCure | UFJ Survivors | Diferença que importa |
 |---|---|---|---|
-| Armas | Dados (`config` + níveis) num único `obj_Attack` | Uma classe por arma (`Arma` → `ArmaDeDisparo` / `ArmaDeContato`) | A nossa é melhor para a defesa de POO; mantenham |
-| Acerto repetido | Cooldown por projétil e por alvo (`hitCD`, `enemiesInvincMap`) | Conjunto de `id(inimigo)` por projétil; mordidas com espera por id | Ver melhoria 1 |
+| Armas | Dados (`config` + níveis) num único `obj_Attack` | Uma classe por arma (`Arma` → `ArmaDeDisparo` / `ArmaSemMunicao`) | A nossa é melhor para a defesa de POO; mantenham |
+| Acerto repetido | Cooldown por projétil e por alvo (`hitCD`, `enemiesInvincMap`) | Conjunto dos inimigos já atingidos por projétil; mordidas com espera por inimigo | Ver melhoria 1 |
 | Dano | `ATK x damage x 10`, variação de ±10%, crítico > 100% vira multiplicador | Dano fixo da tabela x `multiplicador_dano`; crítico 2x | Ver melhoria 3 |
 | Curva de XP | `round((4 x (nível+1))^2,1)` | `6 + 3 x (nível - 1)` (linear) | Linear funciona para 15 min; potência faria sentido com partidas mais longas |
 | Cartas de nível | 4 opções, sorteio ponderado (`weight`), reroll, eliminar, guardar | 3 opções sem peso, reroll (R) e pular (P) | Ver melhoria 4 |
