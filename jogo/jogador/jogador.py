@@ -159,6 +159,7 @@ class Jogador(SerVivo, ABC):
     def aplicar_colab(self, receita, jogo):
         """Funde as duas armas da receita na colab: ocupam uma vaga só, e a outra fica livre."""
         from jogo.armas.colabs import Colab
+        jogo.marcos.add("colab")
         for arma in Colab.ingredientes_em(receita, self.armas):
             self.armas_em_colab.add(type(arma))
             self.remover_arma(arma, jogo)

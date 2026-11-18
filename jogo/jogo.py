@@ -65,6 +65,7 @@ class Jogo:
         self.terminou = False
         self.venceu = False
         self.anuncios = []
+        self.marcos = set()           # coisas que aconteceram na partida (para as conquistas)
         self._ultima_nota = None
         self.adicionar(self.jogador)
         for entidade in self.mapa.entidades():
@@ -79,7 +80,8 @@ class Jogo:
         jogo.treino = opcoes.treino
         jogo.jogador.imortal = opcoes.imortal
         jogo.jogador.desbloqueios = opcoes.desbloqueios
-        jogo.jogador.receber_melhorias(opcoes.melhorias)
+        lanche = (opcoes.lanche(),) if opcoes.lanche is not None else ()
+        jogo.jogador.receber_melhorias(tuple(opcoes.melhorias) + lanche)
         if opcoes.direto_no_chefe:
             jogo.evoluir_jogador(jogo.fase.NIVEL_TREINO - 1)
         return jogo
@@ -261,6 +263,10 @@ class Jogo:
     @property
     def ultima_fase(self):
         return self.indice_fase + 1 >= len(self.fases)
+
+    @property
+    def provas_vencidas(self):
+        return self.indice_fase + (1 if self.venceu else 0)
 
     def concluir_fase(self):
         """O chefe da prova caiu: passa para a próxima prova ou vence o jogo."""

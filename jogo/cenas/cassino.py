@@ -104,6 +104,9 @@ class CenaCassino(Cena):
         simbolos = getattr(self.jogo, "SIMBOLOS", None)
         if simbolos:
             return tuple(self.rng.choice(simbolos) for _ in range(3))
+        setores = getattr(self.jogo, "SETORES", None)
+        if setores:
+            return (self.rng.choice(setores),)
         return (str(self.rng.randint(1, 20)),)
 
     @property
@@ -120,7 +123,8 @@ class CenaCassino(Cena):
             icone = Recursos.icone(self.ICONES[simbolo], int(tamanho * 0.7))
             tela.blit(icone, icone.get_rect(center=centro))
         else:
-            desenhar_texto(tela, simbolo, int(tamanho * 0.45), Cor.REPROVADO, centro=centro)
+            fonte = min(int(tamanho * 0.45), int(tamanho * 1.5 / max(1, len(simbolo))))   # palavra longa cabe na caixa
+            desenhar_texto(tela, simbolo, fonte, Cor.REPROVADO, centro=centro)
 
     def desenhar(self, tela):
         desenhar_fundo(tela, "cenario/centro_academico.png", escuro=170)

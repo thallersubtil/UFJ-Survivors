@@ -14,8 +14,9 @@ class CenaCentroAcademico(Cena):
         meio = LARGURA // 2
         self.menu = MenuDeBotoes([
             Botao("LOJA", (meio, 330), self._loja, largura=420),
-            Botao("CASSINO DO CA", (meio, 410), self._cassino, largura=420),
-            Botao("VOLTAR", (meio, 490), self._voltar, largura=420),
+            Botao("CASSINO DO CA", (meio, 400), self._cassino, largura=420),
+            Botao("CONQUISTAS", (meio, 470), self._conquistas, largura=420),
+            Botao("VOLTAR", (meio, 540), self._voltar, largura=420),
         ])
 
     def _loja(self):
@@ -25,6 +26,10 @@ class CenaCentroAcademico(Cena):
     def _cassino(self):
         from jogo.cenas.cassino import CenaCassino
         self.app.trocar(CenaCassino(self.app))
+
+    def _conquistas(self):
+        from jogo.cenas.conquistas import CenaConquistas
+        self.app.trocar(CenaConquistas(self.app))
 
     def _voltar(self):
         from jogo.cenas.titulo import CenaTitulo

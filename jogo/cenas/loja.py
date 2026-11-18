@@ -8,6 +8,7 @@ from jogo.cenas.cena import Cena
 from jogo.cenas.widgets import (TECLAS_CONFIRMAR, desenhar_fundo, desenhar_moedas, desenhar_painel,
                                 desenhar_texto)
 from jogo.config import ALTURA, LARGURA, Cor
+from jogo.loja.lanches import LANCHES
 from jogo.loja.melhorias import MELHORIAS
 from jogo.nucleo.recursos import Recursos
 from jogo.progressao import Progressao
@@ -24,7 +25,7 @@ class LinhaDaLoja:
 
 
 class CenaLoja(Cena):
-    ABAS = ("MELHORIAS", "DESBLOQUEIOS")
+    ABAS = ("MELHORIAS", "DESBLOQUEIOS", "LANCHES")
     ALTURA_LINHA = 58
     TOPO = 168
 
@@ -46,6 +47,11 @@ class CenaLoja(Cena):
             return [LinhaDaLoja(m.NOME, m.DESCRICAO, m.ICONE, f"nível {progresso.nivel_de(m)}/{m.NIVEL_MAXIMO}",
                                 progresso.preco_da_proxima(m), lambda m=m: progresso.comprar_melhoria(m))
                     for m in MELHORIAS]
+        if self.aba == 2:
+            guardado = progresso.lanche_reservado
+            return [LinhaDaLoja(c.NOME, c.DESCRICAO, c.ICONE, "GUARDADO" if c is guardado else "1 partida",
+                                None if c is guardado else c.PRECO, lambda c=c: progresso.comprar_lanche(c))
+                    for c in LANCHES]
         linhas = []
         for classe in self.desbloqueaveis():
             tipo = "ARMA" if classe in Progressao.ARMAS else "ITEM"
@@ -61,12 +67,14 @@ class CenaLoja(Cena):
     def _comprar(self):
         linha = self.linhas()[self.indice]
         if linha.preco is None:
-            self._avisar("Já está no máximo." if self.aba == 0 else "Já foi comprado.")
+            self._avisar(("Já está no máximo.", "Já foi comprado.", "Já está guardado para a próxima partida.")[self.aba])
         elif not self.app.progresso.pode_pagar(linha.preco):
             self._avisar("Moedas insuficientes.")
         elif linha.comprar():
             Recursos.tocar("compra", 0.5)
             self._avisar(f"Comprado: {linha.nome}!")
+        else:
+            self._avisar("Você já tem um lanche guardado: ele vale na próxima partida.")
 
     def _trocar_aba(self):
         self.aba = (self.aba + 1) % len(self.ABAS)
@@ -136,7 +144,7 @@ class CenaLoja(Cena):
                            sombra=False)
             desenhar_texto(tela, linha.situacao, 16, Cor.TEXTO_FRACO, topo_direita=(caixa.right - 170, caixa.top + 16))
             if linha.preco is None:
-                preco, cor = ("MÁXIMO" if self.aba == 0 else "COMPRADO"), Cor.APROVADO
+                preco, cor = ("MÁXIMO", "COMPRADO", "GUARDADO")[self.aba], Cor.APROVADO
             else:
                 preco = f"{linha.preco} moedas"
                 cor = Cor.DESTAQUE if progresso.pode_pagar(linha.preco) else Cor.REPROVADO

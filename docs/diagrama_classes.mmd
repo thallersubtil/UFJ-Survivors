@@ -160,7 +160,20 @@ classDiagram
         +moedas: int
         +comprar_melhoria(m) bool
         +desbloquear(classe) bool
+        +comprar_lanche(classe) bool
+        +consumir_lanche()
+        +conquistas: frozenset «property»
     }
+    class Lanche {
+        <<abstract>>
+        +aplicar(jogador)*
+    }
+    class Conquista {
+        <<abstract>>
+        +alcancada(jogo, progresso)* bool
+    }
+    class ConquistaDeMarco
+    class RoletaDoBandejao
     class JogoDeAposta {
         <<abstract>>
         +jogar(aposta, escolha, rng)*
@@ -328,6 +341,10 @@ classDiagram
     Progresso ..> Melhoria : compra
     JogoDeAposta <|-- MaquinaDeSalgadinho
     JogoDeAposta <|-- DadoDoMestre
+    JogoDeAposta <|-- RoletaDoBandejao
+    Conquista <|-- ConquistaDeMarco
+    Progresso ..> Lanche : guarda
+    Progresso ..> Conquista : registra
     Jogador o-- Aparencia
     OpcoesDePartida o-- Aparencia
     Jogo ..> OpcoesDePartida : a_partir_de

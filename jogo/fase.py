@@ -145,6 +145,7 @@ class Fase(ABC):
             return
         self.greve -= dt
         if self.greve <= 0:
+            jogo.marcos.add("greve")
             jogo.anunciar("Fim da greve: volta às aulas", 2.5)
             return
         self._espera_nota -= dt

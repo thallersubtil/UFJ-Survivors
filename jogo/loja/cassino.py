@@ -76,7 +76,23 @@ class DadoDoMestre(JogoDeAposta):
         return ResultadoDaAposta(aposta, premio, mensagem, (str(valor),))
 
 
-JOGOS_DE_APOSTA = (MaquinaDeSalgadinho, DadoDoMestre)
+class RoletaDoBandejao(JogoDeAposta):
+    """Roleta com o cardápio do RU: cada prato paga uma coisa. A fila não paga nada."""
+
+    NOME = "Roleta do Bandejão"
+    DESCRICAO = "Strogonoff paga 3x, bife 2x, frango 1,5x, salada 0,5x. Arroz, feijão, chuchu e fila: nada."
+    SETORES = ("Arroz", "Feijão", "Salada", "Chuchu", "Frango", "Bife", "Strogonoff", "Fila")
+    PAGAMENTO = {"Salada": 0.5, "Frango": 1.5, "Bife": 2.0, "Strogonoff": 3.0}
+
+    def jogar(self, aposta, escolha, rng):
+        prato = rng.choice(self.SETORES)
+        multiplicador = self.PAGAMENTO.get(prato, 0)
+        premio = round(aposta * multiplicador)
+        mensagem = f"{prato}! {str(multiplicador).replace('.', ',')}x" if premio else f"{prato}. Nada desta vez."
+        return ResultadoDaAposta(aposta, premio, mensagem, (prato,))
+
+
+JOGOS_DE_APOSTA = (MaquinaDeSalgadinho, DadoDoMestre, RoletaDoBandejao)
 
 
 class Cassino:

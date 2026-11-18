@@ -131,6 +131,8 @@ class Bigorna(Coletavel):
         no_maximo = [a for a in afiaveis if a.no_maximo]
         arma = jogo.rng.choice(no_maximo or afiaveis)
         arma.carimbos += 1
+        if not arma.pode_afiar:
+            jogo.marcos.add("bigorna_max")
         jogo.anunciar(f"Bigorna: {arma.NOME} +{round(arma.BONUS_CARIMBO * 100 * arma.carimbos)}% de dano", 3)
         Recursos.tocar("bau", 0.6)
 

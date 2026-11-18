@@ -20,6 +20,8 @@ class CenaPartida(Cena):
         super().__init__(app)
         self.opcoes = opcoes or OpcoesDePartida()
         self.jogo = Jogo.a_partir_de(classe_jogador, self.opcoes)
+        if self.opcoes.lanche is not None:
+            app.progresso.consumir_lanche()          # o lanche vale só para esta partida
         self.hud = Hud()
         self._espera_fim = self.ESPERA_FIM
 

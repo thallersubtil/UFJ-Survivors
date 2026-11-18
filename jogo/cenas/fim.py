@@ -4,6 +4,7 @@ from jogo.cenas.cena import Cena
 from jogo.cenas.ranking import CenaRanking
 from jogo.cenas.widgets import desenhar_fundo, desenhar_painel, desenhar_texto
 from jogo.config import ALTURA, LARGURA, Cor
+from jogo.loja.conquistas import Conquistas
 from jogo.ranking import RegistroRanking
 
 
@@ -16,6 +17,7 @@ class CenaFimDeJogo(Cena):
         self.moedas = jogo.moedas_ganhas()
         if self.moedas:
             app.progresso.ganhar(self.moedas)
+        self.conquistas = [] if jogo.treino else Conquistas.verificar(jogo, app.progresso)
         pygame.key.start_text_input()
 
     @staticmethod
@@ -78,6 +80,9 @@ class CenaFimDeJogo(Cena):
             y = painel.top + 26 + i * 42
             desenhar_texto(tela, rotulo, 22, Cor.TEXTO_FRACO, topo_esquerda=(painel.left + 30, y))
             desenhar_texto(tela, valor, 24, Cor.DESTAQUE, topo_direita=(painel.right - 30, y))
+        for i, conquista in enumerate(self.conquistas[:3]):
+            desenhar_texto(tela, f"Conquista: {conquista.NOME} (+{conquista.PREMIO} moedas)", 18, Cor.DESTAQUE,
+                           centro=(LARGURA // 2, painel.bottom + 18 + i * 22))
         if self.jogo.treino:
             desenhar_texto(tela, "Modo treino: não entra no ranking.    [Enter] voltar ao título", 16,
                            Cor.TEXTO_FRACO, centro=(LARGURA // 2, ALTURA - 40))

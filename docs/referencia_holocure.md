@@ -28,7 +28,7 @@ Comparação feita em 30/10/2026 com a engenharia reversa do HoloCure v0.7 (paco
 
 ## Onde ainda dá para melhorar (em ordem de valor)
 
-Feitos em 18/11: 1 (acertos guardam o inimigo), 2 (setas antes das formações), 3 (±10% e crítico acima de 100%), 4 (peso, banir e cartas de atributo), 5 (peso dos inimigos por prova), 6 (moedas por prova) e 8 (Bigorna, como modificador de dano). Falta o 7.
+Feitos em 18/11: 1 (acertos guardam o inimigo), 2 (setas antes das formações), 3 (±10% e crítico acima de 100%), 4 (peso, banir e cartas de atributo), 5 (peso dos inimigos por prova), 6 (moedas por prova) e 8 (Bigorna, como modificador de dano). O 7 também: Lanche da Cantina comprado antes da partida, Roleta do Bandejão e conquistas.
 
 1. **Cooldown de acerto por projétil.** Trocar os conjuntos de `id(inimigo)` (`jogo/projeteis/projeteis.py`, `jogo/ajudantes/ajudantes.py`) por um dicionário `{inimigo: tempo_restante}`, como o `hitCD` da referência. Resolve de quebra a pendência do id reaproveitado.
 2. **Avisos antes das formações.** Hoje "Cercado!" aparece junto com o cerco. Mostrar setas na borda da tela 1 s antes (como os `AlertA…D`) e só então criar o círculo ou a parede, em `Fase.formacao_circulo` / `formacao_parede`. Combina com o rolamento: dá para atravessar a parede rolando.

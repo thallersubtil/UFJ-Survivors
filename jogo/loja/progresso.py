@@ -10,6 +10,9 @@ class Progresso:
         self._moedas = 0
         self._niveis = {}            # CHAVE da melhoria -> nível comprado
         self._desbloqueios = set()   # nomes das classes de armas e itens liberados
+        self._lanche = None          # CHAVE do lanche guardado para a próxima partida
+        self._conquistas = set()     # CHAVEs das conquistas já alcançadas
+        self._classes_jogadas = set()
         self._carregar()
 
     @property
@@ -78,6 +81,45 @@ class Progresso:
     def desbloqueios(self):
         return frozenset(self._desbloqueios)
 
+    # Lanche da Cantina (um por vez, vale só na próxima partida)
+
+    @property
+    def lanche_reservado(self):
+        from jogo.loja.lanches import LANCHES
+        return next((c for c in LANCHES if c.CHAVE == self._lanche), None)
+
+    def comprar_lanche(self, classe):
+        if self._lanche is not None or not self.pode_pagar(classe.PRECO):
+            return False
+        self._lanche = classe.CHAVE
+        self.gastar(classe.PRECO)
+        return True
+
+    def consumir_lanche(self):
+        """Tira o lanche guardado (a partida começou) e devolve a classe dele, ou None."""
+        classe = self.lanche_reservado
+        self._lanche = None
+        self.salvar()
+        return classe
+
+    # Conquistas
+
+    @property
+    def conquistas(self):
+        return frozenset(self._conquistas)
+
+    @property
+    def classes_jogadas(self):
+        return frozenset(self._classes_jogadas)
+
+    def registrar_conquista(self, chave):
+        self._conquistas.add(chave)
+        self.salvar()
+
+    def registrar_classe(self, nome):
+        self._classes_jogadas.add(nome)
+        self.salvar()
+
     # Arquivo
 
     def _carregar(self):
@@ -100,10 +142,20 @@ class Progresso:
         desbloqueios = dados.get("desbloqueios", [])
         if isinstance(desbloqueios, list):
             self._desbloqueios = {d for d in desbloqueios if isinstance(d, str)}
+        lanche = dados.get("lanche")
+        from jogo.loja.lanches import LANCHES
+        if lanche in {c.CHAVE for c in LANCHES}:
+            self._lanche = lanche
+        for campo, destino in (("conquistas", self._conquistas), ("classes_jogadas", self._classes_jogadas)):
+            valores = dados.get(campo, [])
+            if isinstance(valores, list):
+                destino.update(v for v in valores if isinstance(v, str))
 
     def salvar(self):
         """Grava o progresso. Sem permissão de escrita, vale só até fechar o jogo."""
-        dados = {"moedas": self._moedas, "melhorias": self._niveis, "desbloqueios": sorted(self._desbloqueios)}
+        dados = {"moedas": self._moedas, "melhorias": self._niveis, "desbloqueios": sorted(self._desbloqueios),
+                 "lanche": self._lanche, "conquistas": sorted(self._conquistas),
+                 "classes_jogadas": sorted(self._classes_jogadas)}
         try:
             self.caminho.parent.mkdir(parents=True, exist_ok=True)
             self.caminho.write_text(json.dumps(dados, ensure_ascii=False, indent=2), encoding="utf-8")

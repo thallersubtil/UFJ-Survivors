@@ -150,6 +150,7 @@ class Cola(Item):
                 jogador.recalcular_atributos()
         elif jogo.rng.random() < self.chance_de_flagra(jogador, jogo):
             self._castigo = self.NIVEIS_DE_PUNICAO
+            jogo.marcos.add("pego_colando")
             jogo.anunciar("PEGO COLANDO!", 3)
             jogador.recalcular_atributos()
 
