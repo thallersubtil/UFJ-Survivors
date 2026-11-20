@@ -87,10 +87,10 @@ def test_barra_do_chefe_fica_no_topo(jogo_limpo, monkeypatch):
         rotulo_da_barra = "Chefe"
     jogo.chefe = ChefeFalso()
     barras = []
-    monkeypatch.setattr(modulo, "desenhar_barra", lambda tela, ret, *a, **k: barras.append(ret))
-    tela = pygame.Surface((1280, 720))
-    modulo.Hud()._chefe(tela, jogo)
-    assert barras and barras[0].top < 720 // 4
+    monkeypatch.setattr(modulo, "barra", lambda ui, ret, *a, **k: barras.append(pygame.Rect(ret)))
+    ui = pygame.Surface((640, 360), pygame.SRCALPHA)       # o HUD desenha na camada de 640x360
+    modulo.Hud()._chefe(ui, jogo)
+    assert barras and barras[0].top < 360 // 4
 
 
 def test_hud_usa_combo_especial_da_config(jogo_limpo, monkeypatch):
@@ -99,8 +99,8 @@ def test_hud_usa_combo_especial_da_config(jogo_limpo, monkeypatch):
     jogo = jogo_limpo()
     jogo.placar.combo = 13
     textos = []
-    monkeypatch.setattr(modulo, "desenhar_texto", lambda tela, t, *a, **k: textos.append(t))
-    modulo.Hud()._tempo_e_placar(pygame.Surface((1280, 720)), jogo)
+    monkeypatch.setattr(modulo, "texto", lambda ui, t, *a, **k: textos.append(t) or pygame.Rect(0, 0, 1, 1))
+    modulo.Hud()._tempo_e_placar(pygame.Surface((640, 360), pygame.SRCALPHA), jogo)
     assert "COMBO 3/10" in textos
 
 

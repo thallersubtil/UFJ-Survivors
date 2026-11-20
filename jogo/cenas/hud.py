@@ -1,99 +1,158 @@
-"""Informações da partida desenhadas por cima do jogo."""
+"""Informações da partida desenhadas por cima do jogo, no estilo do HoloCure (HUD A aprovado)."""
+import math
+
 import pygame
 
-from jogo.config import COMBO_ESPECIAL, LARGURA, Cor
-from jogo.cenas.widgets import desenhar_barra, desenhar_painel, desenhar_texto
-from jogo.nucleo.recursos import Recursos
+from jogo.config import COMBO_ESPECIAL
+from jogo.ui.pixel import (A, L, CamadaPixel, Paleta as P, barra, ease_back, fonte, icone, janela, moldura,
+                           no_quadrado, texto)
 
 
 class Hud:
-    def desenhar(self, tela, jogo):
-        self._experiencia(tela, jogo)
-        self._heroi(tela, jogo)
-        self._armas_e_itens(tela, jogo)
-        self._tempo_e_placar(tela, jogo)
-        self._chefe(tela, jogo)
-        self._anuncios(tela, jogo)
+    VELOCIDADE_ATRASO = 0.6      # fração da vida por segundo que o branco do dano perde
+    ESPERA_ATRASO = 0.25         # o branco fica parado um instante antes de cair
+    DURACAO_DESTAQUE = 0.8       # pulso da etiqueta de nível ao subir
 
-    def _experiencia(self, tela, jogo):
-        j = jogo.jogador
-        desenhar_barra(tela, pygame.Rect(4, 4, LARGURA - 8, 12), j.experiencia / j.experiencia_necessaria,
-                       Cor.EXPERIENCIA)
-        desenhar_texto(tela, f"NV {j.nivel}", 16, Cor.TEXTO, topo_direita=(LARGURA - 10, 18))
+    def __init__(self):
+        self.camada = CamadaPixel()
+        self.tempo = 0.0
+        self.vida_atrasada = None
+        self._espera = 0.0
+        self._nivel_visto = None
+        self.destaque_nivel = 0.0
 
-    def _heroi(self, tela, jogo):
+    # ------------------------------------------------------------ estado que anima
+    def atualizar(self, dt, jogo):
         j = jogo.jogador
-        desenhar_painel(tela, pygame.Rect(10, 24, 300, 70))
-        retrato = Recursos.na_altura(next(iter(j.animador.animacoes.values())).quadros[0], 52)
-        tela.blit(retrato, retrato.get_rect(center=(44, 59)))
-        desenhar_texto(tela, j.NOME, 18, Cor.TEXTO, topo_esquerda=(78, 32))
-        desenhar_barra(tela, pygame.Rect(78, 58, 160, 16), j.vida / j.vida_maxima, Cor.VIDA)
-        desenhar_texto(tela, f"{round(j.vida)}/{round(j.vida_maxima)}", 14, Cor.TEXTO, centro=(158, 66))
-        rolamento = j.rolamento
-        desenhar_barra(tela, pygame.Rect(78, 80, 100, 5), rolamento.progresso,
-                       Cor.DESTAQUE if rolamento.pronto else Cor.TEXTO_FRACO)
-        desenhar_texto(tela, "SHIFT" if rolamento.pronto else "ROLAR", 10,
-                       Cor.DESTAQUE if rolamento.pronto else Cor.TEXTO_FRACO, topo_esquerda=(184, 76))
-        especial = j.especial
-        centro = pygame.Vector2(274, 59)
-        icone = Recursos.icone(especial.ICONE, 40)
-        tela.blit(icone, icone.get_rect(center=centro))
-        if not especial.pronto:
-            veu = pygame.Surface((44, 44), pygame.SRCALPHA)
-            altura = round(44 * (1 - especial.progresso))
-            veu.fill((10, 8, 18, 170), pygame.Rect(0, 0, 44, altura))
-            tela.blit(veu, veu.get_rect(center=centro))
+        self.tempo += dt
+        frac = j.vida / j.vida_maxima
+        if self.vida_atrasada is None or frac >= self.vida_atrasada:
+            self.vida_atrasada = frac
+            self._espera = self.ESPERA_ATRASO
         else:
-            desenhar_texto(tela, "ESPAÇO", 11, Cor.DESTAQUE, centro=(centro.x, centro.y + 26))
-        if especial.cargas_maximas > 1:         # Pendrive: quantas cargas estão guardadas
-            desenhar_texto(tela, f"x{especial.cargas}", 13, Cor.DESTAQUE if especial.cargas else Cor.TEXTO_FRACO,
-                           topo_direita=(centro.x + 24, centro.y - 26))
+            self._espera -= dt
+            if self._espera <= 0:
+                self.vida_atrasada = max(frac, self.vida_atrasada - self.VELOCIDADE_ATRASO * dt)
+        if self._nivel_visto is not None and j.nivel > self._nivel_visto:
+            self.destaque_nivel = self.DURACAO_DESTAQUE
+        else:
+            self.destaque_nivel = max(0.0, self.destaque_nivel - dt)
+        self._nivel_visto = j.nivel
 
-    def _armas_e_itens(self, tela, jogo):
+    # ------------------------------------------------------------ desenho
+    def desenhar(self, tela, jogo):
+        ui = self.camada.limpar()
+        self._experiencia(ui, jogo)
+        self._heroi(ui, jogo)
+        self._vagas(ui, jogo)
+        self._tempo_e_placar(ui, jogo)
+        self._chefe(ui, jogo)
+        self._anuncios(ui, jogo)
+        self.camada.apresentar(tela)
+
+    def _experiencia(self, ui, jogo):
+        j = jogo.jogador
+        barra(ui, (0, 0, L, 7), j.experiencia / j.experiencia_necessaria, P.AZUL, P.AZUL2, fundo=(20, 18, 40),
+              brilho_t=self.tempo * 0.5)
+
+    def _retrato(self, jogador):
+        animacoes = jogador.animador.animacoes
+        animacao = animacoes.get("parado") or next(iter(animacoes.values()))
+        quadro = animacao.quadros[int(self.tempo * 6) % len(animacao.quadros)]
+        caixa = quadro.get_bounding_rect()
+        if caixa.w and caixa.h:
+            quadro = quadro.subsurface(caixa)
+        return no_quadrado(quadro, 74)
+
+    def _heroi(self, ui, jogo):
+        j = jogo.jogador
+        moldura(ui, (6, 10, 46, 46), fundo=(52, 74, 150), raio=4)
+        retrato = self._retrato(j)
+        ui.subsurface((9, 13, 40, 40)).blit(retrato, retrato.get_rect(midtop=(20, 2)))
+        pulso = self.destaque_nivel / self.DURACAO_DESTAQUE
+        tag = pygame.Rect(0, 0, int(30 * (1 + 0.3 * pulso)), int(12 * (1 + 0.3 * pulso)))
+        tag.center = (29, 58)
+        moldura(ui, tag, fundo=P.OURO if pulso else P.AZUL2, raio=2, brilho=False)
+        texto(ui, f"NV {j.nivel}", tag.center, P.ESC if pulso else P.BRANCO, 11, contorno=None, ancora="center")
+
+        texto(ui, j.NOME.upper(), (58, 10), P.BRANCO, 11)
+        barra(ui, (58, 22, 112, 11), j.vida / j.vida_maxima, P.VERM, P.VERM2, atraso=self.vida_atrasada)
+        texto(ui, f"{round(j.vida)}/{round(j.vida_maxima)}", (114, 22), P.BRANCO, 11, ancora="midtop")
+        especial = j.especial
+        pronto = especial.pronto
+        cor = P.OURO if not pronto or int(self.tempo * 6) % 2 else (255, 250, 200)
+        barra(ui, (58, 36, 112, 6), 1.0 if pronto else especial.progresso, cor, P.OURO2, segmentos=5)
+        rotulo = "ESPECIAL PRONTO! (ESPAÇO)" if pronto else "ESPECIAL"
+        if especial.cargas_maximas > 1:               # Pendrive: cargas guardadas
+            rotulo += f"  x{especial.cargas}"
+        texto(ui, rotulo, (58, 44), P.OURO if pronto else P.CINZA, 11)
+        # rolamento: tracinho embaixo do retrato
+        rolamento = j.rolamento
+        barra(ui, (6, 64 - 2, 46, 4), rolamento.progresso, P.VERDE if rolamento.pronto else P.CINZA)
+
+    def _vaga(self, ui, x, y, coisa, tam=22):
+        no_maximo = coisa is not None and coisa.no_maximo
+        moldura(ui, (x, y, tam, tam), fundo=(22, 26, 52), borda=P.OURO if no_maximo else (190, 205, 240), raio=2,
+                brilho=False, alfa=255 if coisa is not None else 150)
+        if coisa is None:
+            return
+        img = icone(coisa.ICONE, tam - 6)
+        ui.blit(img, img.get_rect(center=(x + tam // 2, y + tam // 2)))
+        cafe = getattr(coisa, "fracao_cafe", None)
+        if cafe is not None and cafe < 1:              # recarga do café: véu que desce
+            h = int((tam - 2) * (1 - cafe))
+            veu = pygame.Surface((tam - 2, h), pygame.SRCALPHA)
+            veu.fill((0, 0, 0, 120))
+            ui.blit(veu, (x + 1, y + 1))
+        texto(ui, "MAX" if no_maximo else str(coisa.nivel), (x + tam + 2, y + tam + 3),
+              P.OURO if no_maximo else P.BRANCO, 11, ancora="bottomright")
+
+    def _vagas(self, ui, jogo):
         j = jogo.jogador
         for i in range(j.MAX_ARMAS):
-            caixa = pygame.Rect(12 + i * 46, 102, 42, 42)
-            desenhar_painel(tela, caixa, alfa=210 if i < len(j.armas) else 90)
-            if i >= len(j.armas):
-                continue
-            arma = j.armas[i]
-            icone = Recursos.icone(arma.ICONE, 30)
-            tela.blit(icone, icone.get_rect(center=caixa.center))
-            desenhar_texto(tela, str(arma.nivel), 12, Cor.DESTAQUE, topo_direita=(caixa.right - 4, caixa.bottom - 16))
-            if arma.fracao_cafe is not None:
-                desenhar_barra(tela, pygame.Rect(caixa.left + 3, caixa.bottom + 3, caixa.width - 6, 4),
-                               arma.fracao_cafe, Cor.CAFE)
+            self._vaga(ui, 6 + i * 25, 70, j.armas[i] if i < len(j.armas) else None)
         for i in range(j.MAX_ITENS):
-            caixa = pygame.Rect(12 + i * 38, 156, 34, 34)
-            desenhar_painel(tela, caixa, alfa=210 if i < len(j.itens) else 90)
-            if i >= len(j.itens):
-                continue
-            item = j.itens[i]
-            icone = Recursos.icone(item.ICONE, 24)
-            tela.blit(icone, icone.get_rect(center=caixa.center))
-            desenhar_texto(tela, str(item.nivel), 11, Cor.DESTAQUE, topo_direita=(caixa.right - 3, caixa.bottom - 14))
+            self._vaga(ui, 6 + i * 25, 95, j.itens[i] if i < len(j.itens) else None)
 
-    def _tempo_e_placar(self, tela, jogo):
-        desenhar_texto(tela, jogo.placar.tempo_formatado, 34, Cor.TEXTO, centro=(LARGURA // 2, 42))
-        desenhar_texto(tela, jogo.fase.NOME, 14, Cor.TEXTO_FRACO, centro=(LARGURA // 2, 66))
-        desenhar_texto(tela, f"{jogo.placar.pontos} pts", 20, Cor.DESTAQUE, topo_direita=(LARGURA - 14, 38))
-        desenhar_texto(tela, f"{jogo.placar.eliminacoes} eliminações", 14, Cor.TEXTO, topo_direita=(LARGURA - 14, 62))
-        combo = jogo.placar.combo % COMBO_ESPECIAL
-        desenhar_texto(tela, f"COMBO {combo}/{COMBO_ESPECIAL}", 14,
-                       Cor.DESTAQUE if combo > COMBO_ESPECIAL * 3 // 4 else Cor.TEXTO_FRACO,
-                       topo_direita=(LARGURA - 14, 80))
+    def _tempo_e_placar(self, ui, jogo):
+        placar = jogo.placar
+        pilula = pygame.Rect(0, 0, 74, 24)
+        pilula.midtop = (L // 2, 9)
+        moldura(ui, pilula, fundo=(22, 26, 52), raio=8, brilho=False)
+        texto(ui, placar.tempo_formatado, pilula.center, P.BRANCO, 23, contorno=None, ancora="center")
+        texto(ui, jogo.fase.NOME.upper(), (L // 2, 35), (210, 220, 255), 11, ancora="midtop")
+        moeda = icone("icones/moeda.png", 12)
+        larg = max(1, int(12 * abs(math.cos(self.tempo * 3))))      # moeda girando
+        valor = str(placar.moedas)
+        x = L - 6 - 14 - fonte(11).size(valor)[0]
+        ui.blit(pygame.transform.scale(moeda, (larg, 12)), (x + (12 - larg) // 2, 10))
+        texto(ui, valor, (L - 6, 10), P.OURO, 11, ancora="topright")
+        texto(ui, f"{placar.pontos} pts  ·  {placar.eliminacoes} eliminações", (L - 6, 24), P.BRANCO, 11,
+              ancora="topright")
+        combo = placar.combo % COMBO_ESPECIAL
+        texto(ui, f"COMBO {combo}/{COMBO_ESPECIAL}", (L - 6, 36),
+              P.OURO if combo > COMBO_ESPECIAL * 3 // 4 else P.CINZA, 11, ancora="topright")
 
-    def _chefe(self, tela, jogo):
+    def _chefe(self, ui, jogo):
         chefe = jogo.chefe
         if chefe is None or not chefe.ativo:
             return
-        retangulo = pygame.Rect(0, 0, 560, 16)
-        retangulo.midtop = (LARGURA // 2, 104)      # no topo, logo abaixo do relógio e do nome da prova
-        desenhar_barra(tela, retangulo, chefe.vida / chefe.vida_maxima, Cor.VIDA)
-        desenhar_texto(tela, chefe.rotulo_da_barra, 18, Cor.TEXTO, centro=(LARGURA // 2, retangulo.top - 14))
+        r = pygame.Rect(0, 0, 280, 9)
+        r.midtop = (L // 2, 62)
+        texto(ui, chefe.rotulo_da_barra, (L // 2, r.top - 13), P.BRANCO, 11, ancora="midtop")
+        barra(ui, r, chefe.vida / chefe.vida_maxima, P.VERM, P.VERM2, segmentos=4)
 
-    def _anuncios(self, tela, jogo):
-        for i, (texto, restante) in enumerate(jogo.anuncios[-3:]):
-            tamanho = 96 if texto == "67!" else 40
-            imagem_y = tela.get_height() // 3 + i * 56
-            desenhar_texto(tela, texto, tamanho, Cor.DESTAQUE, centro=(LARGURA // 2, imagem_y))
+    def _anuncios(self, ui, jogo):
+        for i, (mensagem, restante) in enumerate(jogo.anuncios[-3:]):
+            y = A // 3 + i * 28
+            alfa = int(255 * min(1.0, restante / 0.4))
+            if mensagem == "67!":                       # o combo especial aparece grande e pulando
+                k = ease_back(janela(2.5 - restante, 0, 0.3))
+                img = pygame.Surface((80, 30), pygame.SRCALPHA)
+                texto(img, mensagem, (40, 15), P.OURO, 23, ancora="center")
+                img = pygame.transform.scale_by(img, 1 + k)
+                img.set_alpha(alfa)
+                ui.blit(img, img.get_rect(center=(L // 2, y)))
+            else:
+                texto(ui, mensagem, (L // 2, y), P.OURO, 23, ancora="center", alfa=alfa)
+

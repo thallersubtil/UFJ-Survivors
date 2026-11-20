@@ -61,6 +61,7 @@ class CenaPartida(Cena):
             return
         self._ler_entrada()
         self.jogo.atualizar(dt)
+        self.hud.atualizar(dt, self.jogo)
         if self.jogo.terminou:
             return
         if self.jogo.niveis_pendentes > 0:
