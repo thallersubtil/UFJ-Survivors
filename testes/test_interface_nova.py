@@ -98,3 +98,23 @@ def test_nivel_mouse_acha_a_folha_na_tela(tmp_path):
     alvo = cena.cartoes[-1]
     cena.tratar_evento(pygame.event.Event(pygame.MOUSEMOTION, pos=alvo.center, rel=(0, 0), buttons=(0, 0, 0)))
     assert cena.indice == len(cena.opcoes) - 1
+
+
+def test_pausa_desce_do_menu_para_as_fotos_e_volta(tmp_path):
+    from jogo.cenas.partida import CenaPartida
+    from jogo.cenas.pausa import CenaPausa
+    from jogo.jogador.classes import Otaku
+    app = _app(tmp_path)
+    partida = CenaPartida(app, Otaku)
+    app.trocar(partida)
+    app.passo(1 / 60, [_tecla(pygame.K_ESCAPE)])
+    pausa = app.cena_atual
+    assert isinstance(pausa, CenaPausa)
+    app.passo(1 / 60, [_tecla(pygame.K_DOWN)] * 3)
+    assert not pausa.no_menu and pausa.foto == 0
+    pausa.desenhar(pygame.Surface((1280, 720)))       # mostra a descrição da foto no quadro
+    app.passo(1 / 60, [_tecla(pygame.K_UP)])
+    assert pausa.no_menu
+    app.passo(1 / 60, [_tecla(pygame.K_RETURN)])        # "Ir embora"
+    from jogo.cenas.titulo import CenaTitulo
+    assert isinstance(app.cena_atual, CenaTitulo)
