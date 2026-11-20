@@ -150,3 +150,20 @@ def test_selecao_carteirinha_gira_ao_trocar_e_abas_escolhem(tmp_path):
     ultima = cena.aba(len(CLASSES) - 1).center
     cena.tratar_evento(pygame.event.Event(pygame.MOUSEBUTTONDOWN, pos=(ultima[0] * 2, ultima[1] * 2), button=1))
     assert cena.indice == len(CLASSES) - 1
+
+
+def test_treino_agenda_mouse_escolhe_e_marca(tmp_path):
+    from jogo.cenas.treino import CenaTreino
+    app = _app(tmp_path)
+    cena = CenaTreino(app)
+    app.trocar(cena)
+    def clicar(r):
+        cena.tratar_evento(pygame.event.Event(pygame.MOUSEBUTTONDOWN, pos=(r.centerx * 2, r.centery * 2), button=1))
+    clicar(cena.linha(2))
+    assert cena.indice == 2
+    clicar(cena.caixa_marcar(1))
+    assert cena.imortal
+    cena.desenhar(pygame.Surface((1280, 720)))
+    clicar(cena.linha(2))                       # clicar de novo na escolhida começa
+    from jogo.cenas.personalizacao import CenaPersonalizacao
+    assert isinstance(app.cena_atual, CenaPersonalizacao) and app.cena_atual.opcoes.imortal
