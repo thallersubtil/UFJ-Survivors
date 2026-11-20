@@ -225,3 +225,19 @@ def test_loja_clique_escolhe_o_objeto_e_segundo_clique_compra(tmp_path):
     for aba in range(3):
         cena._trocar_aba(aba)
         cena.desenhar(pygame.Surface((1280, 720)))
+
+
+def test_sala_de_trofeus_navega_e_volta(tmp_path):
+    from jogo.cenas.centro_academico import CenaCentroAcademico
+    from jogo.cenas.conquistas import CenaConquistas, tipo_da_taca
+    from jogo.loja.conquistas import CONQUISTAS
+    app = _app(tmp_path)
+    app.progresso.registrar_conquista(CONQUISTAS[0].CHAVE)
+    cena = CenaConquistas(app)
+    app.trocar(cena)
+    app.passo(1 / 60, [_tecla(pygame.K_DOWN), _tecla(pygame.K_RIGHT)])
+    assert cena.indice == 6
+    cena.desenhar(pygame.Surface((1280, 720)))
+    assert {tipo_da_taca(c) for c in CONQUISTAS} <= {"ouro", "prata", "bronze"}
+    app.passo(1 / 60, [_tecla(pygame.K_ESCAPE)])
+    assert isinstance(app.cena_atual, CenaCentroAcademico)
