@@ -118,3 +118,21 @@ def test_pausa_desce_do_menu_para_as_fotos_e_volta(tmp_path):
     app.passo(1 / 60, [_tecla(pygame.K_RETURN)])        # "Ir embora"
     from jogo.cenas.titulo import CenaTitulo
     assert isinstance(app.cena_atual, CenaTitulo)
+
+
+def test_personalizacao_tira_a_foto_e_so_depois_abre_a_classe(tmp_path):
+    from jogo.cenas.personalizacao import CenaPersonalizacao
+    from jogo.cenas.selecao import CenaSelecao
+    app = _app(tmp_path)
+    cena = CenaPersonalizacao(app)
+    app.trocar(cena)
+    app.passo(1 / 60, [_tecla(pygame.K_DOWN), _tecla(pygame.K_RIGHT)])     # troca a pele
+    cena.desenhar(pygame.Surface((1280, 720)))                            # durante a cor se espalhando
+    app.passo(1 / 60, [_tecla(pygame.K_RETURN)])
+    assert cena.foto_tirada_em is not None and app.cena_atual is cena
+    app.passo(1 / 60, [_tecla(pygame.K_DOWN)])                            # depois da foto não mexe mais
+    assert cena.linha == 1
+    cena.desenhar(pygame.Surface((1280, 720)))
+    for _ in range(80):
+        app.passo(1 / 60, [])
+    assert isinstance(app.cena_atual, CenaSelecao)

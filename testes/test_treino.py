@@ -55,7 +55,9 @@ def test_treino_escolhe_o_professor_e_vai_para_a_personalizacao(app):
     assert isinstance(app.cena_atual, CenaPersonalizacao)
     assert app.cena_atual.opcoes.provas == (ProvaDeArquiteturaEED,)
     assert app.cena_atual.opcoes.treino
-    app.passo(1 / 60, [tecla(pygame.K_RETURN)])
+    app.passo(1 / 60, [tecla(pygame.K_RETURN)])               # tira a foto da carteirinha
+    for _ in range(80):
+        app.passo(1 / 60, [])
     assert isinstance(app.cena_atual, CenaSelecao) and app.cena_atual.opcoes.treino
 
 

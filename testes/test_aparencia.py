@@ -109,7 +109,9 @@ def test_personalizacao_vem_antes_da_classe_e_os_cartoes_usam_o_aluno_personaliz
     assert isinstance(cena, CenaPersonalizacao)
     app.passo(1 / 60, [tecla(pygame.K_DOWN), tecla(pygame.K_DOWN), tecla(pygame.K_RIGHT)])   # cabelo
     assert cena.aparencia.cabelo != "Original"
-    app.passo(1 / 60, [tecla(pygame.K_RETURN)])
+    app.passo(1 / 60, [tecla(pygame.K_RETURN)])               # tira a foto da carteirinha
+    for _ in range(80):
+        app.passo(1 / 60, [])
     selecao = app.cena_atual
     assert isinstance(selecao, CenaSelecao)
     assert selecao.opcoes.aparencia == cena.aparencia
@@ -125,6 +127,8 @@ def test_esc_na_selecao_volta_para_a_personalizacao(app):
     cena = CenaPersonalizacao(app)
     app.trocar(cena)
     app.passo(1 / 60, [tecla(pygame.K_RETURN)])
+    for _ in range(80):
+        app.passo(1 / 60, [])
     app.passo(1 / 60, [tecla(pygame.K_ESCAPE)])
     assert isinstance(app.cena_atual, CenaPersonalizacao)
 
