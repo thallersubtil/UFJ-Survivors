@@ -29,9 +29,9 @@ def app(tmp_path):
 
 def test_titulo_leva_ao_centro_academico(app):
     app.trocar(CenaTitulo(app))
-    botoes = [b.texto for b in app.cena_atual.menu.botoes]
+    botoes = [nome for nome, _ in app.cena_atual.opcoes]
     assert "CENTRO ACADÊMICO" in botoes
-    app.cena_atual.menu.indice = botoes.index("CENTRO ACADÊMICO")
+    app.cena_atual.indice = botoes.index("CENTRO ACADÊMICO")
     app.passo(1 / 60, [tecla(pygame.K_RETURN)])
     assert isinstance(app.cena_atual, CenaCentroAcademico)
     app.passo(1 / 60, [tecla(pygame.K_RETURN)])
