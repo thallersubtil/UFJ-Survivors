@@ -136,3 +136,17 @@ def test_personalizacao_tira_a_foto_e_so_depois_abre_a_classe(tmp_path):
     for _ in range(80):
         app.passo(1 / 60, [])
     assert isinstance(app.cena_atual, CenaSelecao)
+
+
+def test_selecao_carteirinha_gira_ao_trocar_e_abas_escolhem(tmp_path):
+    from jogo.cenas.selecao import CenaSelecao
+    from jogo.jogador.classes import CLASSES
+    app = _app(tmp_path)
+    cena = CenaSelecao(app)
+    app.trocar(cena)
+    app.passo(1 / 60, [_tecla(pygame.K_RIGHT)])
+    assert cena.indice == 1
+    cena.desenhar(pygame.Surface((1280, 720)))       # no meio do giro
+    ultima = cena.aba(len(CLASSES) - 1).center
+    cena.tratar_evento(pygame.event.Event(pygame.MOUSEBUTTONDOWN, pos=(ultima[0] * 2, ultima[1] * 2), button=1))
+    assert cena.indice == len(CLASSES) - 1
