@@ -167,3 +167,38 @@ def test_treino_agenda_mouse_escolhe_e_marca(tmp_path):
     clicar(cena.linha(2))                       # clicar de novo na escolhida começa
     from jogo.cenas.personalizacao import CenaPersonalizacao
     assert isinstance(app.cena_atual, CenaPersonalizacao) and app.cena_atual.opcoes.imortal
+
+
+def test_area_interativa_aceita_forma_em_l():
+    from jogo.ui.area import AreaInterativa
+    loja = AreaInterativa("LOJA", [(0, 0), (100, 0), (100, 50), (200, 50), (200, 100), (0, 100)])
+    assert loja.contem((50, 20)) and loja.contem((150, 80))
+    assert not loja.contem((150, 20))               # o canto vazio do L não conta
+
+
+def test_centro_academico_mouse_destaca_e_clique_entra_com_zoom(tmp_path):
+    from jogo.cenas.cassino import CenaCassino
+    from jogo.cenas.centro_academico import CenaCentroAcademico
+    app = _app(tmp_path)
+    cena = CenaCentroAcademico(app)
+    app.trocar(cena)
+    cena.tratar_evento(pygame.event.Event(pygame.MOUSEMOTION, pos=(1150, 350), rel=(0, 0), buttons=(0, 0, 0)))
+    assert cena.areas[cena.indice].nome == "CASSINO"
+    cena.desenhar(pygame.Surface((1280, 720)))
+    cena.tratar_evento(pygame.event.Event(pygame.MOUSEBUTTONDOWN, pos=(1150, 350), button=1))
+    assert cena.entrando is not None
+    cena.desenhar(pygame.Surface((1280, 720)))
+    for _ in range(40):
+        app.passo(1 / 60, [])
+    assert isinstance(app.cena_atual, CenaCassino)
+
+
+def test_centro_academico_botao_voltar(tmp_path):
+    from jogo.cenas.centro_academico import CenaCentroAcademico
+    from jogo.cenas.titulo import CenaTitulo
+    app = _app(tmp_path)
+    cena = CenaCentroAcademico(app)
+    app.trocar(cena)
+    c = cena.BOTAO_VOLTAR.center
+    cena.tratar_evento(pygame.event.Event(pygame.MOUSEBUTTONDOWN, pos=(c[0] * 2, c[1] * 2), button=1))
+    assert isinstance(app.cena_atual, CenaTitulo)

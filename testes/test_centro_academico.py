@@ -34,7 +34,9 @@ def test_titulo_leva_ao_centro_academico(app):
     app.cena_atual.indice = botoes.index("CENTRO ACADÊMICO")
     app.passo(1 / 60, [tecla(pygame.K_RETURN)])
     assert isinstance(app.cena_atual, CenaCentroAcademico)
-    app.passo(1 / 60, [tecla(pygame.K_RETURN)])
+    app.passo(1 / 60, [tecla(pygame.K_RETURN)])               # a câmera entra na loja com zoom
+    for _ in range(40):
+        app.passo(1 / 60, [])
     assert isinstance(app.cena_atual, CenaLoja)
 
 
