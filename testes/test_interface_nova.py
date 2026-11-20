@@ -241,3 +241,18 @@ def test_sala_de_trofeus_navega_e_volta(tmp_path):
     assert {tipo_da_taca(c) for c in CONQUISTAS} <= {"ouro", "prata", "bronze"}
     app.passo(1 / 60, [_tecla(pygame.K_ESCAPE)])
     assert isinstance(app.cena_atual, CenaCentroAcademico)
+
+
+def test_ranking_podio_e_lista(tmp_path):
+    from jogo.cenas.ranking import CenaRanking
+    from jogo.ranking import RegistroRanking
+    app = _app(tmp_path)
+    tela = pygame.Surface((1280, 720))
+    CenaRanking(app).desenhar(tela)                          # vazio
+    registros = [RegistroRanking(f"Aluno{i}", "Otaku", 1000 - i * 50, 300 + i, venceu=i == 0) for i in range(10)]
+    for r in registros:
+        app.ranking.adicionar(r)
+    cena = CenaRanking(app, destaque=registros[5])
+    cena.atualizar(2.0)
+    cena.desenhar(tela)
+    assert cena.pasta_do_heroi("Otaku") == "aluno2"
