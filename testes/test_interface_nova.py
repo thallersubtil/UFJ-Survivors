@@ -202,3 +202,26 @@ def test_centro_academico_botao_voltar(tmp_path):
     c = cena.BOTAO_VOLTAR.center
     cena.tratar_evento(pygame.event.Event(pygame.MOUSEBUTTONDOWN, pos=(c[0] * 2, c[1] * 2), button=1))
     assert isinstance(app.cena_atual, CenaTitulo)
+
+
+def test_toda_melhoria_tem_um_objeto_na_estante():
+    """Melhoria nova precisa de um objeto em CenaLoja.OBJETOS (o retângulo dela na arte do CA)."""
+    from jogo.cenas.loja import CenaLoja
+    from jogo.loja.melhorias import MELHORIAS
+    assert {m.CHAVE for m in MELHORIAS} <= set(CenaLoja.OBJETOS)
+
+
+def test_loja_clique_escolhe_o_objeto_e_segundo_clique_compra(tmp_path):
+    from jogo.cenas.loja import CenaLoja
+    app = _app(tmp_path)
+    app.progresso.ganhar(1000)
+    cena = CenaLoja(app)
+    app.trocar(cena)
+    area = cena.areas()[4]
+    cena.tratar_evento(pygame.event.Event(pygame.MOUSEBUTTONDOWN, pos=area.centro, button=1))
+    assert cena.indice == 4 and app.progresso.moedas == 1000
+    cena.tratar_evento(pygame.event.Event(pygame.MOUSEBUTTONDOWN, pos=area.centro, button=1))
+    assert app.progresso.moedas < 1000
+    for aba in range(3):
+        cena._trocar_aba(aba)
+        cena.desenhar(pygame.Surface((1280, 720)))
