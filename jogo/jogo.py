@@ -6,6 +6,8 @@ from typing import Optional
 
 import pygame
 
+from jogo.boletim import Boletim
+
 from jogo.cenario import Cenario
 from jogo.coletaveis.coletaveis import Moeda, Nota
 from jogo.config import (ALTURA, BONUS_67_DURACAO, BONUS_67_VELOCIDADE, LARGURA,
@@ -66,6 +68,7 @@ class Jogo:
         self.venceu = False
         self.anuncios = []
         self.marcos = set()           # coisas que aconteceram na partida (para as conquistas)
+        self.notas = []               # nota de cada prova vencida (para o boletim do fim de jogo)
         self._ultima_nota = None
         self.adicionar(self.jogador)
         for entidade in self.mapa.entidades():
@@ -271,6 +274,7 @@ class Jogo:
     def concluir_fase(self):
         """O chefe da prova caiu: passa para a próxima prova ou vence o jogo."""
         concluida = self.fase
+        self.notas.append(Boletim.nota_de_aprovacao(self.jogador))
         self.chefe = None
         self._incorporar_novas()     # o que nasceu neste quadro também sai
         self.ganhar_moedas(self.MOEDAS_POR_PROVA)

@@ -64,6 +64,9 @@ jogo/itens/            Item (abstrata) e os 12 itens (2 só depois de comprados 
 jogo/projeteis/  jogo/ajudantes/  jogo/coletaveis/  jogo/efeitos.py   o que as armas e inimigos colocam na arena
 jogo/progressao.py     cartas de nível e prêmio do baú
 jogo/cenas/            telas (Cena abstrata) e o HUD
+jogo/ui/               interface em pixel art: CamadaPixel (640x360 ampliada 2x), texto, moldura, barra (pixel.py),
+                       papel, madeira, giz, carimbo (materiais.py) e AreaInterativa (área clicável sobre a arte)
+jogo/boletim.py        Boletim do fim de jogo: uma nota por prova (Jogo.notas guarda as das provas vencidas)
 assets/                sprites/, icones/, cenario/, sons/, fontes/, legado/ (arte reaproveitada de outro jogo)
 ferramentas/           pixelizar.py e montar_sprites.py (folhas de animação), gerar_mapa.py (mapa da UFJ),
                        gerar_sons.py, simular_partida.py, preparar_arte.py (imagens soltas, ex.: título)

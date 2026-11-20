@@ -256,3 +256,19 @@ def test_ranking_podio_e_lista(tmp_path):
     cena.atualizar(2.0)
     cena.desenhar(tela)
     assert cena.pasta_do_heroi("Otaku") == "aluno2"
+
+
+def test_fim_de_jogo_boletim_desenha_aprovado_e_reprovado(tmp_path):
+    from jogo.cenas.fim import CenaFimDeJogo
+    from jogo.cenas.partida import CenaPartida
+    from jogo.jogador.classes import Otaku
+    for venceu in (True, False):
+        app = _app(tmp_path)
+        partida = CenaPartida(app, Otaku)
+        partida.jogo.terminar(venceu)
+        cena = CenaFimDeJogo(app, partida.jogo)
+        cena.nome = "Ana"
+        for t in (0.1, 1.5, 3.1, 4.0):
+            cena.tempo = t
+            cena.desenhar(pygame.Surface((1280, 720)))
+        assert len(cena.boletim.linhas) == len(partida.jogo.fases)
