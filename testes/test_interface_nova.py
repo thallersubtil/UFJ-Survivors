@@ -52,3 +52,49 @@ def test_hud_avisa_quando_sobe_de_nivel(jogo_limpo):
     jogo.jogador.nivel += 1
     hud.atualizar(1 / 60, jogo)
     assert hud.destaque_nivel > 0
+
+
+def _app(tmp_path):
+    from jogo.aplicacao import Aplicacao
+    from jogo.loja.progresso import Progresso
+    from jogo.ranking import Ranking
+    app = Aplicacao(pygame.Surface((1280, 720)))
+    app.ranking, app.progresso = Ranking(tmp_path / "r.json"), Progresso(tmp_path / "p.json")
+    return app
+
+
+def _tecla(k):
+    return pygame.event.Event(pygame.KEYDOWN, key=k, mod=0, unicode="", scancode=0)
+
+
+def test_nivel_carimba_a_escolhida_e_volta_depois(tmp_path):
+    from jogo.cenas.nivel import CenaNivel
+    from jogo.cenas.partida import CenaPartida
+    from jogo.jogador.classes import Programador
+    app = _app(tmp_path)
+    partida = CenaPartida(app, Programador)
+    app.trocar(partida)
+    partida.jogo.niveis_pendentes = 1
+    app.passo(1 / 60, [])
+    cena = app.cena_atual
+    assert isinstance(cena, CenaNivel)
+    app.passo(1 / 60, [_tecla(pygame.K_2)])
+    assert cena.escolhida == 1 and partida.jogo.niveis_pendentes == 0
+    app.passo(1 / 60, [_tecla(pygame.K_1)])          # durante o carimbo não escolhe de novo
+    assert cena.escolhida == 1
+    cena.desenhar(pygame.Surface((1280, 720)))
+    for _ in range(40):
+        app.passo(1 / 60, [])
+    assert app.cena_atual is partida
+
+
+def test_nivel_mouse_acha_a_folha_na_tela(tmp_path):
+    from jogo.cenas.nivel import CenaNivel
+    from jogo.cenas.partida import CenaPartida
+    from jogo.jogador.classes import Programador
+    app = _app(tmp_path)
+    partida = CenaPartida(app, Programador)
+    cena = CenaNivel(app, partida.jogo)
+    alvo = cena.cartoes[-1]
+    cena.tratar_evento(pygame.event.Event(pygame.MOUSEMOTION, pos=alvo.center, rel=(0, 0), buttons=(0, 0, 0)))
+    assert cena.indice == len(cena.opcoes) - 1
