@@ -1,0 +1,16 @@
+# Créditos da arte e do som
+
+- `assets/sprites/`, `assets/icones/`, `assets/cenario/`: gerados com a ferramenta de imagens do ChatGPT para este trabalho (uso acadêmico, sem fins lucrativos). Mascotes, logos e memes citados pertencem aos seus donos.
+- `assets/legado/` e `assets/fontes/`: reaproveitados do jogo "Crônicas do Saber" (Fiuphis/Rpggame). Fonte Pixelify Sans (licença OFL). Os arquivos `pixelify-sans-ufj-*.ttf` são a mesma fonte com o "C" mais aberto (gerados por `ferramentas/ajustar_fonte.py`), renomeada "Pixelify Sans UFJ" como a OFL pede.
+- `assets/sons/`: sintetizados por `ferramentas/gerar_sons.py`; o 67 usa a voz do sistema macOS.
+- `assets/sprites/<personagem>/`: folhas de animação geradas com a ferramenta de imagens do ChatGPT e convertidas em pixel art por `ferramentas/montar_sprites.py`.
+- `assets/cenario/mapa_ufj.png`, `assets/cenario/predios/`, `assets/cenario/mapa_ufj.json`: gerados por `ferramentas/gerar_mapa.py`. Contornos e nomes dos prédios, vias e calçadas: © colaboradores do OpenStreetMap, licença ODbL (openstreetmap.org/copyright). As cores do chão foram classificadas a partir de imagem de satélite Esri World Imagery, usada só como referência (a imagem não é distribuída).
+- Referências visuais do portal, da Biblioteca Flor do Cerrado e da Faculdade de Medicina: fotos do Wikimedia Commons ("Entrada da UFJ", "Universidade Federal de Jataí" e "Biblioteca Flor-do-Cerrado", CC BY-SA 4.0; "Fmufj", domínio público).
+
+## Professora (chefe da 3ª prova) e professor de computação (chefe da 2ª prova)
+
+`assets/sprites/professora/` e `assets/sprites/professor_computacao/` (parado e andar, 4 quadros cada): gerada em 19/10/2026 com a ferramenta de imagens do ChatGPT, seguindo a receita do `AGENTS.md`, com as folhas do professor como referência de estilo. Personagens genéricos (não retratam pessoas reais). Os quadros foram recortados, alinhados pela base e reduzidos para 124 px de altura.
+
+## Centro Acadêmico (30/10/2026)
+
+`assets/icones/{moeda,pequi,wifi,tenis,oculos,pao_de_queijo,loja_vida,rolamento}.png` e `assets/cenario/centro_academico.png`: gerados com o Nano Banana 2 (via Cloudinary). Para os ícones, a referência de estilo foi uma folha com seis ícones de objetos do HoloCure (moeda, curativo, doce, pena, peixe, chapéu), só para o traço de pixel art; os desenhos são novos e nenhum sprite do HoloCure foi copiado para o projeto. Para o fundo, a referência foi o nosso `titulo_fundo.png`. A folha de ícones foi recortada em 8 e reduzida para 64x64 sem suavizar; o fundo passou por `ferramentas/preparar_arte.py --tela 1280x720`.

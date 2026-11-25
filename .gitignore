@@ -9,3 +9,8 @@ arte_bruta/
 # estado de trabalho local
 .claude/trabalho/
 dados/progresso.json
+
+# pasta do executável (gerada por ferramentas/gerar_executavel.py): entra no git inteira, menos os saves
+UFJ Survivors/dados/
+!/UFJ Survivors/**/__pycache__/
+!/UFJ Survivors/**/*.pyc

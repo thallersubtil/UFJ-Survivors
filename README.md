@@ -18,7 +18,9 @@ No chefe de duas matérias, quando a vida da primeira zera, a segunda (mais dif�
 
 ## Como rodar
 
-Requer Python 3.12.
+**Sem instalar nada (Windows):** baixe o repositório e abra `UFJ Survivors/UFJ Survivors.exe`. Essa pasta é regerada sozinha pelo GitHub Actions (`.github/workflows/executavel.yml`) a cada mudança do jogo no `main`, depois de os testes passarem e de o executável jogar uma partida com cada classe. Para gerá-la à mão: `python ferramentas/gerar_executavel.py` (com `pyinstaller` instalado).
+
+**Pelo código-fonte:** requer Python 3.12 ou mais novo.
 
 macOS / Linux:
 ```bash
@@ -149,7 +151,8 @@ jogo/
   jogo.py fase.py placar.py ranking.py progressao.py efeitos.py
   mapa.py cenario.py  Mapa (abstrata), MapaUFJ, Predio, Decoracao e o pátio genérico
 assets/            sprites, ícones, cenário, sons, fontes e a arte reaproveitada (legado/)
-ferramentas/       preparo da arte, geração dos sons, simulador de partida
+ferramentas/       preparo da arte, geração dos sons, simulador de partida, geração do executável
+UFJ Survivors/     o jogo pronto para Windows (.exe), gerado automaticamente; não edite à mão
 testes/            testes automáticos (pytest)
 docs/              entregas, diagrama, registro de uso de IA, especificação e plano
 ```

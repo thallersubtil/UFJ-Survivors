@@ -1,0 +1,23 @@
+UFJ Survivors - Trabalho de POO (UFJ, 2026/2)
+==============================================
+
+Como jogar
+  De dois cliques em "UFJ Survivors.exe". Nao precisa instalar Python nem nada.
+  Se o Windows mostrar "O Windows protegeu o computador", clique em
+  "Mais informacoes" e depois em "Executar assim mesmo" (o jogo nao tem assinatura digital).
+
+Controles
+  WASD ou setas: andar      Mouse: mirar (clique esquerdo troca para mira automatica)
+  Espaco: especial          Shift ou clique direito: rolamento       Esc: pausa
+
+Onde ficam os saves
+  A pasta "dados" (criada ao lado do .exe na primeira partida) guarda o ranking,
+  as moedas e as compras do Centro Academico. Para levar seu progresso para outro
+  computador, copie essa pasta junto.
+
+Nao apague nem mova a pasta "_internal": o jogo precisa dela.
+
+Esta pasta e gerada automaticamente a partir do ramo main
+(ferramentas/gerar_executavel.py). Nao edite os arquivos dela a mao.
+
+Versao: commit 0bea68f, gerada em 25/11/2026
