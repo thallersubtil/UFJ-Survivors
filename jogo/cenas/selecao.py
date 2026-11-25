@@ -46,8 +46,8 @@ class CenaSelecao(Cena):
         self.app.trocar(CenaPersonalizacao(self.app, self.opcoes))
 
     def aba(self, i):
-        r = pygame.Rect(0, 0, 76, 20)
-        r.center = (L // 2 + (i - (len(CLASSES) - 1) / 2) * 82, A - 32)
+        r = pygame.Rect(0, 0, 84, 20)
+        r.center = (L // 2 + (i - (len(CLASSES) - 1) / 2) * 88, A - 32)
         return r
 
     @property
@@ -107,7 +107,7 @@ class CenaSelecao(Cena):
         blocos = (("ARMA", arma.NOME, arma.DESCRICAO, arma.ICONE), ("PASSIVA", passiva.NOME, passiva.DESCRICAO, None),
                   ("ESPECIAL", especial.NOME, especial.DESCRICAO, especial.ICONE))
         for i, (tipo, nome, descricao, ic) in enumerate(blocos):
-            y = r.y + 88 + i * 44
+            y = r.y + 84 + i * 40
             caixa = pygame.Rect(r.x + 12, y, 34, 34)
             moldura(s, caixa, fundo=(22, 26, 52), borda=(150, 160, 220), raio=2, brilho=False)
             if ic:

@@ -10,7 +10,7 @@ import pygame
 from jogo.cenas.cena import Cena
 from jogo.loja.conquistas import CONQUISTAS
 from jogo.ui.materiais import fundo_desfocado, moldura_madeira
-from jogo.ui.pixel import A, L, CamadaPixel, Paleta as P, ease_out, fonte, janela, texto
+from jogo.ui.pixel import A, L, CamadaPixel, Paleta as P, ease_out, fonte, janela, quebrar, texto
 
 CORES_TACA = {"ouro": ((255, 210, 70), (200, 140, 30), (255, 245, 180)),
               "prata": ((210, 216, 228), (140, 146, 166), (250, 252, 255)),
@@ -77,7 +77,7 @@ class CenaConquistas(Cena):
     def base_da_taca(self, i):
         coluna, prateleira = i % self.POR_PRATELEIRA, i // self.POR_PRATELEIRA
         e = self.ESTANTE
-        return e.x + 56 + coluna * 102, e.y + 120 + prateleira * self._altura_prateleira
+        return e.x + 56 + coluna * 102, e.y + 110 + prateleira * self._altura_prateleira
 
     def caixa_da_taca(self, i):
         x, y = self.base_da_taca(i)
@@ -157,11 +157,11 @@ class CenaConquistas(Cena):
         prateleiras = math.ceil(len(CONQUISTAS) / self.POR_PRATELEIRA)
         for p in range(prateleiras):
             for y in range(30):
-                yy = altura * p + 100 - y
+                yy = altura * p + 90 - y
                 pygame.draw.line(luz, (255, 230, 170, max(0, 22 - y)), (0, yy), (e.w, yy))
         ui.blit(luz, e.topleft)
         for p in range(prateleiras):
-            y = e.y + 120 + p * altura
+            y = e.y + 110 + p * altura
             pygame.draw.rect(ui, (180, 200, 220), (e.x, y, e.w, 4))
             pygame.draw.rect(ui, (120, 140, 160), (e.x, y + 4, e.w, 2))
         for i, conquista in enumerate(CONQUISTAS):
@@ -174,12 +174,10 @@ class CenaConquistas(Cena):
             if feita:
                 self._brilhos(ui, (cx, base - 60), 44 if sel else 30, 4 if sel else 2, i)
             if sel:
-                pygame.draw.polygon(ui, P.OURO, [(cx - 6, base + 10), (cx + 6, base + 10), (cx, base + 4)])
-            nome = conquista.NOME
-            while fonte(11).size(nome)[0] > 96 and len(nome) > 4:
-                nome = nome[:-2] + "."
+                pygame.draw.polygon(ui, P.OURO, [(cx - 6, base + 8), (cx + 6, base + 8), (cx, base + 2)])
             cor = P.OURO if sel else (P.CINZA if feita else (110, 106, 120))
-            texto(ui, nome, (cx, base + 10 + (8 if sel else 0)), cor, 11, ancora="midtop")
+            for j, linha in enumerate(quebrar(conquista.NOME, fonte(11), 96)[:2]):   # nome inteiro, em até 2 linhas
+                texto(ui, linha, (cx, base + 10 + j * 10), cor, 11, ancora="midtop")
         x = int(((self.tempo * 0.35) % 1.5) * (e.w + 200)) - 100          # reflexo do vidro
         vidro = pygame.Surface(e.size, pygame.SRCALPHA)
         pygame.draw.polygon(vidro, (255, 255, 255, 26), [(x, 0), (x + 40, 0), (x - 60, e.h), (x - 100, e.h)])
