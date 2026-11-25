@@ -1,9 +1,12 @@
 """Configurações gerais e números de balanceamento do jogo."""
 from pathlib import Path
 
+import sys
+
 RAIZ = Path(__file__).resolve().parent.parent
 PASTA_ASSETS = RAIZ / "assets"
-PASTA_DADOS = RAIZ / "dados"
+# No executável (PyInstaller) o código fica numa pasta interna; ranking e progresso vão ao lado do .exe.
+PASTA_DADOS = (Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else RAIZ) / "dados"
 ARQUIVO_RANKING = PASTA_DADOS / "ranking.json"
 ARQUIVO_PROGRESSO = PASTA_DADOS / "progresso.json"   # moedas e compras do Centro Acadêmico
 
