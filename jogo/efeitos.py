@@ -189,3 +189,100 @@ class RaioDebate(Efeito):
         pygame.draw.line(tela, (240, 130, 60), inicio, fim, int(8 + tremor))
         pygame.draw.line(tela, (120, 240, 200), inicio, fim, 4)
         pygame.draw.line(tela, (255, 255, 255), inicio, fim, 2)
+
+
+class EstouroDePequi(Efeito):
+    """Explosão de espinhos do Pequi: fere uma vez cada inimigo na área (menos o que já levou o pequi)."""
+
+    def __init__(self, posicao, raio, dano, excluir=None):
+        super().__init__(posicao, 0.3, raio)
+        self.dano = dano
+        self.excluir = excluir
+        self._feriu = False
+
+    def ao_atualizar(self, dt, jogo):
+        if self._feriu:
+            return
+        self._feriu = True
+        for inimigo in jogo.inimigos_proximos(self.posicao, self.raio):
+            if inimigo is not self.excluir:
+                jogo.causar_dano(inimigo, self.dano, inimigo.posicao - self.posicao)
+
+    def desenhar(self, tela, camera):
+        c = camera.para_tela(self.posicao)
+        r = self.raio * (0.5 + 0.5 * self.fracao)
+        alfa = int(230 * (1 - self.fracao))
+        lado = int(self.raio * 2.4)
+        sup = pygame.Surface((lado, lado), pygame.SRCALPHA)
+        meio = pygame.Vector2(lado / 2, lado / 2)
+        pygame.draw.circle(sup, (250, 200, 40, alfa // 3), meio, int(r))
+        for i in range(12):
+            direcao = pygame.Vector2(1, 0).rotate(i * 30 + 15 * self.fracao)
+            pygame.draw.line(sup, (120, 170, 40, alfa), meio + direcao * r * 0.3, meio + direcao * r, 3)
+        tela.blit(sup, sup.get_rect(center=(round(c.x), round(c.y))))
+
+
+class OndaDoGrito(Efeito):
+    """Anel que se abre em volta do herói no grito de guerra da Atlética."""
+
+    camada = 1
+
+    def __init__(self, dono, raio, duracao=0.45):
+        super().__init__(dono.posicao, duracao)
+        self.dono = dono
+        self.raio_final = raio
+
+    def ao_atualizar(self, dt, jogo):
+        self.posicao = pygame.Vector2(self.dono.posicao)
+
+    def desenhar(self, tela, camera):
+        c = camera.para_tela(self.posicao)
+        raio = max(4, int(self.raio_final * (0.25 + 0.75 * self.fracao)))
+        alfa = int(200 * (1 - self.fracao))
+        sup = pygame.Surface((raio * 2 + 8, raio * 2 + 8), pygame.SRCALPHA)
+        meio = (raio + 4, raio + 4)
+        pygame.draw.circle(sup, (255, 200, 60, alfa // 4), meio, raio)
+        pygame.draw.circle(sup, (255, 230, 120, alfa), meio, raio, 4)
+        tela.blit(sup, sup.get_rect(center=(round(c.x), round(c.y))))
+
+
+class AvisoDeFormacao(Efeito):
+    """Setas piscando na borda da tela antes de um cerco ou de uma parede; no fim, chama a formação.
+
+    `lados`: -1 esquerda, 1 direita, -2 em cima, 2 embaixo.
+    """
+
+    camada = 4
+
+    def __init__(self, lados, duracao, ao_terminar):
+        super().__init__(pygame.Vector2(), duracao)
+        self.lados = tuple(lados)
+        self.ao_terminar = ao_terminar
+
+    def atualizar(self, dt, jogo):
+        self.tempo += dt
+        if self.tempo >= self.duracao:
+            self.remover()
+            self.ao_terminar()
+
+    def esta_visivel(self, camera):
+        return True
+
+    def desenhar(self, tela, camera):
+        if int(self.tempo * 8) % 2:
+            return
+        largura, altura = tela.get_size()
+        for lado in self.lados:
+            for i in (-1, 0, 1):
+                if abs(lado) == 1:
+                    x = 26 if lado < 0 else largura - 26
+                    y = altura // 2 + i * 120
+                    base = x - 16 * lado
+                    pontos = [(x, y), (base, y - 18), (base, y + 18)]
+                else:
+                    y = 26 if lado < 0 else altura - 26
+                    x = largura // 2 + i * 200
+                    base = y - 16 * (1 if lado > 0 else -1)
+                    pontos = [(x, y), (x - 18, base), (x + 18, base)]
+                pygame.draw.polygon(tela, (235, 70, 60), pontos)
+                pygame.draw.polygon(tela, Cor.BORDA_ESCURA, pontos, 3)

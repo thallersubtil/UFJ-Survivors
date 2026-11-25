@@ -1,3 +1,4 @@
+from jogo.efeitos import AvisoDeFormacao
 import time
 
 import pygame
@@ -58,7 +59,10 @@ def test_mini_chefe_da_prova_de_calculo():
 def test_formacao_a_cada_minuto():
     jogo = jogo_imortal()
     antes = len(jogo.inimigos)
-    pular_para(jogo, 60)
+    pular_para(jogo, 60 - ProvaDeCalculo.AVISO)
+    assert any(isinstance(e, AvisoDeFormacao) for e in jogo.entidades)    # setas antes do cerco
+    for _ in range(round(60 * (ProvaDeCalculo.AVISO + 0.1))):
+        jogo.atualizar(1 / 60)
     assert len(jogo.inimigos) >= antes + 20
 
 

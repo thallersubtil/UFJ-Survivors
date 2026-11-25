@@ -6,10 +6,12 @@ from typing import Optional
 
 import pygame
 
+from jogo.boletim import Boletim
+
 from jogo.cenario import Cenario
-from jogo.coletaveis.coletaveis import Nota
+from jogo.coletaveis.coletaveis import Moeda, Nota
 from jogo.config import (ALTURA, BONUS_67_DURACAO, BONUS_67_VELOCIDADE, LARGURA,
-                         LIMITE_COLETAVEIS, LIMITE_EFEITOS, SORTEIOS_POR_PARTIDA, Cor)
+                         LIMITE_COLETAVEIS, LIMITE_EFEITOS, SORTEIOS_POR_PARTIDA, BANIMENTOS_POR_PARTIDA, Cor)
 from jogo.efeitos import TextoFlutuante
 from jogo.fase import semestre
 from jogo.jogador.bonus import BonusTemporario
@@ -34,6 +36,8 @@ class Jogo:
     MARGEM_BUSCA = 64
 
     CURA_ENTRE_PROVAS = 0.5      # fração da vida máxima recuperada ao passar de prova
+    MOEDAS_POR_PROVA = 150       # bônus de moedas a cada prova aprovada
+    MOEDAS_POR_MINUTO = 6        # bolsa pelo tempo sobrevivido, paga no fim
 
     def __init__(self, classe_jogador, fase=None, semente=None, mapa=None, fases=None, aparencia=None):
         self.rng = random.Random(semente)
@@ -58,10 +62,13 @@ class Jogo:
         self.niveis_pendentes = 0
         self.baus_pendentes = 0
         self.sorteios_restantes = SORTEIOS_POR_PARTIDA
+        self.banimentos_restantes = BANIMENTOS_POR_PARTIDA
         self.chefe = None
         self.terminou = False
         self.venceu = False
         self.anuncios = []
+        self.marcos = set()           # coisas que aconteceram na partida (para as conquistas)
+        self.notas = []               # nota de cada prova vencida (para o boletim do fim de jogo)
         self._ultima_nota = None
         self.adicionar(self.jogador)
         for entidade in self.mapa.entidades():
@@ -75,6 +82,9 @@ class Jogo:
         jogo = cls(classe_jogador, fases=opcoes.criar_fases(), semente=semente, aparencia=opcoes.aparencia)
         jogo.treino = opcoes.treino
         jogo.jogador.imortal = opcoes.imortal
+        jogo.jogador.desbloqueios = opcoes.desbloqueios
+        lanche = (opcoes.lanche(),) if opcoes.lanche is not None else ()
+        jogo.jogador.receber_melhorias(tuple(opcoes.melhorias) + lanche)
         if opcoes.direto_no_chefe:
             jogo.evoluir_jogador(jogo.fase.NIVEL_TREINO - 1)
         return jogo
@@ -170,8 +180,8 @@ class Jogo:
             return False
         critico = self._rolar_critico()
         if critico:
-            dano *= self.jogador.MULT_CRITICO
-        dano = max(1, round(dano))
+            dano *= self.jogador.MULT_CRITICO + max(0.0, self.jogador.chance_critico - 1)   # passou de 100%: crítico mais forte
+        dano = max(1, round(dano * self.rng.uniform(1 - self.VARIACAO_DANO, 1 + self.VARIACAO_DANO)))
         morreu = inimigo.receber_dano(dano)
         if direcao is not None:
             inimigo.empurrar(direcao)
@@ -188,6 +198,8 @@ class Jogo:
             self._registrar_morte(inimigo)
         return morreu
 
+    VARIACAO_DANO = 0.10          # cada golpe varia ±10%, para os números não repetirem
+
     def _rolar_critico(self):
         """Sorteia um acerto crítico com a chance do herói (só gasta o sorteio se a chance existir)."""
         chance = self.jogador.chance_critico
@@ -195,6 +207,8 @@ class Jogo:
 
     def _registrar_morte(self, inimigo):
         inimigo.remover()
+        if inimigo.possuido > 0 and self.jogador.chance_carona > 0 and self.rng.random() < self.jogador.chance_carona:
+            self.adicionar(Moeda(inimigo.posicao + (12, 0)))     # Carona Solidária
         if self.placar.registrar_eliminacao(inimigo.valor_em_pontos):
             self._combo_67()
         inimigo.ao_morrer(self)
@@ -214,12 +228,26 @@ class Jogo:
         return True
 
     def dar_experiencia(self, quantidade):
-        niveis = self.jogador.ganhar_experiencia(quantidade)
+        heroi = self.jogador
+        niveis = heroi.ganhar_experiencia(quantidade * heroi.mult_experiencia * heroi.fator_experiencia)
         self.niveis_pendentes += niveis
+        for _ in range(niveis):
+            for item in list(heroi.itens):
+                item.ao_subir_de_nivel(heroi, self)
+
+    def ganhar_moedas(self, quantidade):
+        self.placar.adicionar_moedas(round(quantidade * self.jogador.mult_moedas * self.fase.MULT_MOEDAS))
+
+    def moedas_ganhas(self):
+        """Moedas que vão para o Centro Acadêmico: as pegas mais a bolsa pelo tempo. Treino não paga."""
+        if self.treino:
+            return 0
+        bolsa = round(self.placar.tempo / 60 * self.MOEDAS_POR_MINUTO * self.jogador.mult_moedas)
+        return self.placar.moedas + bolsa
 
     def soltar_nota(self, posicao, valor):
         """Solta uma nota; acima do limite, soma o valor na última nota solta."""
-        if len(self.grupos["coletavel"]) + len(self._novas) >= LIMITE_COLETAVEIS and \
+        if len(self.grupos["coletavel"]) + sum(e.grupo == "coletavel" for e in self._novas) >= LIMITE_COLETAVEIS and \
                 self._ultima_nota is not None and self._ultima_nota.ativo:
             self._ultima_nota.valor += valor
             return
@@ -239,11 +267,17 @@ class Jogo:
     def ultima_fase(self):
         return self.indice_fase + 1 >= len(self.fases)
 
+    @property
+    def provas_vencidas(self):
+        return self.indice_fase + (1 if self.venceu else 0)
+
     def concluir_fase(self):
         """O chefe da prova caiu: passa para a próxima prova ou vence o jogo."""
         concluida = self.fase
+        self.notas.append(Boletim.nota_de_aprovacao(self.jogador))
         self.chefe = None
         self._incorporar_novas()     # o que nasceu neste quadro também sai
+        self.ganhar_moedas(self.MOEDAS_POR_PROVA)
         if self.ultima_fase:
             self.terminar(venceu=True)
             return

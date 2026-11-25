@@ -20,10 +20,15 @@ class CenaPartida(Cena):
         super().__init__(app)
         self.opcoes = opcoes or OpcoesDePartida()
         self.jogo = Jogo.a_partir_de(classe_jogador, self.opcoes)
+        if self.opcoes.lanche is not None:
+            app.progresso.consumir_lanche()          # o lanche vale só para esta partida
         self.hud = Hud()
         self._espera_fim = self.ESPERA_FIM
 
     def tratar_evento(self, evento):
+        if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 3:
+            self.jogo.jogador.rolar()
+            return
         if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
             modo = self.app.alternar_mira()
             self.jogo.anunciar("Mira automática" if modo == "automatica" else "Mira no mouse", 1.2)
@@ -34,6 +39,8 @@ class CenaPartida(Cena):
             self.app.empilhar(CenaPausa(self.app, self))
         elif evento.key == pygame.K_SPACE:
             self.jogo.jogador.usar_especial(self.jogo)
+        elif evento.key in (pygame.K_LSHIFT, pygame.K_RSHIFT):
+            self.jogo.jogador.rolar()
 
     def _ler_entrada(self):
         teclas = pygame.key.get_pressed()
@@ -54,6 +61,9 @@ class CenaPartida(Cena):
             return
         self._ler_entrada()
         self.jogo.atualizar(dt)
+        self.hud.atualizar(dt, self.jogo)
+        if self.jogo.terminou:
+            return
         if self.jogo.niveis_pendentes > 0:
             self.app.empilhar(CenaNivel(self.app, self.jogo))
         elif self.jogo.baus_pendentes > 0:

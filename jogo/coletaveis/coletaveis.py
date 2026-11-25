@@ -1,4 +1,4 @@
-"""Coisas que o herói pega no chão: notas (experiência), café, poção e baú."""
+"""Coisas que o herói pega no chão: notas (experiência), café, poção, moedas e baú."""
 import math
 from abc import ABC, abstractmethod
 
@@ -92,6 +92,49 @@ class PocaoDeVida(Coletavel):
         jogo.jogador.curar(self.CURA)
         jogo.adicionar(TextoFlutuante(f"+{self.CURA}", self.posicao, Cor.CURA, 18))
         Recursos.tocar("coleta", 0.4)
+
+
+class Moeda(Coletavel):
+    """Moeda do Centro Acadêmico: gasta na loja e no cassino, entre as partidas."""
+
+    IMAGEM = "icones/moeda.png"
+    ALTURA = 20
+
+    def __init__(self, posicao, valor=1):
+        super().__init__(posicao, raio=10)
+        self.valor = valor
+
+    def ao_coletar(self, jogo):
+        jogo.ganhar_moedas(self.valor)
+        Recursos.tocar("moeda", 0.25)
+
+    def altura_desenho(self):
+        return 28 if self.valor >= 5 else self.ALTURA
+
+
+class Bigorna(Coletavel):
+    """Bigorna: afia uma arma (+15% de dano, até 3 vezes por arma). Prefere as que já estão no nível máximo."""
+
+    IMAGEM = "icones/bigorna.png"
+    ALTURA = 40
+    MAGNETICO = False
+
+    def __init__(self, posicao):
+        super().__init__(posicao, raio=20)
+
+    def ao_coletar(self, jogo):
+        afiaveis = [a for a in jogo.jogador.armas if a.pode_afiar]
+        if not afiaveis:
+            jogo.jogador.curar(30)
+            jogo.anunciar("Bigorna: nada para afiar, +30 de vida", 2.5)
+            return
+        no_maximo = [a for a in afiaveis if a.no_maximo]
+        arma = jogo.rng.choice(no_maximo or afiaveis)
+        arma.carimbos += 1
+        if not arma.pode_afiar:
+            jogo.marcos.add("bigorna_max")
+        jogo.anunciar(f"Bigorna: {arma.NOME} +{round(arma.BONUS_CARIMBO * 100 * arma.carimbos)}% de dano", 3)
+        Recursos.tocar("bau", 0.6)
 
 
 class Bau(Coletavel):

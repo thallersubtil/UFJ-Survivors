@@ -1,3 +1,5 @@
+%% UFJ Survivors - diagrama de classes
+%% Grupo: Filipe Duarte de Freitas Oliveira, Gabriel Gomes Borges, Gustavo do Nascimento Silva, Thaller Subtil de Carvalho
 classDiagram
     direction TB
     class Entidade {
@@ -33,6 +35,10 @@ classDiagram
     class Otaku
     class Programador
     class MestreDeRPG
+    class Monitor
+    class Gamer
+    class Calouro
+    class CaraDaCarona
     class Inimigo {
         <<abstract>>
         +mover(dt, jogo)*
@@ -48,6 +54,7 @@ classDiagram
     class PiCambaleante
     class Ponteiro
     class PilhaAA
+    class MonitorPossuido
     class PenteDeRAM
     class Chefe {
         <<abstract>>
@@ -115,7 +122,7 @@ classDiagram
         +municao: float «property»
         +disparar(jogo, dono)* bool
     }
-    class ArmaDeContato {
+    class ArmaSemMunicao {
         <<abstract>>
     }
     class Colab {
@@ -125,9 +132,13 @@ classDiagram
     class Item {
         <<abstract>>
         +aplicar(jogador)*
+        +atualizar(dt, jogador, jogo)
+        +ao_subir_de_nivel(jogador, jogo)
     }
     class Especial {
         <<abstract>>
+        +cargas: int
+        +cargas_maximas: int «property»
         +ativar(dono, jogo)*
     }
     class Passiva {
@@ -135,6 +146,40 @@ classDiagram
         +aplicar(jogador)*
     }
     class InstintoOtaku
+    class Rolamento {
+        +rolando: bool
+        +iniciar(direcao) bool
+        +atualizar(dt, mult_recarga)
+    }
+    class Melhoria {
+        <<abstract>>
+        +custo(nivel)$ int
+        +aplicar(jogador)*
+    }
+    class Progresso {
+        +moedas: int
+        +comprar_melhoria(m) bool
+        +desbloquear(classe) bool
+        +comprar_lanche(classe) bool
+        +consumir_lanche()
+        +conquistas: frozenset «property»
+    }
+    class Lanche {
+        <<abstract>>
+        +aplicar(jogador)*
+    }
+    class Conquista {
+        <<abstract>>
+        +alcancada(jogo, progresso)* bool
+    }
+    class ConquistaDeMarco
+    class RoletaDoBandejao
+    class JogoDeAposta {
+        <<abstract>>
+        +jogar(aposta, escolha, rng)*
+    }
+    class MaquinaDeSalgadinho
+    class DadoDoMestre
     class Jogo {
         +entidades: list~Entidade~
         +fases: list~Fase~
@@ -197,6 +242,8 @@ classDiagram
     class Decoracao
     class Aparencia {
         -_escolhas: dict
+        +genero: str «property»
+        +feminino: bool «property»
         +pele: str «property»
         +cabelo: str «property»
         +moletom: str «property»
@@ -233,6 +280,10 @@ classDiagram
     Jogador <|-- Otaku
     Jogador <|-- Programador
     Jogador <|-- MestreDeRPG
+    Jogador <|-- Monitor
+    Jogador <|-- Gamer
+    Jogador <|-- Calouro
+    Jogador <|-- CaraDaCarona
     Passiva <|-- InstintoOtaku
     Inimigo <|-- Bug
     Inimigo <|-- CalculadoraBrava
@@ -242,6 +293,7 @@ classDiagram
     Inimigo <|-- PiCambaleante
     Inimigo <|-- Ponteiro
     Inimigo <|-- PilhaAA
+    Inimigo <|-- MonitorPossuido
     Inimigo <|-- PenteDeRAM
     Inimigo <|-- Chefe
     Chefe <|-- ChefePossuido
@@ -260,7 +312,7 @@ classDiagram
     Projetil <|-- ProjetilDoHeroi
     Projetil <|-- ProjetilInimigo
     Arma <|-- ArmaDeDisparo
-    Arma <|-- ArmaDeContato
+    Arma <|-- ArmaSemMunicao
     Arma <|-- Colab
     Fase <|-- Prova
     Prova <|-- ProvaDeCalculo
@@ -284,6 +336,15 @@ classDiagram
     Jogador *-- Item
     Jogador *-- Especial
     Jogador *-- Passiva
+    Jogador *-- Rolamento
+    Jogador o-- Melhoria
+    Progresso ..> Melhoria : compra
+    JogoDeAposta <|-- MaquinaDeSalgadinho
+    JogoDeAposta <|-- DadoDoMestre
+    JogoDeAposta <|-- RoletaDoBandejao
+    Conquista <|-- ConquistaDeMarco
+    Progresso ..> Lanche : guarda
+    Progresso ..> Conquista : registra
     Jogador o-- Aparencia
     OpcoesDePartida o-- Aparencia
     Jogo ..> OpcoesDePartida : a_partir_de

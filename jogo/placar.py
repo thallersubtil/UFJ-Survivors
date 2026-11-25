@@ -12,6 +12,7 @@ class Placar:
         self.tempo = 0.0
         self.combo = 0
         self.combos_67 = 0
+        self._moedas = 0
 
     @property
     def pontos(self):
@@ -29,6 +30,24 @@ class Placar:
         if quantidade < 0:
             raise ValueError("não dá para ganhar pontos negativos")
         self.pontos = self._pontos + quantidade
+
+    @property
+    def moedas(self):
+        """Moedas pegas nesta partida (vão para o Centro Acadêmico no fim)."""
+        return self._moedas
+
+    @moedas.setter
+    def moedas(self, valor):
+        if isinstance(valor, bool) or not isinstance(valor, int):
+            raise TypeError("moedas devem ser um número inteiro")
+        if valor < 0:
+            raise ValueError("moedas não podem ser negativas")
+        self._moedas = valor
+
+    def adicionar_moedas(self, quantidade):
+        if quantidade < 0:
+            raise ValueError("não dá para ganhar moedas negativas")
+        self.moedas = self._moedas + int(quantidade)
 
     def registrar_eliminacao(self, pontos):
         """Conta uma eliminação. Retorna True quando o combo completa 67."""

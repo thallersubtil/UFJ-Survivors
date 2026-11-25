@@ -15,7 +15,7 @@ class Bug(Inimigo):
     VELOCIDADE = 125
     DANO = 3
     PONTOS = 5
-    TAMANHO_GRUPO = 6
+    TAMANHO_GRUPO = (5, 8)
 
     def mover(self, dt, jogo):
         self.ir_em_direcao(jogo.jogador.posicao, dt)

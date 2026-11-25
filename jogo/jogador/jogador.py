@@ -8,6 +8,7 @@ from jogo.config import ESCALA_PIXEL, INVENCIBILIDADE_APOS_DANO
 from jogo.nucleo.animacao import Animador
 from jogo.nucleo.desenho import desenhar_sprite
 from jogo.jogador.aparencia import vestir_animacoes
+from jogo.jogador.rolamento import Rolamento
 from jogo.nucleo.recursos import Recursos
 from jogo.nucleo.ser_vivo import SerVivo
 
@@ -28,9 +29,13 @@ class Jogador(SerVivo, ABC):
     RAIO = 22
     MAX_ARMAS = 4                # habilidades ativas; no limite, só melhorias (uma colab libera vaga)
     MOLETOM_ORIGINAL = "verde"    # como achar o moletom na arte, para trocar a cor
+    PASTA_SPRITE_FEMININA = None        # arte da versão feminina; sem ela, usa a masculina
+    PASTA_TRANSFORMADO_FEMININA = None
     MAX_ITENS = 4                # habilidades passivas
     ALCANCE_COLETA_BASE = 90
     MULT_CRITICO = 2.0           # quanto o acerto crítico multiplica o dano
+    GANHO_VELOCIDADE_POR_NIVEL = 0.006   # o aluno pega ritmo: +0,6% de velocidade por nível
+    TETO_GANHO_VELOCIDADE = 0.30
 
     def __init__(self, posicao):
         super().__init__(posicao, self.RAIO, self.VIDA)
@@ -39,11 +44,17 @@ class Jogador(SerVivo, ABC):
         self.bonus = []
         self.armas_em_colab = set()
         self.direcao_mira = pygame.Vector2(1, 0)
+        self.direcao_movimento = pygame.Vector2(1, 0)
+        self.rolamento = Rolamento()
         self.movendo = False
         self.olhando_esquerda = False
         self.invencivel = 0.0
         self.aparencia = None         # Aparencia escolhida na personalização
         self.imortal = False          # modo treino
+        self.melhorias = []           # melhorias permanentes compradas no Centro Acadêmico
+        self.banidos = set()              # classes de arma e item banidas das cartas nesta partida
+        self.atributos_extras = {"dano": 0.0, "recarga": 0.0, "vida": 0}   # cartas de atributo
+        self.desbloqueios = frozenset()   # armas e itens comprados que podem aparecer nas cartas
         self.tempo = 0.0
         self.transformado = False
         self.animador = Animador(self._animacoes(), inicial="parado")
@@ -52,6 +63,7 @@ class Jogador(SerVivo, ABC):
         self.passiva = self.criar_passiva()
         self.recalcular_atributos()
         self.especial = self.criar_especial()
+        self.especial.cargas_maximas = self.cargas_especial
         self.adicionar_arma(self.criar_arma_inicial())
 
     @abstractmethod
@@ -68,25 +80,46 @@ class Jogador(SerVivo, ABC):
 
     def _redefinir_atributos(self):
         self.mult_dano = 1.0
-        self.mult_velocidade = 1.0
+        self.mult_velocidade = 1.0 + min(self.TETO_GANHO_VELOCIDADE,
+                                         (self.nivel - 1) * self.GANHO_VELOCIDADE_POR_NIVEL)
         self.mult_recarga = 1.0
         self.mult_especial = 1.0
+        self.mult_rolamento = 1.0     # fator da recarga do rolamento (menor é mais rápido)
         self.chance_critico = 0.0
         self.mult_cafe = 1.0
         self.regeneracao = 0.0
         self.alcance_coleta = self.ALCANCE_COLETA_BASE
         self.vida_maxima_extra = 0
+        self.mult_experiencia = 1.0
+        self.fator_experiencia = 1.0  # multiplica tudo (Cola); mult_experiencia soma as melhorias
+        self.mult_vida_maxima = 1.0
+        self.cargas_especial = 1
+        self.chance_carona = 0.0       # Cara da Carona: moeda extra de quem morre possuído
+        self.mult_moedas = 1.0
 
     def recalcular_atributos(self):
-        """Zera os modificadores e deixa a passiva e cada item aplicarem o seu (polimorfismo)."""
+        """Zera os modificadores e deixa a passiva, cada item e cada melhoria aplicarem o seu (polimorfismo)."""
         maxima_antes = self.vida_maxima
         self._redefinir_atributos()
         self.passiva.aplicar(self)
         for item in self.itens:
             item.aplicar(self)
-        self.vida_maxima = self.VIDA + self.vida_maxima_extra
+        for melhoria in self.melhorias:
+            melhoria.aplicar(self)
+        extras = self.atributos_extras
+        self.mult_dano += extras["dano"]
+        self.mult_recarga *= 1 - extras["recarga"]
+        self.vida_maxima_extra += extras["vida"]
+        self.vida_maxima = (self.VIDA + self.vida_maxima_extra) * self.mult_vida_maxima
+        if getattr(self, "especial", None) is not None:
+            self.especial.cargas_maximas = self.cargas_especial
         if self.vida_maxima > maxima_antes:
             self.curar(self.vida_maxima - maxima_antes)
+
+    def receber_melhorias(self, melhorias):
+        """Começa a partida com as melhorias permanentes da loja."""
+        self.melhorias = list(melhorias)
+        self.recalcular_atributos()
 
     def multiplicador(self, atributo):
         resultado = 1.0
@@ -126,6 +159,7 @@ class Jogador(SerVivo, ABC):
     def aplicar_colab(self, receita, jogo):
         """Funde as duas armas da receita na colab: ocupam uma vaga só, e a outra fica livre."""
         from jogo.armas.colabs import Colab
+        jogo.marcos.add("colab")
         for arma in Colab.ingredientes_em(receita, self.armas):
             self.armas_em_colab.add(type(arma))
             self.remover_arma(arma, jogo)
@@ -135,6 +169,15 @@ class Jogador(SerVivo, ABC):
         if len(self.itens) >= self.MAX_ITENS:
             raise ValueError("o herói já carrega o máximo de itens")
         self.itens.append(item)
+        self.recalcular_atributos()
+
+    def banir(self, classe):
+        """Tira uma arma ou item das cartas pelo resto da partida."""
+        self.banidos.add(classe)
+
+    def ganhar_atributo(self, atributo, valor):
+        """Carta de atributo: soma um bônus permanente nesta partida."""
+        self.atributos_extras[atributo] += valor
         self.recalcular_atributos()
 
     def subir_nivel_item(self, item):
@@ -165,22 +208,37 @@ class Jogador(SerVivo, ABC):
 
     @property
     def pode_levar_dano(self):
-        return self.invencivel <= 0 and self.esta_vivo and not self.imortal
+        return self.invencivel <= 0 and not self.rolamento.protegido and self.esta_vivo and not self.imortal
+
+    def rolar(self):
+        """Esquiva (Shift ou botão direito): rola na direção do movimento, invencível enquanto dura."""
+        if not self.esta_vivo or not self.rolamento.iniciar(self.direcao_movimento):
+            return False
+        Recursos.tocar("rolar", 0.35)
+        return True
 
     def receber_dano(self, quantidade):
         morreu = super().receber_dano(quantidade)
         self.invencivel = INVENCIBILIDADE_APOS_DANO
         return morreu
 
+    def _arte(self, pasta, pasta_feminina, imagem):
+        """Animações do aluno ou, se a aparência é feminina e a arte existe, da aluna."""
+        if self.aparencia is not None and self.aparencia.feminino and pasta_feminina:
+            feminina = Recursos.animacoes(pasta_feminina)
+            if feminina:
+                return feminina
+        return Recursos.animacoes_ou_imagem(pasta, imagem, self.ALTURA)
+
     def _animacoes(self):
         if self.transformado:
-            base = Recursos.animacoes_ou_imagem(self.PASTA_TRANSFORMADO, self.IMAGEM_TRANSFORMADO, self.ALTURA)
+            base = self._arte(self.PASTA_TRANSFORMADO, self.PASTA_TRANSFORMADO_FEMININA, self.IMAGEM_TRANSFORMADO)
             return vestir_animacoes(base, self.aparencia, self.MOLETOM_ORIGINAL, cabelo_natural=False)
-        base = Recursos.animacoes_ou_imagem(self.PASTA_SPRITE, self.IMAGEM, self.ALTURA)
+        base = self._arte(self.PASTA_SPRITE, self.PASTA_SPRITE_FEMININA, self.IMAGEM)
         return vestir_animacoes(base, self.aparencia, self.MOLETOM_ORIGINAL)
 
     def vestir(self, aparencia):
-        """Troca as cores do aluno (pele, cabelo, moletom, calça)."""
+        """Troca o gênero e as cores do aluno (pele, cabelo, moletom, calça)."""
         self.aparencia = aparencia
         self.animador.trocar_conjunto(self._animacoes())
 
@@ -205,12 +263,16 @@ class Jogador(SerVivo, ABC):
         self.invencivel = max(0.0, self.invencivel - dt)
         direcao = pygame.Vector2(jogo.entrada.direcao)
         self.movendo = direcao.length_squared() > 0
-        if self.movendo:
+        if self.rolamento.rolando:
+            self.posicao += self.rolamento.direcao * self.velocidade * self.rolamento.fator_velocidade * dt
+        elif self.movendo:
             direcao.normalize_ip()
             self.posicao += direcao * self.velocidade * dt
             self.direcao_mira = pygame.Vector2(direcao)
+            self.direcao_movimento = pygame.Vector2(direcao)
             if abs(direcao.x) > 0.01:
                 self.olhando_esquerda = direcao.x < 0
+        self.rolamento.atualizar(dt, self.mult_rolamento)
         self.posicao = jogo.resolver_obstaculos(self.posicao, self.raio)
         arena = jogo.arena
         self.posicao.x = max(arena.left + self.raio, min(self.posicao.x, arena.right - self.raio))
@@ -229,6 +291,8 @@ class Jogador(SerVivo, ABC):
         self.especial.atualizar(dt, self.mult_recarga * self.mult_especial)
         for arma in list(self.armas):
             arma.atualizar(dt, jogo, self)
+        for item in list(self.itens):
+            item.atualizar(dt, self, jogo)
 
     def desenhar(self, tela, camera):
         imagem = self.animador.quadro_atual
@@ -237,5 +301,9 @@ class Jogador(SerVivo, ABC):
         else:
             pulo = abs(math.sin(self.tempo * 10)) * 4 if self.movendo else (1 + math.sin(self.tempo * 2)) * 0.8
         alfa = 130 if self.invencivel > 0 and int(self.invencivel * 20) % 2 else 255
+        angulo = 0.0
+        if self.rolamento.rolando:     # uma cambalhota inteira durante o rolamento
+            angulo = 360 * self.rolamento.fracao * (1 if self.olhando_esquerda else -1)
+            alfa = 200
         desenhar_sprite(tela, camera, imagem, self.posicao, espelhar=self.olhando_esquerda,
-                        piscar=self.piscar > 0, deslocamento_y=pulo, alfa=alfa)
+                        piscar=self.piscar > 0, deslocamento_y=pulo, alfa=alfa, angulo=angulo)

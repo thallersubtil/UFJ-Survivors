@@ -22,7 +22,7 @@ def colocar_chefe(jogo, nome):
 
 
 def derrotar_fase(jogo, chefe):
-    jogo.causar_dano(chefe, chefe.vida)
+    jogo.causar_dano(chefe, chefe.vida * 2)     # sobra por causa da variação de ±10%
     chefe.mover(1 / 60, jogo)
 
 

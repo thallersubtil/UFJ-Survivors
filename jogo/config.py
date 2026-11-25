@@ -1,10 +1,14 @@
 """Configurações gerais e números de balanceamento do jogo."""
 from pathlib import Path
 
+import sys
+
 RAIZ = Path(__file__).resolve().parent.parent
 PASTA_ASSETS = RAIZ / "assets"
-PASTA_DADOS = RAIZ / "dados"
+# No executável (PyInstaller) o código fica numa pasta interna; ranking e progresso vão ao lado do .exe.
+PASTA_DADOS = (Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else RAIZ) / "dados"
 ARQUIVO_RANKING = PASTA_DADOS / "ranking.json"
+ARQUIVO_PROGRESSO = PASTA_DADOS / "progresso.json"   # moedas e compras do Centro Acadêmico
 
 TITULO = "UFJ Survivors"
 LARGURA, ALTURA = 1280, 720
@@ -20,12 +24,13 @@ COMBO_ESPECIAL = 67
 BONUS_67_VELOCIDADE = 1.5
 BONUS_67_DURACAO = 6.0
 SORTEIOS_POR_PARTIDA = 3
+BANIMENTOS_POR_PARTIDA = 3      # cartas que dá para banir (tecla B) por partida
 CURA_AO_PULAR = 20
 LIMITE_COLETAVEIS = 400
 LIMITE_EFEITOS = 150
 
-FONTE = "fontes/pixelify-sans-latin-700-normal.woff2"
-FONTE_MEDIA = "fontes/pixelify-sans-latin-500-normal.woff2"
+FONTE = "fontes/pixelify-sans-ufj-700.ttf"      # Pixelify Sans com o C mais aberto (ferramentas/ajustar_fonte.py)
+FONTE_MEDIA = "fontes/pixelify-sans-ufj-500.ttf"
 
 
 class Cor:

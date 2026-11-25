@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from jogo.armas.arma import Arma, ArmaDeContato, ArmaDeDisparo
+from jogo.armas.arma import Arma, ArmaSemMunicao, ArmaDeDisparo
 from jogo.itens.item import Item
 from jogo.jogador.bonus import BonusTemporario
 from jogo.jogador.especial import Especial
@@ -22,7 +22,7 @@ class Estilingue(ArmaDeDisparo):
         return True
 
 
-class Soco(ArmaDeContato):
+class Soco(ArmaSemMunicao):
     NOME = "Soco"
     MELHORIAS = ("a", "b", "c", "d", "e", "f")
 

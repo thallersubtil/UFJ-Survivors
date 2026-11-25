@@ -58,9 +58,9 @@ class ProjetilDoHeroi(Projetil):
 
     def verificar_colisao(self, jogo):
         for inimigo in jogo.inimigos_proximos(self.posicao, self.raio):
-            if id(inimigo) in self.atingidos:
+            if inimigo in self.atingidos:
                 continue
-            self.atingidos.add(id(inimigo))
+            self.atingidos.add(inimigo)
             jogo.causar_dano(inimigo, self.dano, self.velocidade)
             self.ao_acertar(inimigo, jogo)
             self.perfuracao -= 1
@@ -186,3 +186,53 @@ class CobraGemea(MovimentoSerpente, ProjetilDivisivel):
     PASTA_SPRITE = "cobra"
     ALTURA = 22
     DURACAO = 1.6
+
+
+class PequiArremessado(ProjetilDoHeroi):
+    """Pequi que estoura no primeiro inimigo, espalhando espinhos em volta (Pequi Explosivo)."""
+
+    IMAGEM = "icones/pequi.png"
+    ALTURA = 24
+    DURACAO = 1.4
+
+    def __init__(self, posicao, velocidade, dano, raio_explosao):
+        super().__init__(posicao, velocidade, dano, perfuracao=1, raio=12)
+        self.raio_explosao = raio_explosao
+
+    def angulo_desenho(self):
+        return self.tempo * 360
+
+    def ao_acertar(self, inimigo, jogo):
+        from jogo.efeitos import EstouroDePequi
+        jogo.adicionar(EstouroDePequi(self.posicao, self.raio_explosao, self.dano * 0.8, excluir=inimigo))
+
+
+class ControleRicochete(ProjetilDoHeroi):
+    """Controle do Gamer: ao acertar, ricocheteia para o inimigo mais perto que ainda não levou."""
+
+    IMAGEM = "sprites/controle.png"
+    ALTURA = 22
+    DURACAO = 1.6
+    ALCANCE_RICOCHETE = 320
+
+    def __init__(self, posicao, velocidade, dano, ricochetes=1):
+        super().__init__(posicao, velocidade, dano, perfuracao=1, raio=12)
+        self.ricochetes = ricochetes
+
+    def angulo_desenho(self):
+        return self.tempo * 720
+
+    def ao_acertar(self, inimigo, jogo):
+        if self.ricochetes <= 0:
+            return
+        candidatos = [e for e in jogo.inimigos_proximos(inimigo.posicao, self.ALCANCE_RICOCHETE)
+                      if e is not inimigo and e not in self.atingidos]
+        if not candidatos:
+            return
+        proximo = min(candidatos, key=lambda e: e.posicao.distance_squared_to(inimigo.posicao))
+        rumo = proximo.posicao - self.posicao
+        if rumo.length_squared() > 0:
+            self.velocidade = rumo.normalize() * self.velocidade.length()
+        self.ricochetes -= 1
+        self.perfuracao += 1         # o acerto que ricocheteia não gasta o controle
+        self.tempo = 0.0

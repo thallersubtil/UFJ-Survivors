@@ -21,7 +21,7 @@ def no_maximo(arma):
 
 
 def test_tabelas_dos_itens():
-    assert len(ITENS) == 7
+    assert len(ITENS) == 12
     for classe in ITENS:
         assert len(classe.MELHORIAS) == classe.NIVEL_MAXIMO - 1
         assert classe.NOME and classe.DESCRICAO and classe.ICONE
@@ -108,7 +108,7 @@ def test_aplicar_opcoes_de_melhoria_e_de_arma_nova(jogo_limpo):
     assert isinstance(j.armas[-1], Gemini)
 
 
-def test_sem_nada_para_oferecer_aparece_o_lanche(jogo_limpo):
+def test_sem_nada_para_oferecer_aparecem_cartas_de_atributo_com_lanche(jogo_limpo):
     jogo = jogo_limpo()
     j = jogo.jogador
     j.armas = [CarameloNoFusca(), CobrasGemeas(), DebateDasIAs(), CarameloNoFusca()]
@@ -118,9 +118,9 @@ def test_sem_nada_para_oferecer_aparece_o_lanche(jogo_limpo):
         item.nivel = item.NIVEL_MAXIMO
         j.itens.append(item)
     opcoes = Progressao.gerar_opcoes(j, random.Random(2))
-    assert [o.tipo for o in opcoes] == ["lanche"]
+    assert len(opcoes) == 3 and {o.tipo for o in opcoes} == {"atributo"}
     j.vida = 10
-    opcoes[0].aplicar(j, jogo)
+    Progressao.opcao_lanche().aplicar(j, jogo)
     assert j.vida == 40
 
 
@@ -175,4 +175,4 @@ def test_colab_funde_as_armas_e_libera_vaga_para_uma_nova(jogo_limpo):
     colab.aplicar(j, jogo)
     assert len(j.armas) == 3
     novas = {o.titulo for o in Progressao.candidatas(j) if o.rotulo == "NOVA"}
-    assert novas == {"Caramelo", "Fusca Azul"}
+    assert novas == {"Caramelo", "Fusca Azul", "Apostila", "Quadro Branco", "Controle"}

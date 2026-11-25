@@ -64,6 +64,9 @@ class Chefe(Inimigo, ABC):
     def possuir(self, duracao):
         """Chefes não são possuídos pelo Fusca."""
 
+    def assustar(self, duracao):
+        """Professor não cai em trote."""
+
     def empurrar(self, direcao, forca=180):
         super().empurrar(direcao, forca * 0.1)
 

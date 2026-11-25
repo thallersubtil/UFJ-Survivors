@@ -1,14 +1,21 @@
 """Classes de personagem. Cada classe tem uma arma inicial (ativa), uma passiva e um especial.
 
-A aparência (masculino ou feminino, cabelo, roupas, cores) não depende da classe:
-é escolhida na personalização e fica no boneco do aluno.
+A aparência (gênero e cores) é escolhida na personalização, ANTES da classe, e vale para
+todas: cada classe tem a sua arte (pastas masculina e feminina), recolorida com as
+cores escolhidas.
 """
+from jogo.armas.apostila import Apostila
 from jogo.armas.caramelo import Caramelo
 from jogo.armas.cobra_python import CobraPython
+from jogo.armas.controle import Controle
+from jogo.armas.fusca import FuscaAzul
 from jogo.armas.gemini import Gemini
-from jogo.jogador.especiais import SuperSaiyajin, ViradaDeNoite, Zoltraak
+from jogo.armas.quadro_branco import QuadroBranco
+from jogo.jogador.especiais import (Lotacao, RevisaoParaProva, Speedrun, SuperSaiyajin, TroteReverso, ViradaDeNoite,
+                                    Zoltraak)
 from jogo.jogador.jogador import Jogador
-from jogo.jogador.passivas import Cafeinado, InstintoOtaku, RolagemDeIniciativa
+from jogo.jogador.passivas import (Cafeinado, CaronaSolidaria, InstintoOtaku, PlantaoDeDuvidas, Reflexo,
+                                   RolagemDeIniciativa, SedeDeAprender)
 
 
 class Otaku(Jogador):
@@ -18,8 +25,10 @@ class Otaku(Jogador):
     VELOCIDADE = 180
     IMAGEM = "sprites/aluno2.png"
     PASTA_SPRITE = "aluno2"
+    PASTA_SPRITE_FEMININA = "aluna2"
     MOLETOM_ORIGINAL = "laranja"
     PASTA_TRANSFORMADO = "aluno2_ssj"
+    PASTA_TRANSFORMADO_FEMININA = "aluna2_ssj"
     IMAGEM_TRANSFORMADO = "sprites/aluno2_ssj.png"
 
     def criar_arma_inicial(self):
@@ -39,6 +48,7 @@ class Programador(Jogador):
     VELOCIDADE = 230
     IMAGEM = "sprites/aluno1.png"
     PASTA_SPRITE = "aluno1"
+    PASTA_SPRITE_FEMININA = "aluna1"
 
     def criar_arma_inicial(self):
         return CobraPython()
@@ -57,6 +67,7 @@ class MestreDeRPG(Jogador):
     VELOCIDADE = 205
     IMAGEM = "sprites/aluno1.png"
     PASTA_SPRITE = "aluno1"
+    PASTA_SPRITE_FEMININA = "aluna1"
 
     def criar_arma_inicial(self):
         return Gemini()
@@ -68,4 +79,82 @@ class MestreDeRPG(Jogador):
         return Zoltraak()
 
 
-CLASSES = (Otaku, Programador, MestreDeRPG)
+class Monitor(Jogador):
+    NOME = "Monitor"
+    DESCRICAO = "Paciente. Atrasa os inimigos e se cuida sozinho."
+    VIDA = 100
+    VELOCIDADE = 200
+    IMAGEM = "sprites/aluno1.png"          # arte provisória (usa a do Programador)
+    PASTA_SPRITE = "aluno1"
+    PASTA_SPRITE_FEMININA = "aluna1"
+
+    def criar_arma_inicial(self):
+        return QuadroBranco()
+
+    def criar_passiva(self):
+        return PlantaoDeDuvidas()
+
+    def criar_especial(self):
+        return RevisaoParaProva()
+
+
+class Gamer(Jogador):
+    NOME = "Gamer"
+    DESCRICAO = "Rápido e frágil. Vive rolando."
+    VIDA = 95
+    VELOCIDADE = 235
+    IMAGEM = "sprites/aluno2.png"          # arte provisória (usa a do Otaku)
+    PASTA_SPRITE = "aluno2"
+    PASTA_SPRITE_FEMININA = "aluna2"
+    MOLETOM_ORIGINAL = "laranja"
+
+    def criar_arma_inicial(self):
+        return Controle()
+
+    def criar_passiva(self):
+        return Reflexo()
+
+    def criar_especial(self):
+        return Speedrun()
+
+
+class Calouro(Jogador):
+    NOME = "Calouro"
+    DESCRICAO = "Começa fraco, mas aprende rápido."
+    VIDA = 85
+    VELOCIDADE = 215
+    IMAGEM = "sprites/aluno1.png"          # arte provisória
+    PASTA_SPRITE = "aluno1"
+    PASTA_SPRITE_FEMININA = "aluna1"
+
+    def criar_arma_inicial(self):
+        return Apostila()
+
+    def criar_passiva(self):
+        return SedeDeAprender()
+
+    def criar_especial(self):
+        return TroteReverso()
+
+
+class CaraDaCarona(Jogador):
+    NOME = "Cara da Carona"
+    DESCRICAO = "Todo mundo quer carona. O Fusca vem junto."
+    VIDA = 110
+    VELOCIDADE = 195
+    IMAGEM = "sprites/aluno2.png"          # arte provisória
+    PASTA_SPRITE = "aluno2"
+    PASTA_SPRITE_FEMININA = "aluna2"
+    MOLETOM_ORIGINAL = "laranja"
+
+    def criar_arma_inicial(self):
+        return FuscaAzul()
+
+    def criar_passiva(self):
+        return CaronaSolidaria()
+
+    def criar_especial(self):
+        return Lotacao()
+
+
+CLASSES = (Otaku, Programador, MestreDeRPG, Monitor, Gamer, Calouro, CaraDaCarona)
