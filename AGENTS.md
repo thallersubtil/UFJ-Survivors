@@ -20,6 +20,7 @@ python3.12 -m venv .venv                 # Windows: py -3.12 -m venv .venv
 .venv/bin/python main.py                 # abre o jogo
 .venv/bin/pytest -q                      # testes (todos devem passar antes de qualquer commit)
 .venv/bin/python ferramentas/simular_partida.py --heroi 1 --imortal   # partida inteira sem janela, para balancear
+.venv/bin/python ferramentas/demonstrar_polimorfismo.py               # hierarquia lida do código e o laço único rodando
 ```
 
 Os testes rodam sem janela (`testes/conftest.py` define `SDL_VIDEODRIVER=dummy`). Para scripts próprios que importam pygame sem abrir janela, use as mesmas variáveis.
@@ -54,7 +55,7 @@ jogo/mapa.py           Mapa (abstrata), MapaUFJ, Predio (obstáculo), Decoracao;
 jogo/nucleo/animacao.py  Animacao e Animador (composição: personagens contêm um Animador)
 jogo/nucleo/           Entidade, SerVivo, Colisao, Camera, GradeEspacial, Recursos (arte/som com substitutos), desenho
 jogo/jogador/          Jogador (abstrata), classes.py (as 7 classes), Passiva e passivas,
-                       especiais, Rolamento (esquiva), BonusTemporario, Aparencia (recoloração dos sprites dos alunos)
+                       especiais, Rolamento (esquiva), BonusTemporario
 jogo/loja/             Centro Acadêmico: Progresso (moedas e compras salvas), Melhoria (abstrata) e as melhorias
                        permanentes, JogoDeAposta (abstrata) e os jogos do cassino
 jogo/inimigos/         Inimigo (abstrata), FabricaDeInimigos, um arquivo por lacaio, Chefe, ChefePossuido e os três chefes,
@@ -103,9 +104,9 @@ docs/                  entregas, diagrama, registro de uso de IA, especificaçã
 3. Rode `.venv/bin/python ferramentas/montar_sprites.py`. As folhas brutas estão com o Thaller.
 Se a pasta não existir, o jogo usa a imagem estática `IMAGEM` ou um círculo colorido; nada quebra.
 
-**Classe nova**: uma classe em `jogo/jogador/classes.py` que herda de `Jogador`, com `NOME`, `DESCRICAO`, `VIDA`, `VELOCIDADE`, `PASTA_SPRITE` (e `MOLETOM_ORIGINAL` se o moletom da arte não for verde) e os três métodos `criar_arma_inicial()`, `criar_passiva()` e `criar_especial()`; acrescente-a em `CLASSES`. A passiva herda de `Passiva` (`jogo/jogador/passivas.py`) e soma o efeito em `aplicar(jogador)` usando `jogador.nivel`, como os itens.
+**Classe nova**: uma classe em `jogo/jogador/classes.py` que herda de `Jogador`, com `NOME`, `DESCRICAO`, `VIDA`, `VELOCIDADE`, `PASTA_SPRITE` e os três métodos `criar_arma_inicial()`, `criar_passiva()` e `criar_especial()`; acrescente-a em `CLASSES`. A passiva herda de `Passiva` (`jogo/jogador/passivas.py`) e soma o efeito em `aplicar(jogador)` usando `jogador.nivel`, como os itens.
 
-**Trocar a arte provisória dos alunos e dos professores**: gere folhas `parado` (4 quadros, o 3º piscando) e `andar` (4 quadros) para cada um, como acima. Pastas: `aluno1` e `aluna1` (Programador e Mestre de RPG), `aluno2`, `aluna2`, `aluno2_ssj` e `aluna2_ssj` (Otaku), `professor` (chefe de Cálculo), `professor_computacao` (chefe de Arquitetura e ED) e `professora` (chefe de TD e POO; gerada em 19/10 com a mesma receita, usando as folhas do professor como referência de estilo). Para dar uma arte própria a um chefe, troque `PASTA_SPRITE` em `jogo/inimigos/professor_de_calculo.py`, `professor_de_arquitetura_ed.py` ou `professora_de_td_e_poo.py`. A pasta de cada classe fica em `PASTA_SPRITE` (e `PASTA_SPRITE_FEMININA`) em `jogo/jogador/classes.py`. A arte tem que parecer pixel art como a dos alunos (contorno escuro de 1 px, transparência sem meio-termo, paleta curta); se sair lisa, passe `ferramentas/endurecer_sprite.py`. Ao trocar a arte dos alunos, confira a personalização (`classificar` em `jogo/jogador/aparencia.py` acha pele, cabelo, moletom e calça pela cor).
+**Trocar a arte provisória dos alunos e dos professores**: gere folhas `parado` (4 quadros, o 3º piscando) e `andar` (4 quadros) para cada um, como acima. Pastas: `aluno1` e `aluna1` (Programador e Mestre de RPG), `aluno2`, `aluna2`, `aluno2_ssj` e `aluna2_ssj` (Otaku), `professor` (chefe de Cálculo), `professor_computacao` (chefe de Arquitetura e ED) e `professora` (chefe de TD e POO; gerada em 19/10 com a mesma receita, usando as folhas do professor como referência de estilo). Para dar uma arte própria a um chefe, troque `PASTA_SPRITE` em `jogo/inimigos/professor_de_calculo.py`, `professor_de_arquitetura_ed.py` ou `professora_de_td_e_poo.py`. A pasta de cada classe fica em `PASTA_SPRITE` em `jogo/jogador/classes.py`. A arte tem que parecer pixel art como a dos alunos (contorno escuro de 1 px, transparência sem meio-termo, paleta curta); se sair lisa, passe `ferramentas/endurecer_sprite.py`.
 
 **Mapa da UFJ**: `.venv/bin/python ferramentas/gerar_mapa.py` (baixa sozinho as fontes de satélite e OpenStreetMap se faltarem, com `--baixar` para atualizar) gera `assets/cenario/mapa_ufj.png`, os sprites dos prédios e `mapa_ufj.json`. Escala: 10 unidades por metro (prédios bem maiores que o herói); o chão é guardado em 1/3 da resolução e ampliado com suavização em blocos. Para mudar escala, recorte, cores, nomes curtos dos prédios ou densidade de árvores, edite as constantes no topo do script. Prédios são `Predio` (obstáculos com o contorno real); herói e inimigos são empurrados para fora por `Colisao.empurrar_para_fora`.
 
@@ -128,6 +129,6 @@ Se a pasta não existir, o jogo usa a imagem estática `IMAGEM` ou um círculo c
 |---|---|---|
 | 1 | 22/10 | Proposta e diagrama de classes (`docs/entregas/etapa1_proposta.md`, `diagrama_classes.png`) |
 | 2 | 05/11 | Protótipo (tag `etapa-2-prototipo`; a versão atual já é bem mais completa) |
-| 3 | 26/11 | Hierarquia completa e polimorfismo funcionando |
+| 3 | 26/11 | Hierarquia completa e polimorfismo funcionando (`docs/entregas/etapa3_hierarquia_e_polimorfismo.md`; a saída dele vem de `ferramentas/demonstrar_polimorfismo.py`) |
 | Mostra | 03/12 | A turma joga os jogos e vota em "mais criativo" e "melhor arquitetura" |
 | 4 | 10/12 ou 14/12 | Versão final, defesa oral individual e requisito surpresa (ex.: "crie um inimigo novo em 10 minutos sem alterar as classes existentes") |

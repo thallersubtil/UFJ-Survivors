@@ -87,13 +87,10 @@ def test_treino_nao_entra_no_ranking(app):
 
 
 def test_jogo_a_partir_das_opcoes_aplica_tudo():
-    from jogo.jogador.aparencia import Aparencia
     from jogo.jogo import Jogo
-    aparencia = Aparencia(cabelo="Ruivo")
-    opcoes = OpcoesDePartida.treino_contra(ProvaDeTDEPOO, imortal=True).com_aparencia(aparencia)
+    opcoes = OpcoesDePartida.treino_contra(ProvaDeTDEPOO, imortal=True)
     jogo = Jogo.a_partir_de(Programador, opcoes, semente=2)
     assert jogo.treino and jogo.jogador.imortal
-    assert jogo.jogador.aparencia == aparencia
     assert [type(f) for f in jogo.fases] == [ProvaDeTDEPOO]
 
 

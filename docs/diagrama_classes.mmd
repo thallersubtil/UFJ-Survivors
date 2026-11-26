@@ -244,19 +244,6 @@ classDiagram
         +esta_visivel(camera) bool
     }
     class Decoracao
-    class Aparencia {
-        -_escolhas: dict
-        +genero: str «property»
-        +feminino: bool «property»
-        +pele: str «property»
-        +cabelo: str «property»
-        +moletom: str «property»
-        +calca: str «property»
-        +recolorir(imagem) Surface
-        +#95;#95;eq#95;#95;(outra)
-        +#95;#95;hash#95;#95;()
-        +#95;#95;str#95;#95;()
-    }
     class OpcoesDePartida {
         +provas: tuple
         +treino: bool
@@ -367,8 +354,6 @@ classDiagram
     Conquista <|-- ConquistaDeMarco
     Progresso ..> Lanche : guarda
     Progresso ..> Conquista : registra
-    Jogador o-- Aparencia
-    OpcoesDePartida o-- Aparencia
     Jogo ..> OpcoesDePartida : a_partir_de
     Fase ..> FabricaDeInimigos : usa
     FabricaDeInimigos ..> Inimigo : cria

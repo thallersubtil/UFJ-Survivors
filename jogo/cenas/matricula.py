@@ -23,6 +23,7 @@ FOTO_AZUL = (200, 214, 236)
 class CenaMatricula(Cena):
     DURACAO_TROCA = 0.35               # o retrato novo se abre em círculo sobre o anterior
     DURACAO_FOTO = 1.1                 # flash + carteirinha saindo da impressora
+    AVISO = pygame.Rect(478, 104, 150, 76)    # quadro "na partida", na camada
     MARGEM_DA_FOTO = 6                 # folga dos lados do retrato na webcam
     MARGEM_DO_TOPO = 22                # folga acima da cabeça (também livra o aviso "AO VIVO")
     VIDA_MAXIMA_BARRA, VELOCIDADE_MAXIMA_BARRA = 130, 240
@@ -40,6 +41,8 @@ class CenaMatricula(Cena):
         self._anterior = self.indice
         self._t_troca = -10.0
         self.foto_tirada_em = None
+        self._chibis_grandes = {}          # pasta -> quadros do andar no tamanho do quadro "na partida"
+        self._topo_da_carteirinha = None   # até onde a carteirinha já subiu (ela passa na frente do boneco)
         self._foto_impressa = None         # onde a foto da carteirinha está na camada (quando já saiu)
         self._limite_da_impressora = 0
 
@@ -195,11 +198,38 @@ class CenaMatricula(Cena):
               (120, 30, 30) if chamando else (255, 70, 60), 23, contorno=None)
         if 0.4 <= self.tempo < 1.0:
             texto(ui, "DING!", (painel.right - 2, painel.bottom + 4), P.OURO, 11, ancora="topright")
-        aviso = pygame.Rect(478, 104, 150, 76)                          # o chibi: quem anda na partida
+        aviso = self.AVISO                                              # o chibi: quem anda na partida
         papel(ui, aviso, P.PAPEL2, semente=8)
         texto(ui, "NA PARTIDA", (aviso.centerx, aviso.y + 4), (60, 60, 90), 11, contorno=None, ancora="midtop")
-        chibi = self._chibi(self.indice, altura=54)
-        ui.blit(chibi, chibi.get_rect(midbottom=(aviso.centerx, aviso.bottom - 4)))
+
+    def _chibi_grande(self, i):
+        """O quadro da vez do andar na arte feita no tamanho deste quadro (assets/retratos/chibis): ampliar o boneco
+        da partida deixaria o traço fora de foco. Sem essa arte, amplia mesmo."""
+        pasta = CLASSES[i].PASTA_SPRITE
+        if pasta not in self._chibis_grandes:
+            caminho = f"retratos/chibis/{pasta}/andar-8.png"
+            quadros = None
+            if (Recursos.pasta / caminho).is_file():
+                tira = Recursos.imagem(caminho)
+                largura = tira.get_width() // 8
+                quadros = [tira.subsurface((k * largura, 0, largura, tira.get_height())) for k in range(8)]
+            self._chibis_grandes[pasta] = quadros
+        quadros = self._chibis_grandes[pasta]
+        animacoes = self.exemplos[i].animador.animacoes
+        tira = animacoes.get("andar") or next(iter(animacoes.values()))
+        if quadros is None or len(tira.quadros) != len(quadros):
+            quadro = self._chibi(i)
+            altura = 54 * ESCALA
+            return pygame.transform.smoothscale(quadro, (round(quadro.get_width() * altura / quadro.get_height()), altura))
+        return quadros[int(self.tempo * tira.fps) % len(quadros)]
+
+    def _chibi_nitido(self, tela):
+        """O boneco da partida vai direto na tela, suavizado: pela camada (ampliada em blocos) sairia serrilhado."""
+        chibi = self._chibi_grande(self.indice)
+        if self._topo_da_carteirinha is not None:               # a carteirinha impressa passa na frente dele
+            tela.set_clip(pygame.Rect(0, 0, tela.get_width(), self._topo_da_carteirinha * ESCALA))
+        tela.blit(chibi, chibi.get_rect(midbottom=(self.AVISO.centerx * ESCALA, (self.AVISO.bottom - 4) * ESCALA)))
+        tela.set_clip(None)
 
     def _dados(self, ui, r, heroi):
         """Ficha da classe no monitor: nome, descrição, barras e os três blocos (arma, passiva, especial)."""
@@ -262,6 +292,7 @@ class CenaMatricula(Cena):
 
     def _impressora(self, ui):
         self._foto_impressa = None
+        self._topo_da_carteirinha = None
         imp = pygame.Rect(478, 208, 150, 50)
         foto_t = None if self.foto_tirada_em is None else self.tempo - self.foto_tirada_em
         if foto_t is not None and foto_t >= 0.1:
@@ -275,8 +306,9 @@ class CenaMatricula(Cena):
             foto = pygame.Surface((44, 58))
             foto.fill(FOTO_AZUL)
             self._foto_impressa = pygame.Rect(c.x + 6, c.y + 18, 44, 58)
+            self._topo_da_carteirinha = c.y
             self._limite_da_impressora = imp.y
-            if self.classe.rosto(44 * ESCALA) is None:           # sem a arte do rosto: o retrato reduzido
+            if self.classe.foto(44 * ESCALA) is None:            # sem a arte da foto: o retrato reduzido
                 mini = self._retrato(self.indice, (40, 54))
                 foto.blit(mini, mini.get_rect(midbottom=(22, 58)))
             ui.blit(foto, self._foto_impressa)
@@ -319,11 +351,12 @@ class CenaMatricula(Cena):
         pygame.draw.circle(tela, P.VERM if int(self.tempo * 2) % 2 else (100, 20, 20),
                            (area.x + 10 * ESCALA, area.y + 10 * ESCALA), 3 * ESCALA)
         texto(tela, "AO VIVO", (area.x + 16 * ESCALA, area.y + 4 * ESCALA), P.BRANCO, 23, media=True)
-        rosto = self.classe.rosto(44 * ESCALA)
+        self._chibi_nitido(tela)
+        rosto = self.classe.foto(44 * ESCALA)
         if self._foto_impressa is not None and rosto is not None:      # o rosto na carteirinha, também nítido
             f = self._foto_impressa
             tela.set_clip(pygame.Rect(0, 0, tela.get_width(), self._limite_da_impressora * ESCALA))   # some atrás da impressora
-            tela.blit(rosto, rosto.get_rect(midbottom=((f.centerx) * ESCALA, f.bottom * ESCALA - ESCALA)))
+            tela.blit(rosto, rosto.get_rect(midbottom=((f.centerx) * ESCALA, f.bottom * ESCALA)))
             tela.set_clip(None)
         foto_t = None if self.foto_tirada_em is None else self.tempo - self.foto_tirada_em
         if foto_t is not None and foto_t < 0.25:

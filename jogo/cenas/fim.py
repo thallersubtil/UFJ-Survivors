@@ -14,7 +14,7 @@ from jogo.loja.conquistas import Conquistas
 from jogo.nucleo.recursos import Recursos
 from jogo.ranking import RegistroRanking
 from jogo.ui.materiais import caneta, carimbo, circulo_caneta, madeira, papel
-from jogo.ui.pixel import A, L, CamadaPixel, Paleta as P, ease_back, ease_out, icone, janela, no_quadrado, texto
+from jogo.ui.pixel import A, ESCALA, L, CamadaPixel, Paleta as P, ease_back, ease_out, icone, janela, no_quadrado, texto
 
 TINTA = (40, 40, 80)
 AZUL_CANETA = (40, 50, 120)
@@ -30,6 +30,7 @@ class CenaFimDeJogo(Cena):
 
     def __init__(self, app, jogo):
         super().__init__(app)
+        self._caixa_da_foto = None
         self.jogo = jogo
         self.nome = ""
         self.tempo = 0.0
@@ -94,16 +95,29 @@ class CenaFimDeJogo(Cena):
     def _foto(self, ui, r):
         s = pygame.Surface(r.size)
         s.fill((200, 214, 236))
-        animacoes = self.jogo.jogador.animador.animacoes
-        animacao = animacoes.get("parado") or next(iter(animacoes.values()))
-        quadro = animacao.quadros[int(self.tempo * 5) % len(animacao.quadros)]
-        caixa = quadro.get_bounding_rect()
-        if caixa.w and caixa.h:
-            quadro = quadro.subsurface(caixa)
-        img = no_quadrado(quadro, int(r.h * 1.5))
-        s.blit(img, img.get_rect(midtop=(r.w // 2, 3)))
+        self._caixa_da_foto = r                    # a foto 3x4 entra depois, direto na tela (veja _foto_nitida)
+        if self.jogo.jogador.foto(r.w * ESCALA) is None:      # sem a arte da foto: o boneco de perto
+            animacoes = self.jogo.jogador.animador.animacoes
+            animacao = animacoes.get("parado") or next(iter(animacoes.values()))
+            quadro = animacao.quadros[int(self.tempo * 5) % len(animacao.quadros)]
+            caixa = quadro.get_bounding_rect()
+            if caixa.w and caixa.h:
+                quadro = quadro.subsurface(caixa)
+            img = no_quadrado(quadro, int(r.h * 1.5))
+            s.blit(img, img.get_rect(midtop=(r.w // 2, 3)))
         ui.blit(s, r)
         pygame.draw.rect(ui, (70, 70, 90), r, 1)
+
+    def _foto_nitida(self, tela):
+        """A foto 3x4 do aluno vai direto na tela, em resolução cheia: pela camada sairia em blocos."""
+        r = self._caixa_da_foto
+        foto = self.jogo.jogador.foto(r.w * ESCALA) if r is not None else None
+        if foto is None:
+            return
+        area = pygame.Rect(r.x * ESCALA, r.y * ESCALA, r.w * ESCALA, r.h * ESCALA).inflate(-2 * ESCALA, -2 * ESCALA)
+        tela.set_clip(area.clip(tela.get_rect()))
+        tela.blit(foto, foto.get_rect(midtop=area.midtop))
+        tela.set_clip(None)
 
     def _cabecalho(self, ui, b):
         if (Recursos.pasta / "sprites/logo.png").exists():
@@ -202,3 +216,4 @@ class CenaFimDeJogo(Cena):
             "Digite seu nome    Enter: salvar no ranking    Esc: sair sem salvar"
         texto(ui, rodape, (L // 2, A - 12), P.BRANCO, 11, ancora="midtop")
         self.camada.apresentar(tela)
+        self._foto_nitida(tela)
