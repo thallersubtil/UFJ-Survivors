@@ -3,24 +3,23 @@ import math
 from jogo.ajudantes.ajudantes import CachorroCaramelo
 from jogo.armas.arma import ArmaSemMunicao
 
+from jogo.formas_supremas import CachorroDaMatilha
+
 
 class Caramelo(ArmaSemMunicao):
     NOME = "Caramelo"
     ICONE = "sprites/caramelo.png"
     DESCRICAO = "Um vira-lata caramelo corre em volta de você e morde quem chega perto."
     ATRIBUTOS = {
-        "quantidade": (1, 2, 2, 3, 3, 4, 4),
-        "dano": (7, 8, 9, 10, 12, 13, 16),
-        "raio": (70, 75, 80, 90, 95, 100, 115),
-        "velocidade": (3.0, 3.0, 3.4, 3.4, 3.8, 3.8, 4.3),
+        "quantidade": (1, 2, 3, 5),
+        "dano": (7, 9, 12, 22),
+        "raio": (70, 80, 95, 125),
+        "velocidade": (3.0, 3.4, 3.8, 6.0),
     }
     MELHORIAS = (
-        "Mais 1 caramelo.",
-        "Voltas mais rápidas e mais dano.",
-        "Mais 1 caramelo.",
-        "Voltas mais rápidas e maiores.",
-        "Mais 1 caramelo.",
-        "Mais dano, voltas maiores e mais rápidas.",
+        "Mais 1 caramelo, voltas mais rápidas e mais dano.",
+        "Mais 1 caramelo, voltas maiores e mais dano.",
+        "MATILHA DOURADA: 5 caramelos bem maiores, que mordem mais longe, dão voltas maiores e muito mais rápidas.",
     )
 
     def __init__(self):
@@ -34,9 +33,10 @@ class Caramelo(ArmaSemMunicao):
     def _recriar(self, jogo, dono):
         self.ao_remover(jogo)
         quantidade = self.valor("quantidade")
-        self.cachorros = [CachorroCaramelo(dono, 2 * math.pi * i / quantidade, self) for i in range(quantidade)]
+        classe = CachorroDaMatilha if self.no_maximo else CachorroCaramelo      # no máximo: maiores e mais rápidos
+        self.cachorros = [classe(dono, 2 * math.pi * i / quantidade, self) for i in range(quantidade)]
         for cachorro in self.cachorros:
-            jogo.adicionar(cachorro)
+            self.lancar(jogo, cachorro)
 
     def ao_remover(self, jogo):
         for cachorro in self.cachorros:

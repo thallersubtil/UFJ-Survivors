@@ -47,7 +47,8 @@ class Projetil(Entidade, ABC):
 
     def desenhar(self, tela, camera):
         imagem = self.animador.quadro_atual
-        desenhar_sprite(tela, camera, imagem, self.posicao, angulo=self.angulo_desenho(), sombra=False)
+        desenhar_sprite(tela, camera, imagem, self.posicao, angulo=self.angulo_desenho(), sombra=False,
+                        aura=self.aura)
 
 
 class ProjetilDoHeroi(Projetil):
@@ -86,8 +87,10 @@ class ProjetilDivisivel(ProjetilDoHeroi):
         if self.geracoes <= 0:
             return
         for desvio in (-self.DESVIO, self.DESVIO):
-            jogo.adicionar(type(self)(self.posicao, self.velocidade.rotate(desvio), self.dano * self.FATOR_DANO,
-                                      geracoes=self.geracoes - 1, raio=self.raio, atingidos=self.atingidos))
+            filha = type(self)(self.posicao, self.velocidade.rotate(desvio), self.dano * self.FATOR_DANO,
+                               geracoes=self.geracoes - 1, raio=self.raio, atingidos=self.atingidos)
+            filha.aura = self.aura
+            jogo.adicionar(filha)
 
 
 class ProjetilInimigo(Projetil):
@@ -154,22 +157,30 @@ class ProjetilDaMateria(ProjetilInimigo):
 
 
 class TiroChatGPT(ProjetilDoHeroi):
-    """Bolinha de energia do mascote. Quando alucinado, é rosa e com '?'."""
+    """Rajada de energia do mascote, com cauda. Quando alucinado, é rosa e com '?'."""
 
     DURACAO = 1.4
+    ALTURA = 22
+    PASTA_SPRITE = "tiro_chatgpt"
+    PASTA_ALUCINADO = "tiro_chatgpt_alucinado"
 
     def __init__(self, posicao, velocidade, dano, alucinado=False):
         super().__init__(posicao, velocidade, dano, raio=8)
         self.alucinado = alucinado
+        if alucinado and Recursos.animacoes(self.PASTA_ALUCINADO):
+            self.animador = Animador(Recursos.animacoes(self.PASTA_ALUCINADO))
 
     def desenhar(self, tela, camera):
         c = camera.para_tela(self.posicao)
-        cor = (255, 110, 200) if self.alucinado else (120, 240, 200)
-        pygame.draw.circle(tela, (*cor, 255), (round(c.x), round(c.y)), 8)
-        pygame.draw.circle(tela, (255, 255, 255), (round(c.x), round(c.y)), 4)
+        if "mover" in self.animador.animacoes:
+            super().desenhar(tela, camera)
+        else:                                   # sem a arte: bolinha simples
+            cor = (255, 110, 200) if self.alucinado else (120, 240, 200)
+            pygame.draw.circle(tela, (*cor, 255), (round(c.x), round(c.y)), 8)
+            pygame.draw.circle(tela, (255, 255, 255), (round(c.x), round(c.y)), 4)
         if self.alucinado:
             marca = Recursos.fonte(14).render("?", True, (255, 255, 255))
-            tela.blit(marca, marca.get_rect(center=(round(c.x), round(c.y - 14))))
+            tela.blit(marca, marca.get_rect(center=(round(c.x), round(c.y - 16))))
 
 
 class EstrelaGemini(ProjetilDivisivel):
@@ -179,13 +190,6 @@ class EstrelaGemini(ProjetilDivisivel):
 
     def angulo_desenho(self):
         return self.tempo * 540
-
-
-class CobraGemea(MovimentoSerpente, ProjetilDivisivel):
-    IMAGEM = "sprites/cobra.png"
-    PASTA_SPRITE = "cobra"
-    ALTURA = 22
-    DURACAO = 1.6
 
 
 class PequiArremessado(ProjetilDoHeroi):
@@ -204,7 +208,9 @@ class PequiArremessado(ProjetilDoHeroi):
 
     def ao_acertar(self, inimigo, jogo):
         from jogo.efeitos import EstouroDePequi
-        jogo.adicionar(EstouroDePequi(self.posicao, self.raio_explosao, self.dano * 0.8, excluir=inimigo))
+        estouro = EstouroDePequi(self.posicao, self.raio_explosao, self.dano * 0.8, excluir=inimigo)
+        estouro.aura = self.aura
+        jogo.adicionar(estouro)
 
 
 class ControleRicochete(ProjetilDoHeroi):

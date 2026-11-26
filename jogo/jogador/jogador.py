@@ -23,6 +23,8 @@ class Jogador(SerVivo, ABC):
     VELOCIDADE = 200
     IMAGEM = ""
     IMAGEM_TRANSFORMADO = None
+    RETRATO = None               # arte principal (alta) da classe, mostrada na matrícula
+    ROSTO = None                 # retrato só do rosto: HUD (ao lado da vida) e foto da carteirinha
     PASTA_SPRITE = None          # pasta em assets/sprites/ com as animações (parado, andar)
     PASTA_TRANSFORMADO = None    # animações da forma transformada (Super Saiyajin)
     ALTURA = 64
@@ -30,11 +32,14 @@ class Jogador(SerVivo, ABC):
     MAX_ARMAS = 4                # habilidades ativas; no limite, só melhorias (uma colab libera vaga)
     MOLETOM_ORIGINAL = "verde"    # como achar o moletom na arte, para trocar a cor
     PASTA_SPRITE_FEMININA = None        # arte da versão feminina; sem ela, usa a masculina
+    XP_PRIMEIRO_NIVEL = 10
+    XP_A_MAIS_POR_NIVEL = 8
+    APARENCIA_FIXA = False       # True: a arte já é o visual final e não troca de gênero nem de cor
     PASTA_TRANSFORMADO_FEMININA = None
     MAX_ITENS = 4                # habilidades passivas
     ALCANCE_COLETA_BASE = 90
     MULT_CRITICO = 2.0           # quanto o acerto crítico multiplica o dano
-    GANHO_VELOCIDADE_POR_NIVEL = 0.006   # o aluno pega ritmo: +0,6% de velocidade por nível
+    GANHO_VELOCIDADE_POR_NIVEL = 0.01    # o aluno pega ritmo: +1% de velocidade por nível
     TETO_GANHO_VELOCIDADE = 0.30
 
     def __init__(self, posicao):
@@ -190,7 +195,8 @@ class Jogador(SerVivo, ABC):
 
     @property
     def experiencia_necessaria(self):
-        return 6 + (self.nivel - 1) * 3
+        """Cada nível custa bem mais que o anterior: poucos níveis por partida (uns 30), cada um pesa."""
+        return self.XP_PRIMEIRO_NIVEL + (self.nivel - 1) * self.XP_A_MAIS_POR_NIVEL
 
     def ganhar_experiencia(self, quantidade):
         """Soma experiência e retorna quantos níveis o herói subiu."""
@@ -222,6 +228,13 @@ class Jogador(SerVivo, ABC):
         self.invencivel = INVENCIBILIDADE_APOS_DANO
         return morreu
 
+    @classmethod
+    def rosto(cls, lado):
+        """O retrato do rosto num quadrado de `lado` pixels, ou None se a classe não tem essa arte."""
+        if not cls.ROSTO or not (Recursos.pasta / cls.ROSTO).is_file():
+            return None
+        return Recursos.na_altura(Recursos.imagem(cls.ROSTO), lado)
+
     def _arte(self, pasta, pasta_feminina, imagem):
         """Animações do aluno ou, se a aparência é feminina e a arte existe, da aluna."""
         if self.aparencia is not None and self.aparencia.feminino and pasta_feminina:
@@ -231,6 +244,10 @@ class Jogador(SerVivo, ABC):
         return Recursos.animacoes_ou_imagem(pasta, imagem, self.ALTURA)
 
     def _animacoes(self):
+        if self.APARENCIA_FIXA:
+            if self.transformado:
+                return Recursos.animacoes_ou_imagem(self.PASTA_TRANSFORMADO, self.IMAGEM_TRANSFORMADO, self.ALTURA)
+            return Recursos.animacoes_ou_imagem(self.PASTA_SPRITE, self.IMAGEM, self.ALTURA)
         if self.transformado:
             base = self._arte(self.PASTA_TRANSFORMADO, self.PASTA_TRANSFORMADO_FEMININA, self.IMAGEM_TRANSFORMADO)
             return vestir_animacoes(base, self.aparencia, self.MOLETOM_ORIGINAL, cabelo_natural=False)

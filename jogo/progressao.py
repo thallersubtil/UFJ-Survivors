@@ -53,11 +53,12 @@ class Progressao:
     def _candidatas_sem_filtro(jogador):
         opcoes = []
         for receita in Colab.colabs_disponiveis(jogador.armas):
-            opcoes.append(Opcao(receita.NOME, receita.DESCRICAO, receita.ICONE, "COLAB!", "colab",
+            opcoes.append(Opcao(receita.NOME, receita.DESCRICAO, receita.ICONE, "COLAB SECRETA!", "colab",
                                 lambda j, jogo, r=receita: j.aplicar_colab(r, jogo)))
         for arma in jogador.armas:
             if not arma.no_maximo:
-                opcoes.append(Opcao(arma.NOME, arma.descricao_proxima(), arma.ICONE, f"nível {arma.nivel + 1}",
+                rotulo = "NÍVEL MÁXIMO!" if arma.nivel + 1 == arma.NIVEL_MAXIMO else f"nível {arma.nivel + 1}"
+                opcoes.append(Opcao(arma.NOME, arma.descricao_proxima(), arma.ICONE, rotulo,
                                     "melhoria", lambda j, jogo, a=arma: a.subir_nivel(),
                                     peso=Progressao._peso(type(arma)), origem=type(arma)))
         if len(jogador.armas) < jogador.MAX_ARMAS:

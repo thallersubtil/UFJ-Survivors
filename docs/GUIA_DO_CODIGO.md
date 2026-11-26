@@ -11,7 +11,7 @@ O herói (um aluno) anda pelo Campus Jatobá; as armas atacam sozinhas; ondas de
 ```
 main.py
  └─ Aplicacao (jogo/aplicacao.py)        janela 1280x720 e uma PILHA de cenas
-     └─ CenaTitulo -> CenaPersonalizacao -> CenaSelecao -> CenaPartida -> CenaFimDeJogo -> CenaRanking
+     └─ CenaTitulo -> CenaMatricula -> CenaPartida -> CenaFimDeJogo -> CenaRanking
          └─ CenaTreino (escolhe o professor) -> CenaPersonalizacao -> ...
                                          │
                                          ├─ empilha CenaNivel  (escolher carta ao subir de nível)
@@ -71,7 +71,7 @@ Arma (abstrata: atualizar; nivel 1 a 7 com @property)    jogo/armas/arma.py
 │  └─ CobraPython, MascoteChatGPT, Gemini
 ├─ ArmaSemMunicao (não gasta café)
 │  └─ Caramelo, MascoteClaude, FuscaAzul
-└─ Colab (duas armas no nível 7 viram uma)               jogo/armas/colabs.py
+└─ Colab (duas armas no nível máximo viram a versão suprema)               jogo/armas/colabs.py
    └─ CarameloNoFusca, CobrasGemeas, DebateDasIAs  (herança múltipla: Colab + família da arma)
 
 Item (abstrata: aplicar)   7 itens passivos em jogo/itens/itens.py

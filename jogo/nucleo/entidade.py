@@ -14,6 +14,7 @@ class Entidade(ABC):
 
     grupo = "geral"
     camada = 1
+    aura = None          # cor do contorno da forma suprema (arma no nível máximo ou colab); None = normal
 
     def __init__(self, posicao, raio):
         self.posicao = pygame.Vector2(posicao)

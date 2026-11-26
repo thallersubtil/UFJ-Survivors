@@ -63,10 +63,10 @@ def test_nivel_da_arma_validado():
     with pytest.raises(ValueError):
         s.nivel = 0
     with pytest.raises(ValueError):
-        s.nivel = 8
+        s.nivel = Soco.NIVEL_MAXIMO + 1
     with pytest.raises(TypeError):
         s.nivel = 2.0
-    for _ in range(6):
+    for _ in range(Soco.NIVEL_MAXIMO - 1):
         s.subir_nivel()
     assert s.no_maximo
     with pytest.raises(ValueError):

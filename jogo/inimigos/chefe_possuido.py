@@ -18,6 +18,9 @@ class ChefePossuido(Chefe, ABC):
     """
 
     NOME_PROFESSOR = "o Professor"
+    ARTIGO = "Um"                          # "Um Professor ... selvagem apareceu!"
+    ILUSTRACAO = "chefes/calculo.png"      # arte da apresentação (jogo/cenas/chefe.py)
+    COR_DA_APRESENTACAO = (236, 72, 110)
     IMAGEM = "sprites/professor.png"
     PASTA_SPRITE = "professor"
     ALTURA = 112

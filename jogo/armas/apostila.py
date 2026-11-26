@@ -1,6 +1,8 @@
 from jogo.ajudantes.ajudantes import FolhaDaApostila
 from jogo.armas.arma import ArmaSemMunicao
 
+from jogo.formas_supremas import BolaDeConteudo
+
 
 class Apostila(ArmaSemMunicao):
     """Folhas que giram em volta do aluno por alguns segundos, somem e voltam."""
@@ -8,19 +10,16 @@ class Apostila(ArmaSemMunicao):
     ICONE = "icones/apostila.png"
     DESCRICAO = "Folhas da apostila giram em volta de você de tempos em tempos e ferem quem encosta."
     ATRIBUTOS = {
-        "folhas": (1, 1, 2, 2, 2, 3, 3),
-        "dano": (11, 12, 13, 15, 17, 19, 23),
-        "raio": (70, 75, 80, 85, 90, 95, 105),
-        "duracao": (3.0, 3.0, 3.5, 3.5, 4.0, 4.0, 5.0),
-        "pausa": (2.0, 2.0, 1.8, 1.8, 1.5, 1.5, 1.0),
+        "folhas": (1, 2, 2, 2),
+        "dano": (11, 13, 17, 34),
+        "raio": (70, 80, 90, 120),
+        "duracao": (3.0, 3.5, 4.0, 3.4),
+        "pausa": (2.0, 1.8, 1.5, 1.8),
     }
     MELHORIAS = (
-        "Mais dano e folhas mais afastadas.",
-        "Mais uma folha.",
-        "Mais dano; as folhas giram por mais tempo.",
-        "Mais dano; voltam mais rápido.",
-        "Mais uma folha.",
-        "Edição revisada: mais dano, mais tempo girando e menos pausa.",
+        "Mais uma folha, mais dano e folhas mais afastadas.",
+        "Mais dano; giram por mais tempo e voltam mais rápido.",
+        "BOLA DE NEVE DE CONTEÚDO: a matéria acumulada vira duas bolas de papel que rolam pela tela crescendo e atropelando tudo.",
     )
 
     def __init__(self):
@@ -35,9 +34,16 @@ class Apostila(ArmaSemMunicao):
         if self._espera > 0:
             return
         total = self.valor("folhas")
+        if self.no_maximo:                      # bola de neve de conteúdo: rola pela tela crescendo
+            dano = self.valor("dano") * dono.multiplicador_dano
+            for i in range(total):
+                direcao = dono.direcao_mira.rotate(i * 360 / total)
+                self.lancar(jogo, BolaDeConteudo(dono.posicao, direcao, dano, self.valor("duracao")))
+            self._espera = self.valor("pausa")
+            return
         self.folhas = [FolhaDaApostila(dono, self, i, total, self.valor("duracao")) for i in range(total)]
         for folha in self.folhas:
-            jogo.adicionar(folha)
+            self.lancar(jogo, folha)
         self._espera = self.valor("pausa")
 
     def ao_remover(self, jogo):

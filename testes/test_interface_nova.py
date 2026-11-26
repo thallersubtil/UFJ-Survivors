@@ -120,36 +120,56 @@ def test_pausa_desce_do_menu_para_as_fotos_e_volta(tmp_path):
     assert isinstance(app.cena_atual, CenaTitulo)
 
 
-def test_personalizacao_tira_a_foto_e_so_depois_abre_a_classe(tmp_path):
-    from jogo.cenas.personalizacao import CenaPersonalizacao
-    from jogo.cenas.selecao import CenaSelecao
-    app = _app(tmp_path)
-    cena = CenaPersonalizacao(app)
-    app.trocar(cena)
-    app.passo(1 / 60, [_tecla(pygame.K_DOWN), _tecla(pygame.K_RIGHT)])     # troca a pele
-    cena.desenhar(pygame.Surface((1280, 720)))                            # durante a cor se espalhando
-    app.passo(1 / 60, [_tecla(pygame.K_RETURN)])
-    assert cena.foto_tirada_em is not None and app.cena_atual is cena
-    app.passo(1 / 60, [_tecla(pygame.K_DOWN)])                            # depois da foto não mexe mais
-    assert cena.linha == 1
-    cena.desenhar(pygame.Surface((1280, 720)))
-    for _ in range(80):
-        app.passo(1 / 60, [])
-    assert isinstance(app.cena_atual, CenaSelecao)
-
-
-def test_selecao_carteirinha_gira_ao_trocar_e_abas_escolhem(tmp_path):
-    from jogo.cenas.selecao import CenaSelecao
+def test_matricula_tira_a_foto_e_so_depois_comeca_a_partida(tmp_path):
+    from jogo.cenas.matricula import CenaMatricula
+    from jogo.cenas.partida import CenaPartida
     from jogo.jogador.classes import CLASSES
     app = _app(tmp_path)
-    cena = CenaSelecao(app)
+    cena = CenaMatricula(app)
     app.trocar(cena)
-    app.passo(1 / 60, [_tecla(pygame.K_RIGHT)])
+    app.passo(1 / 60, [_tecla(pygame.K_RIGHT)])                           # troca de classe
+    cena.desenhar(pygame.Surface((1280, 720)))                            # durante o retrato se abrindo
+    app.passo(1 / 60, [_tecla(pygame.K_RETURN)])
+    assert cena.foto_tirada_em is not None and app.cena_atual is cena
+    app.passo(1 / 60, [_tecla(pygame.K_RIGHT)])                           # depois da foto não mexe mais
     assert cena.indice == 1
-    cena.desenhar(pygame.Surface((1280, 720)))       # no meio do giro
-    ultima = cena.aba(len(CLASSES) - 1).center
-    cena.tratar_evento(pygame.event.Event(pygame.MOUSEBUTTONDOWN, pos=(ultima[0] * 2, ultima[1] * 2), button=1))
+    cena.desenhar(pygame.Surface((1280, 720)))                            # carteirinha saindo da impressora
+    for _ in range(80):
+        app.passo(1 / 60, [])
+    assert isinstance(app.cena_atual, CenaPartida)
+    assert isinstance(app.cena_atual.jogo.jogador, CLASSES[1])
+    assert app.classe_escolhida == 1                                      # lembra a última escolha
+    assert CenaMatricula(app).indice == 1
+
+
+def test_matricula_abas_escolhem_e_o_botao_tira_a_foto(tmp_path):
+    from jogo.cenas.matricula import CenaMatricula
+    from jogo.jogador.classes import CLASSES
+    app = _app(tmp_path)
+    cena = CenaMatricula(app)
+    app.trocar(cena)
+    def clicar(r):
+        cena.tratar_evento(pygame.event.Event(pygame.MOUSEBUTTONDOWN, pos=(r.centerx * 2, r.centery * 2), button=1))
+    clicar(cena.aba(len(CLASSES) - 1))
     assert cena.indice == len(CLASSES) - 1
+    app.passo(1 / 60, [_tecla(pygame.K_RIGHT)])                           # dá a volta
+    assert cena.indice == 0
+    clicar(cena.botao_foto)
+    assert cena.foto_tirada_em is not None
+
+
+def test_matricula_mostra_o_retrato_de_cada_classe(tmp_path):
+    from jogo.cenas.matricula import CenaMatricula
+    from jogo.jogador.classes import CLASSES
+    from jogo.nucleo.recursos import Recursos
+    cena = CenaMatricula(_app(tmp_path))
+    for i, classe in enumerate(CLASSES):
+        assert (Recursos.pasta / classe.RETRATO).is_file()
+        retrato = cena._retrato(i, (138, 176))
+        assert retrato.get_width() <= 138 and retrato.get_height() <= 176      # cabe inteiro no quadro da webcam
+        assert retrato.get_width() == 138 or retrato.get_height() == 176      # e ocupa o quadro todo num dos lados
+        cena.escolher(i)
+        cena.desenhar(pygame.Surface((1280, 720)))
 
 
 def test_treino_agenda_mouse_escolhe_e_marca(tmp_path):
@@ -165,8 +185,8 @@ def test_treino_agenda_mouse_escolhe_e_marca(tmp_path):
     assert cena.imortal
     cena.desenhar(pygame.Surface((1280, 720)))
     clicar(cena.linha(2))                       # clicar de novo na escolhida começa
-    from jogo.cenas.personalizacao import CenaPersonalizacao
-    assert isinstance(app.cena_atual, CenaPersonalizacao) and app.cena_atual.opcoes.imortal
+    from jogo.cenas.matricula import CenaMatricula
+    assert isinstance(app.cena_atual, CenaMatricula) and app.cena_atual.opcoes.imortal
 
 
 def test_area_interativa_aceita_forma_em_l():
@@ -255,7 +275,7 @@ def test_ranking_podio_e_lista(tmp_path):
     cena = CenaRanking(app, destaque=registros[5])
     cena.atualizar(2.0)
     cena.desenhar(tela)
-    assert cena.pasta_do_heroi("Otaku") == "aluno2"
+    assert cena.pasta_do_heroi("Otaku") == "otaku"
 
 
 def test_fim_de_jogo_boletim_desenha_aprovado_e_reprovado(tmp_path):
@@ -272,3 +292,66 @@ def test_fim_de_jogo_boletim_desenha_aprovado_e_reprovado(tmp_path):
             cena.tempo = t
             cena.desenhar(pygame.Surface((1280, 720)))
         assert len(cena.boletim.linhas) == len(partida.jogo.fases)
+
+
+def test_cada_classe_tem_rosto_e_o_hud_e_a_carteirinha_usam_ele(tmp_path):
+    from jogo.cenas.hud import Hud
+    from jogo.cenas.matricula import CenaMatricula
+    from jogo.jogador.classes import CLASSES
+    from jogo.jogador.jogador import Jogador
+    from jogo.jogo import Jogo
+    assert Jogador.rosto(80) is None                                   # a base não tem arte
+    for classe in CLASSES:
+        assert classe.rosto(80).get_size() == (80, 80)
+    jogo = Jogo(CLASSES[0], semente=1)
+    tela = pygame.Surface((1280, 720))
+    hud = Hud()
+    hud.desenhar(tela, jogo)
+    quadro = Hud.RETRATO
+    centro = tela.get_at((quadro.centerx * 2, quadro.centery * 2 + 10))
+    assert centro[:3] != (52, 74, 150)                                 # o rosto cobre o fundo azul do quadro
+    cena = CenaMatricula(_app(tmp_path))
+    cena.tirar_foto()
+    cena.tempo += 0.8
+    cena.desenhar(tela)
+    assert cena._foto_impressa is not None
+
+
+def test_perigo_avisa_antes_e_a_partida_para_para_apresentar_o_chefe(tmp_path):
+    from jogo.cenas.chefe import CenaChefe
+    from jogo.cenas.partida import CenaPartida
+    from jogo.fase import ProvaDeCalculo
+    from jogo.jogador.classes import Programador
+    from jogo.opcoes import OpcoesDePartida
+    app = _app(tmp_path)
+    opcoes = OpcoesDePartida.treino_contra(ProvaDeCalculo, direto_no_chefe=True, imortal=True)
+    partida = CenaPartida(app, Programador, opcoes)
+    app.trocar(partida)
+    jogo = partida.jogo
+    app.passo(1 / 60, [])
+    assert jogo.perigo > 0 and jogo.chefe is None                      # primeiro o aviso
+    tela = pygame.Surface((1280, 720))
+    partida.desenhar(tela)                                              # faixas de PERIGO! por cima do HUD
+    for _ in range(4 * 60):
+        app.passo(1 / 60, [])
+        if isinstance(app.cena_atual, CenaChefe):
+            break
+    apresentacao = app.cena_atual
+    assert isinstance(apresentacao, CenaChefe) and jogo.chefe is not None and jogo.perigo == 0
+    assert apresentacao.frase == "Um Professor de Cálculo selvagem apareceu!"
+    tempo_da_partida = jogo.placar.tempo
+    for _ in range(40):
+        app.passo(1 / 60, [])
+        apresentacao.desenhar(tela)
+    assert jogo.placar.tempo == tempo_da_partida                        # a partida fica parada
+    app.passo(1 / 60, [_tecla(pygame.K_RETURN)])                        # Enter pula
+    assert app.cena_atual is partida
+    app.passo(1 / 60, [])
+    assert jogo.placar.tempo > tempo_da_partida and app.cena_atual is partida    # e não apresenta de novo
+
+
+def test_a_professora_e_apresentada_no_feminino():
+    from jogo.cenas.chefe import CenaChefe
+    from jogo.inimigos.professora_de_td_e_poo import ProfessoraDeTDEPOO
+    from jogo.nucleo.recursos import Recursos
+    assert ProfessoraDeTDEPOO.ARTIGO == "Uma" and (Recursos.pasta / ProfessoraDeTDEPOO.ILUSTRACAO).is_file()

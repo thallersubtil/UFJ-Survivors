@@ -99,6 +99,14 @@ class Recursos:
 
     FPS_PADRAO = {"parado": 5, "andar": 8, "mover": 10, "atacar": 10}
     NAO_REPETE = {"atacar"}
+    QUADROS_BASE = 4       # as velocidades acima valem para tiras de 4 quadros
+    FPS_MAXIMO = 12
+
+    @classmethod
+    def fps_da_tira(cls, nome, quadros):
+        """Tiras com mais quadros tocam mais rápido (até o limite), para o ciclo não ficar arrastado."""
+        fps = cls.FPS_PADRAO.get(nome, 8)
+        return max(fps, min(cls.FPS_MAXIMO, fps * quadros / cls.QUADROS_BASE))
 
     @classmethod
     def animacoes(cls, pasta, escala=1):
@@ -118,7 +126,7 @@ class Recursos:
                 largura = tira.get_width() // n
                 quadros = [cls.ampliar(tira.subsurface((i * largura, 0, largura, tira.get_height())).copy(), escala)
                            for i in range(n)]
-                resultado[nome] = Animacao(quadros, cls.FPS_PADRAO.get(nome, 8), nome not in cls.NAO_REPETE)
+                resultado[nome] = Animacao(quadros, cls.fps_da_tira(nome, n), nome not in cls.NAO_REPETE)
             cls._derivadas[chave] = resultado
         return cls._derivadas[chave]
 
@@ -135,6 +143,32 @@ class Recursos:
             branca = imagem.copy()
             branca.fill((255, 255, 255, 0), special_flags=pygame.BLEND_RGBA_MAX)
             cls._derivadas[chave] = branca
+        return cls._derivadas[chave]
+
+    AMPLIACAO_SUPREMA = 1.25
+
+    @classmethod
+    def suprema(cls, imagem, cor):
+        """Versão de nível máximo de um sprite: maior, com contorno brilhante na cor dada."""
+        chave = ("suprema", id(imagem), tuple(cor))
+        if chave not in cls._derivadas:
+            tamanho = (max(1, round(imagem.get_width() * cls.AMPLIACAO_SUPREMA)),
+                       max(1, round(imagem.get_height() * cls.AMPLIACAO_SUPREMA)))
+            try:
+                maior = pygame.transform.smoothscale(imagem, tamanho)
+            except ValueError:
+                maior = pygame.transform.scale(imagem, tamanho)
+            borda = 3
+            resultado = pygame.Surface((tamanho[0] + 2 * borda, tamanho[1] + 2 * borda), pygame.SRCALPHA)
+            mascara = pygame.mask.from_surface(maior, 60)
+            brilho = mascara.to_surface(setcolor=(*cor, 255), unsetcolor=(0, 0, 0, 0))
+            clarao = mascara.to_surface(setcolor=(255, 255, 255, 255), unsetcolor=(0, 0, 0, 0))
+            for dx, dy in ((-3, 0), (3, 0), (0, -3), (0, 3), (-2, -2), (2, -2), (-2, 2), (2, 2)):
+                resultado.blit(brilho, (borda + dx, borda + dy))
+            for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                resultado.blit(clarao, (borda + dx, borda + dy))
+            resultado.blit(maior, (borda, borda))
+            cls._derivadas[chave] = resultado
         return cls._derivadas[chave]
 
     @classmethod

@@ -4,6 +4,8 @@ from jogo.armas.arma import ArmaDeDisparo
 from jogo.nucleo.recursos import Recursos
 from jogo.projeteis.projeteis import ControleRicochete
 
+from jogo.formas_supremas import ControleLendario
+
 
 class Controle(ArmaDeDisparo):
     """Arma inicial do Gamer: arremessa o controle, que ricocheteia de inimigo em inimigo."""
@@ -11,18 +13,15 @@ class Controle(ArmaDeDisparo):
     ICONE = "icones/controle.png"
     DESCRICAO = "Arremessa o controle, que ricocheteia de um inimigo para outro."
     ATRIBUTOS = {
-        "dano": (13, 15, 17, 19, 21, 24, 28),
-        "ricochetes": (2, 2, 3, 3, 4, 4, 6),
-        "quantidade": (1, 1, 1, 2, 2, 2, 2),
-        "recarga": (0.9, 0.85, 0.85, 0.8, 0.75, 0.7, 0.6),
+        "dano": (13, 17, 22, 38),
+        "ricochetes": (2, 3, 4, 9),
+        "quantidade": (1, 1, 2, 3),
+        "recarga": (0.9, 0.85, 0.75, 0.5),
     }
     MELHORIAS = (
-        "Mais dano e recarga menor.",
-        "Mais 1 ricochete.",
-        "Mais 1 controle (modo cooperativo).",
-        "Mais 1 ricochete e mais dano.",
-        "Mais dano e recarga menor.",
-        "Combo infinito: muito mais ricochetes.",
+        "Mais 1 ricochete, mais dano e recarga menor.",
+        "Mais 1 controle (modo cooperativo), mais 1 ricochete e mais dano.",
+        "COMBO INFINITO: cada ricochete aumenta o dano em 20% (são 9) e o último acerto explode.",
     )
     VELOCIDADE = 520
     ALCANCE = 600
@@ -34,7 +33,7 @@ class Controle(ArmaDeDisparo):
         quantidade = self.valor("quantidade")
         for i in range(quantidade):
             direcao = rumo.rotate((i - (quantidade - 1) / 2) * 25)
-            jogo.adicionar(ControleRicochete(dono.posicao, direcao * self.VELOCIDADE,
+            self.lancar(jogo, (ControleLendario if self.no_maximo else ControleRicochete)(dono.posicao, direcao * self.VELOCIDADE,
                                              self.valor("dano") * dono.multiplicador_dano, self.valor("ricochetes")))
         Recursos.tocar("disparo", 0.12)
         return True

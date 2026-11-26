@@ -14,4 +14,6 @@ class ProfessorDeArquiteturaEED(ChefePossuido):
     NOME = "Professor de Arquitetura e ED"
     NOME_PROFESSOR = "o Professor"
     PASTA_SPRITE = "professor_computacao"
+    ILUSTRACAO = "chefes/arquitetura_ed.png"
+    COR_DA_APRESENTACAO = (70, 220, 150)
     MATERIAS = (ArquiteturaDeComputadores, EstruturaDeDadosEmC)

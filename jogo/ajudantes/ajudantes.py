@@ -62,7 +62,7 @@ class CachorroCaramelo(Ajudante):
 
     def desenhar(self, tela, camera):
         imagem = self.animador.quadro_atual
-        desenhar_sprite(tela, camera, imagem, self.posicao, espelhar=self.olhando_esquerda,
+        desenhar_sprite(tela, camera, imagem, self.posicao, aura=self.aura, espelhar=self.olhando_esquerda,
                         deslocamento_y=abs(math.sin(self.tempo * 14)) * 4)
 
 
@@ -89,7 +89,7 @@ class MascoteFlutuante(Ajudante):
 
     def desenhar(self, tela, camera):
         imagem = self.animador.quadro_atual
-        desenhar_sprite(tela, camera, imagem, self.posicao, sombra=False)
+        desenhar_sprite(tela, camera, imagem, self.posicao, sombra=False, aura=self.aura)
         if self.barra is not None:
             c = camera.para_tela(self.posicao)
             fundo = pygame.Rect(0, 0, 34, 5)
@@ -132,25 +132,23 @@ class FuscaVeiculo(Ajudante):
 
     def desenhar(self, tela, camera):
         imagem = self.animador.quadro_atual
-        desenhar_sprite(tela, camera, imagem, self.posicao, espelhar=self.sentido < 0,
+        desenhar_sprite(tela, camera, imagem, self.posicao, aura=self.aura, espelhar=self.sentido < 0,
                         deslocamento_y=abs(math.sin(self.tempo * 30)) * 2)
 
 
 class FuscaCircular(Ajudante):
-    """O Caramelo dirigindo o fusca em volta do herói, atropelando e possuindo inimigos."""
+    """Um Caramelo dirigindo um fusca em círculo em volta do herói, atropelando e possuindo inimigos."""
 
     IMAGEM = "sprites/caramelo_no_fusca.png"
     PASTA_SPRITE = "caramelo_no_fusca"
     ALTURA = 64
-    RAIO_VOLTA = 230
-    VELOCIDADE_ANGULAR = 1.8
-    ESPERA_ATROPELO = 1.0
+    ESPERA_ATROPELO = 0.4
 
-    def __init__(self, dono, arma):
+    def __init__(self, dono, arma, angulo=0.0):
         super().__init__(dono.posicao, 36)
         self.dono = dono
         self.arma = arma
-        self.angulo = 0.0
+        self.angulo = angulo
         self.tempo = 0.0
         self.animador = self.criar_animador()
         self.olhando_esquerda = False
@@ -159,9 +157,9 @@ class FuscaCircular(Ajudante):
     def atualizar(self, dt, jogo):
         self.tempo += dt
         self.animador.atualizar(dt)
-        self.angulo += self.VELOCIDADE_ANGULAR * dt
-        nova = self.dono.posicao + pygame.Vector2(math.cos(self.angulo), math.sin(self.angulo)) * self.RAIO_VOLTA
-        self.olhando_esquerda = nova.x < self.posicao.x
+        self.angulo += self.arma.valor("velocidade") * dt
+        nova = self.dono.posicao + pygame.Vector2(math.cos(self.angulo), math.sin(self.angulo)) * self.arma.valor("raio")
+        self.olhando_esquerda = math.sin(self.angulo) > 0          # anda no sentido da volta
         self.posicao = nova
         for chave in list(self._atropelados):
             self._atropelados[chave] -= dt
@@ -177,7 +175,7 @@ class FuscaCircular(Ajudante):
 
     def desenhar(self, tela, camera):
         imagem = self.animador.quadro_atual
-        desenhar_sprite(tela, camera, imagem, self.posicao, espelhar=self.olhando_esquerda,
+        desenhar_sprite(tela, camera, imagem, self.posicao, aura=self.aura, espelhar=self.olhando_esquerda,
                         deslocamento_y=abs(math.sin(self.tempo * 30)) * 2)
 
 
@@ -224,9 +222,18 @@ class SinalWifi(Ajudante):
             pygame.draw.circle(sup, (160, 160, 170, 40), meio, int(self.raio), 2)
         else:
             pulso = (self.tempo * 1.5) % 1.0
-            pygame.draw.circle(sup, (90, 200, 255, 28), meio, int(self.raio))
-            pygame.draw.circle(sup, (140, 220, 255, 110), meio, int(self.raio), 2)
-            pygame.draw.circle(sup, (180, 240, 255, int(140 * (1 - pulso))), meio, max(2, int(self.raio * pulso)), 2)
+            if self.arma.aura is None:
+                pygame.draw.circle(sup, (90, 200, 255, 28), meio, int(self.raio))
+                pygame.draw.circle(sup, (140, 220, 255, 110), meio, int(self.raio), 2)
+                pygame.draw.circle(sup, (180, 240, 255, int(140 * (1 - pulso))), meio, max(2, int(self.raio * pulso)), 2)
+            else:                                   # fibra óptica: campo dourado com três ondas seguidas
+                cor = self.arma.aura
+                pygame.draw.circle(sup, (*cor, 38), meio, int(self.raio))
+                pygame.draw.circle(sup, (*cor, 200), meio, int(self.raio), 4)
+                pygame.draw.circle(sup, (255, 255, 255, 150), meio, int(self.raio) - 3, 1)
+                for atraso in (0.0, 0.33, 0.66):
+                    onda = (self.tempo * 2.2 + atraso) % 1.0
+                    pygame.draw.circle(sup, (*cor, int(190 * (1 - onda))), meio, max(2, int(self.raio * onda)), 3)
         tela.blit(sup, sup.get_rect(center=(round(c.x), round(c.y))))
 
 
@@ -236,6 +243,8 @@ class FolhaDaApostila(Ajudante):
     VELOCIDADE_ANGULAR = 3.4       # radianos por segundo
     RAIO_ACERTO = 16
     ESPERA_ACERTO = 0.6            # o mesmo inimigo só leva de novo depois disso (uma vez por volta)
+    PASTA_SPRITE = "folha_apostila"
+    QUADROS_POR_SEGUNDO = 9
     _imagem = None
 
     def __init__(self, dono, arma, indice, total, duracao):
@@ -284,10 +293,18 @@ class FolhaDaApostila(Ajudante):
             cls._imagem = pygame.transform.scale(sup, (28, 36))
         return cls._imagem
 
+    def _quadro(self):
+        """Folha esvoaçando (arte em assets/sprites/folha_apostila/); sem a arte, a folha desenhada aqui."""
+        animacao = Recursos.animacoes(self.PASTA_SPRITE).get("mover")
+        if animacao is None:
+            return self.imagem()
+        return animacao.quadros[int(self.tempo * self.QUADROS_POR_SEGUNDO + self.fase) % len(animacao.quadros)]
+
     def desenhar(self, tela, camera):
         c = camera.para_tela(self.posicao)
         angulo = round(math.degrees(self.fase + self.tempo * self.VELOCIDADE_ANGULAR) / 30) * 30
-        imagem = pygame.transform.rotate(self.imagem(), -angulo)
+        quadro = self._quadro() if self.aura is None else Recursos.suprema(self._quadro(), self.aura)
+        imagem = pygame.transform.rotate(quadro, -angulo)
         if self.duracao - self.tempo < 0.4:          # pisca antes de sumir
             imagem.set_alpha(120 if int(self.tempo * 20) % 2 else 255)
         tela.blit(imagem, imagem.get_rect(center=(round(c.x), round(c.y))))
@@ -331,6 +348,18 @@ class QuadroBrancoNoChao(Ajudante):
         sup = pygame.Surface((lado, lado), pygame.SRCALPHA)
         meio = (lado // 2, lado // 2)
         alfa = 1.0 if self.duracao - self.tempo > 0.5 else (self.duracao - self.tempo) / 0.5
+        if self.aura is not None:         # lousa digital: tela acesa com grade e borda brilhante
+            pygame.draw.circle(sup, (40, 70, 120, int(110 * alfa)), meio, int(self.raio))
+            passo = 22
+            for d in range(-int(self.raio), int(self.raio) + 1, passo):
+                meia = int(math.sqrt(max(0, self.raio ** 2 - d ** 2)))
+                pygame.draw.line(sup, (120, 220, 255, int(70 * alfa)), (meio[0] - meia, meio[1] + d), (meio[0] + meia, meio[1] + d))
+                pygame.draw.line(sup, (120, 220, 255, int(70 * alfa)), (meio[0] + d, meio[1] - meia), (meio[0] + d, meio[1] + meia))
+            pulso = 0.5 + 0.5 * math.sin(self.tempo * 6)
+            pygame.draw.circle(sup, (*self.aura, int((150 + 90 * pulso) * alfa)), meio, int(self.raio), 5)
+            pygame.draw.circle(sup, (255, 255, 255, int(160 * alfa)), meio, int(self.raio) - 4, 1)
+            tela.blit(sup, sup.get_rect(center=(round(c.x), round(c.y))))
+            return
         pygame.draw.circle(sup, (235, 240, 250, int(70 * alfa)), meio, int(self.raio))
         pygame.draw.circle(sup, (60, 110, 200, int(170 * alfa)), meio, int(self.raio), 3)
         for i in range(3):                # rabiscos de pincel atômico

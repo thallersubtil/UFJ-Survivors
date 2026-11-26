@@ -13,7 +13,7 @@ from jogo.ui.pixel import (A, L, CamadaPixel, Paleta as P, ease_back, icone, jan
 class CenaTitulo(Cena):
     LOGO = "sprites/logo.png"
     FUNDO = "cenario/titulo_fundo.png"
-    CORREDORES = ("aluno2", "aluno1", "aluna2", "aluna1", "aluno2")
+    CORREDORES = ("otaku", "programador", "gamer", "calouro", "cara_da_carona")
     _fundo_cache = {}
 
     def __init__(self, app):
@@ -26,9 +26,9 @@ class CenaTitulo(Cena):
 
     # ------------------------------------------------------------ ações
     def _jogar(self):
-        from jogo.cenas.personalizacao import CenaPersonalizacao
+        from jogo.cenas.matricula import CenaMatricula
         from jogo.opcoes import OpcoesDePartida
-        self.app.trocar(CenaPersonalizacao(self.app, OpcoesDePartida().com_progresso(self.app.progresso)))
+        self.app.trocar(CenaMatricula(self.app, OpcoesDePartida().com_progresso(self.app.progresso)))
 
     def _centro_academico(self):
         from jogo.cenas.centro_academico import CenaCentroAcademico
@@ -109,8 +109,8 @@ class CenaTitulo(Cena):
                                                                    (r.x, r.bottom)])
             pygame.draw.line(ui, P.OURO if sel else (190, 205, 240), (r.x, r.y + 1), (r.right + 6, r.y + 1), 2)
             texto(ui, nome, (r.x + 22, r.y + 9), P.OURO if sel else P.BRANCO, 11)
-            if sel and (Recursos.pasta / "sprites/aluno2/parado-4.png").exists():
-                mini = quadros("aluno2", altura=26)[int(self.tempo * 6) % 4]
+            if sel and (Recursos.pasta / "sprites/otaku/parado-4.png").exists():
+                mini = quadros("otaku", altura=26)[int(self.tempo * 6) % 4]
                 ui.blit(mini, mini.get_rect(midright=(r.right + 30, r.centery)))
 
     def desenhar(self, tela):

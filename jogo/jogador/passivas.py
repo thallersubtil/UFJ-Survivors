@@ -6,7 +6,7 @@ class InstintoOtaku(Passiva):
     NOME = "Instinto Otaku"
     DESCRICAO = "Chance de acerto crítico (dano em dobro) que cresce a cada nível."
     BASE = 0.03
-    POR_NIVEL = 0.01
+    POR_NIVEL = 0.016
     MAXIMO = 0.5
 
     def aplicar(self, jogador):
@@ -15,8 +15,8 @@ class InstintoOtaku(Passiva):
 
 class Cafeinado(Passiva):
     NOME = "Cafeinado"
-    DESCRICAO = "Armas recarregam 1% mais rápido por nível (até 30%) e o café rende mais."
-    POR_NIVEL = 0.01
+    DESCRICAO = "Armas recarregam 1,6% mais rápido por nível (até 30%) e o café rende mais."
+    POR_NIVEL = 0.016
     MAXIMO = 0.30
     CAFE = 1.25
 
@@ -27,8 +27,8 @@ class Cafeinado(Passiva):
 
 class RolagemDeIniciativa(Passiva):
     NOME = "Rolagem de Iniciativa"
-    DESCRICAO = "O especial recarrega 2% mais rápido por nível (até 60%)."
-    POR_NIVEL = 0.02
+    DESCRICAO = "O especial recarrega 3,2% mais rápido por nível (até 60%)."
+    POR_NIVEL = 0.032
     MAXIMO = 0.60
 
     def aplicar(self, jogador):
@@ -39,9 +39,9 @@ class PlantaoDeDuvidas(Passiva):
     NOME = "Plantão de Dúvidas"
     DESCRICAO = "Recupera vida aos poucos e puxa as notas de mais longe; os dois crescem a cada nível."
     REGENERACAO_BASE = 0.1
-    REGENERACAO_POR_NIVEL = 0.02
+    REGENERACAO_POR_NIVEL = 0.032
     REGENERACAO_MAXIMA = 0.7
-    COLETA_POR_NIVEL = 0.02
+    COLETA_POR_NIVEL = 0.032
     COLETA_MAXIMA = 0.6
 
     def aplicar(self, jogador):
@@ -52,9 +52,9 @@ class PlantaoDeDuvidas(Passiva):
 
 class Reflexo(Passiva):
     NOME = "Reflexo"
-    DESCRICAO = "O rolamento recarrega 10% mais rápido, e mais 1,5% a cada nível (até 55%)."
+    DESCRICAO = "O rolamento recarrega 10% mais rápido, e mais 2,4% a cada nível (até 55%)."
     BASE = 0.10
-    POR_NIVEL = 0.015
+    POR_NIVEL = 0.024
     MAXIMO = 0.55
 
     def aplicar(self, jogador):
@@ -63,9 +63,9 @@ class Reflexo(Passiva):
 
 class SedeDeAprender(Passiva):
     NOME = "Sede de Aprender"
-    DESCRICAO = "+10% de experiência, e mais 1% a cada nível (até +40%)."
+    DESCRICAO = "+10% de experiência, e mais 1,6% a cada nível (até +40%)."
     BASE = 0.10
-    POR_NIVEL = 0.01
+    POR_NIVEL = 0.016
     MAXIMO = 0.40
 
     def aplicar(self, jogador):
@@ -74,9 +74,9 @@ class SedeDeAprender(Passiva):
 
 class CaronaSolidaria(Passiva):
     NOME = "Carona Solidária"
-    DESCRICAO = "Inimigo que morre possuído (atropelado) pode deixar uma moeda: 10%, e mais 1% por nível (até 40%)."
+    DESCRICAO = "Inimigo que morre possuído (atropelado) pode deixar uma moeda: 10%, e mais 1,6% por nível (até 40%)."
     BASE = 0.10
-    POR_NIVEL = 0.01
+    POR_NIVEL = 0.016
     MAXIMO = 0.40
 
     def aplicar(self, jogador):

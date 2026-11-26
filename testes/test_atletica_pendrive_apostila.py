@@ -65,13 +65,12 @@ def test_apostila_ganha_folhas_e_alterna_entre_girar_e_sumir(jogo_limpo):
     apostila = Apostila()
     jogo.jogador.adicionar_arma(apostila)
     assert apostila.valor("folhas") == 1
-    while not apostila.no_maximo:
-        apostila.subir_nivel()
-    assert apostila.valor("folhas") == 3
+    apostila.subir_nivel()
+    assert apostila.valor("folhas") == 2
     apostila.atualizar(1 / 60, jogo, jogo.jogador)
     jogo._incorporar_novas()
     folhas = [e for e in jogo.entidades if isinstance(e, FolhaDaApostila)]
-    assert len(folhas) == 3
+    assert len(folhas) == 2
     tempo = 0.0
     while folhas[0].ativo and tempo < 30:
         apostila.atualizar(1 / 60, jogo, jogo.jogador)
@@ -82,7 +81,24 @@ def test_apostila_ganha_folhas_e_alterna_entre_girar_e_sumir(jogo_limpo):
     for _ in range(round(60 * (apostila.valor("pausa") + 0.2))):
         apostila.atualizar(1 / 60, jogo, jogo.jogador)
     jogo._incorporar_novas()
-    assert sum(isinstance(e, FolhaDaApostila) and e.ativo for e in jogo.entidades) == 3
+    assert sum(isinstance(e, FolhaDaApostila) and e.ativo for e in jogo.entidades) == 2
+
+
+def test_apostila_no_maximo_vira_bola_de_conteudo_que_rola_e_cresce(jogo_limpo):
+    from jogo.formas_supremas import BolaDeConteudo
+    jogo = jogo_limpo()
+    apostila = Apostila()
+    jogo.jogador.adicionar_arma(apostila)
+    while not apostila.no_maximo:
+        apostila.subir_nivel()
+    apostila.atualizar(1 / 60, jogo, jogo.jogador)
+    jogo._incorporar_novas()
+    bolas = [e for e in jogo.entidades if isinstance(e, BolaDeConteudo)]
+    assert len(bolas) == 2 and not any(isinstance(e, FolhaDaApostila) for e in jogo.entidades)
+    inicio, raio = pygame.Vector2(bolas[0].posicao), bolas[0].raio
+    for _ in range(60):
+        bolas[0].atualizar(1 / 60, jogo)
+    assert bolas[0].posicao.distance_to(inicio) > 300 and bolas[0].raio > raio
 
 
 def test_folha_fere_quem_encosta_uma_vez_por_volta(jogo_limpo):
