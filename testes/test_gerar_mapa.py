@@ -6,6 +6,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "ferramentas"))
 import gerar_mapa  # noqa: E402
+import pintar_predios  # noqa: E402
 
 
 def test_classifica_cores_do_satelite():
@@ -29,15 +30,30 @@ def test_nome_curto_dos_predios():
     assert gerar_mapa.nome_curto(None) == ""
 
 
-def test_cor_do_telhado_vai_para_a_paleta():
-    assert gerar_mapa.cor_de_telhado((180, 95, 62)) == gerar_mapa.TELHADOS["ceramica"]
-    assert gerar_mapa.cor_de_telhado((230, 230, 228)) == gerar_mapa.TELHADOS["branco"]
-    assert gerar_mapa.cor_de_telhado((85, 88, 96)) == gerar_mapa.TELHADOS["escuro"]
+def test_estilo_do_predio_e_fixo_por_nome_ou_por_identificador():
+    assert pintar_predios.estilo_do_predio("predio_1", "BIBLIOTECA") == "metal"
+    assert pintar_predios.estilo_do_predio("predio_1", "RU") == "ceramica"
+    sorteado = pintar_predios.estilo_do_predio("predio_42", "PREDIO")
+    assert sorteado in pintar_predios.ESTILOS and sorteado == pintar_predios.estilo_do_predio("predio_42", "PREDIO")
 
 
-def test_sprite_de_predio_tem_parede_telhado_e_contorno():
-    poligono = [(10, 30), (50, 30), (50, 50), (10, 50)]
-    sprite, canto = gerar_mapa.desenhar_predio(poligono, gerar_mapa.TELHADOS["branco"], andares=2, nome="RU")
-    assert sprite.get_height() > 20 + 2 * gerar_mapa.ALTURA_ANDAR - 1
-    assert canto[1] < 30
-    assert sprite.get_at((0, 0)).a == 0
+@pytest.mark.parametrize("estilo", sorted(pintar_predios.ESTILOS))
+def test_sprite_de_predio_tem_parede_telhado_e_contorno(estilo):
+    poligono = [(100, 300), (400, 300), (400, 500), (100, 500)]
+    altura_parede = 2 * gerar_mapa.ALTURA_ANDAR
+    sprite, canto = pintar_predios.pintar_predio(poligono, altura_parede, estilo, nome="RU")
+    assert sprite.height > 200 + altura_parede - 1
+    assert canto == (100 - pintar_predios.MARGEM, 300 - altura_parede - pintar_predios.MARGEM)
+    assert sprite.getpixel((0, 0))[3] == 0                       # fora do prédio é transparente
+    telhado = sprite.getpixel((150, 100))
+    parede = sprite.getpixel((36, 420 - canto[1]))               # entre duas janelas, na parede da frente
+    assert telhado[3] == 255 and parede[3] == 255 and telhado != parede
+    assert sprite.getpixel((250, 500 - canto[1] + pintar_predios.SOMBRA[1] + 4))[3] in range(1, 255)   # sombra no chão
+
+
+def test_paredes_visiveis_sao_as_viradas_para_baixo_nos_dois_sentidos():
+    horario = [(0, 0), (10, 0), (10, 10), (0, 10)]
+    for base in (horario, horario[::-1]):
+        faces = pintar_predios._faces_visiveis(base)
+        assert [(a[1], b[1]) for _, a, b in faces] == [(10, 10)]
+

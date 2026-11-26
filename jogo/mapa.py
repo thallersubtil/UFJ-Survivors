@@ -5,6 +5,7 @@ OpenStreetMap (ferramentas/gerar_mapa.py), e `Cenario` (jogo/cenario.py) é o
 pátio genérico usado quando o mapa da UFJ não está disponível.
 """
 import json
+import random
 from collections import OrderedDict
 from abc import ABC, abstractmethod
 
@@ -179,10 +180,77 @@ class MapaUFJ(Mapa):
             ampliado = pygame.transform.smoothscale(pedaco, tamanho)
         except ValueError:
             ampliado = pygame.transform.scale(pedaco, tamanho)
+        self._detalhar_grama(ampliado, bx, by)
+        self._enfeitar(ampliado, bx, by)
         self._blocos[chave] = ampliado
         if len(self._blocos) > self.MAX_BLOCOS:
             self._blocos.popitem(last=False)
         return ampliado
+
+    # Detalhe da grama: o chão ampliado fica borrado, então folhas claras e escuras em resolução
+    # de tela são somadas e subtraídas só onde o bloco é verde (ferramentas/montar_grama.py).
+    GRAMA_LUZ = "cenario/grama_luz.png"
+    GRAMA_SOMBRA = "cenario/grama_sombra.png"
+    VERDES = (((109, 173, 68), (30, 30, 22)), ((53, 110, 52), (26, 30, 18)))   # grama e mata: cor e tolerância
+    ENFEITES = ("capim_alto", "capim_baixo", "capim_baixo", "capim_alto", "trevos", "flores_amarelas",
+                "margaridas", "flores_rosas", "flores_vermelhas", "petalas_ipe", "pedras", "arbusto",
+                "arbusto_florido", "cogumelos")
+    ENFEITES_POR_BLOCO = 6
+
+    @staticmethod
+    def _existe(caminho):
+        return (Recursos.pasta / caminho).is_file()
+
+    def _detalhar_grama(self, bloco, bx, by):
+        """Dá textura nítida às partes verdes do bloco, sem mexer em ruas, calçadas e terra."""
+        if not (self._existe(self.GRAMA_LUZ) and self._existe(self.GRAMA_SOMBRA)):
+            return
+        verde = pygame.mask.Mask(bloco.get_size())
+        for cor, tolerancia in self.VERDES:
+            verde.draw(pygame.mask.from_threshold(bloco, cor, (*tolerancia, 255)), (0, 0))
+        if verde.count() == 0:
+            return
+        detalhado = bloco.convert_alpha()
+        lado = self.BLOCO * self.escala
+        for caminho, modo in ((self.GRAMA_LUZ, pygame.BLEND_RGB_ADD), (self.GRAMA_SOMBRA, pygame.BLEND_RGB_SUB)):
+            ladrilho = Recursos.imagem(caminho)
+            largura, altura = ladrilho.get_size()
+            for y in range(-((by * lado) % altura), bloco.get_height(), altura):
+                for x in range(-((bx * lado) % largura), bloco.get_width(), largura):
+                    detalhado.blit(ladrilho, (x, y), special_flags=modo)
+        recorte = verde.to_surface(setcolor=(255, 255, 255, 255), unsetcolor=(255, 255, 255, 0))
+        detalhado.blit(recorte, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+        bloco.blit(detalhado, (0, 0))
+
+    def _e_grama(self, x, y):
+        """Diz se o ponto do mundo cai em gramado aberto (não em mata, rua, calçada ou terra)."""
+        chao = Recursos.imagem(self.chao)
+        px, py = int(x // self.escala), int(y // self.escala)
+        if not chao.get_rect().collidepoint(px, py):
+            return False
+        cor, tolerancia = self.VERDES[0]
+        return all(abs(a - b) <= t for a, b, t in zip(chao.get_at((px, py))[:3], cor, tolerancia))
+
+    def _enfeites_do_bloco(self, bx, by):
+        """Enfeites (imagem e ponto de apoio no mundo) do bloco; sempre os mesmos para o mesmo bloco."""
+        sorteio = random.Random(bx * 73856093 ^ by * 19349663)
+        lado = self.BLOCO * self.escala
+        achados = []
+        for _ in range(self.ENFEITES_POR_BLOCO):
+            nome = sorteio.choice(self.ENFEITES)
+            x, y = (bx + sorteio.random()) * lado, (by + sorteio.random()) * lado
+            caminho = f"cenario/enfeites/{nome}.png"
+            if self._e_grama(x, y) and self._existe(caminho):
+                achados.append((Recursos.imagem(caminho), x, y))
+        return achados
+
+    def _enfeitar(self, bloco, bx, by):
+        """Desenha flores, capim e pedras no gramado; os vizinhos entram para nada ficar cortado na emenda."""
+        lado = self.BLOCO * self.escala
+        enfeites = [e for vy in (by - 1, by, by + 1) for vx in (bx - 1, bx, bx + 1)
+                    for e in self._enfeites_do_bloco(vx, vy)]
+        for imagem, x, y in sorted(enfeites, key=lambda e: e[2]):
+            bloco.blit(imagem, (round(x - bx * lado - imagem.get_width() / 2), round(y - by * lado - imagem.get_height())))
 
     def desenhar_chao(self, tela, camera):
         """O chão fica guardado em resolução reduzida e é desenhado em blocos ampliados com suavização."""

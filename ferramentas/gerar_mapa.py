@@ -6,7 +6,7 @@ Entradas (em arte_bruta/mapa/, fora do git):
 
 Saídas:
   assets/cenario/mapa_ufj.png          chão em pixel art (metade da resolução da arena)
-  assets/cenario/predios/<id>.png      um sprite 3/4 por prédio
+  assets/cenario/predios/<id>.png      um sprite 3/4 por prédio (pintado por ferramentas/pintar_predios.py)
   assets/cenario/mapa_ufj.json         arena, ponto inicial, prédios (colisão) e decorações
 
 Uso: python ferramentas/gerar_mapa.py [--baixar]   (baixa as fontes se ainda não existirem)
@@ -17,6 +17,7 @@ import os
 import random
 import re
 import unicodedata
+import zlib
 from dataclasses import dataclass
 from enum import IntEnum
 from pathlib import Path
@@ -25,6 +26,8 @@ os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 import numpy as np  # noqa: E402
 import pygame  # noqa: E402
 from PIL import Image, ImageDraw, ImageFilter  # noqa: E402
+
+from pintar_predios import estilo_do_predio, pintar_predio  # noqa: E402
 
 RAIZ = Path(__file__).resolve().parent.parent
 ENTRADA = RAIZ / "arte_bruta" / "mapa"
@@ -143,106 +146,6 @@ def nome_curto(nome):
             return curto
     limpo = re.sub(r"\s+(UFJ|do Campus Jatoba)$", "", _sem_acento(nome)).upper()
     return limpo[:18]
-
-
-TELHADOS = {
-    "branco": (226, 226, 220),
-    "cinza": (172, 176, 182),
-    "escuro": (92, 96, 106),
-    "ceramica": (180, 92, 60),
-    "metal": (150, 172, 192),
-}
-# cores conferidas nas fotos (Wikimedia Commons): Biblioteca clara, Medicina cinza-escura
-TELHADO_CONHECIDO = {"BIBLIOTECA": "cinza", "MEDICINA": "escuro", "REITORIA": "branco", "RU": "branco"}
-PAREDES = {"branco": (236, 234, 226), "cinza": (214, 214, 208), "escuro": (126, 130, 140),
-           "ceramica": (232, 214, 182), "metal": (220, 224, 228)}
-
-
-def cor_de_telhado(media):
-    """Cor da paleta de telhados mais próxima da média vista no satélite."""
-    return min(TELHADOS.values(), key=lambda c: sum((a - b) ** 2 for a, b in zip(c, media)))
-
-
-def _tom(cor, delta):
-    return tuple(max(0, min(255, v + delta)) for v in cor)
-
-
-CONTORNO = (26, 22, 34)
-GROSSURA = 4                      # contorno grosso, como o dos personagens
-
-
-def _poligono_grosso(sup, cor, pontos, largura):
-    pygame.draw.polygon(sup, cor, pontos, 0)
-    pygame.draw.lines(sup, CONTORNO, True, pontos, largura)
-    for q in pontos:
-        pygame.draw.circle(sup, CONTORNO, q, largura / 2)
-
-
-def desenhar_predio(poligono, telhado, andares=2, nome=""):
-    """Sprite 3/4 de um prédio em resolução cheia, no estilo ilustrado. Devolve (superfície, canto)."""
-    altura_parede = max(1, andares) * ALTURA_ANDAR
-    xs = [p[0] for p in poligono]
-    ys = [p[1] for p in poligono]
-    m = GROSSURA + 2
-    esquerda, topo = int(min(xs)) - m, int(min(ys)) - altura_parede - m
-    largura = int(max(xs)) - esquerda + m + 1
-    altura = int(max(ys)) - topo + m + 1
-    base = [(x - esquerda, y - topo) for x, y in poligono]
-    nome_parede = next(k for k, v in TELHADOS.items() if v == telhado)
-    parede = PAREDES[nome_parede]
-    sombra_parede = _tom(parede, -46)
-    vidro = (64, 112, 168) if nome_parede != "escuro" else (150, 196, 230)
-    brilho_vidro = _tom(vidro, 70)
-    sprite = pygame.Surface((largura, altura), pygame.SRCALPHA)
-    teto = [(x, y - altura_parede) for x, y in base]
-
-    # paredes: cada aresta virada para baixo (visível) vira uma face com janelas
-    n = len(base)
-    sentido = sum(base[i][0] * base[(i + 1) % n][1] - base[(i + 1) % n][0] * base[i][1] for i in range(n))
-    faces = []
-    for i in range(n):
-        a, b = base[i], base[(i + 1) % n]
-        dx, dy = b[0] - a[0], b[1] - a[1]
-        normal_y = dx if sentido > 0 else -dx
-        if normal_y > 0:
-            faces.append((max(a[1], b[1]), a, b, dx, dy))
-    for _, a, b, dx, dy in sorted(faces):
-        face = [a, b, (b[0], b[1] - altura_parede), (a[0], a[1] - altura_parede)]
-        clara = abs(dx) > abs(dy)
-        cor = parede if clara else sombra_parede
-        _poligono_grosso(sprite, cor, face, GROSSURA)
-        comprimento = (dx * dx + dy * dy) ** 0.5
-        colunas = int(comprimento // 34)
-        for c in range(colunas):
-            f0 = (c + 0.25) / max(colunas, 1)
-            f1 = (c + 0.75) / max(colunas, 1)
-            for andar in range(max(1, andares)):
-                y0 = altura_parede - andar * ALTURA_ANDAR - ALTURA_ANDAR * 0.78
-                y1 = altura_parede - andar * ALTURA_ANDAR - ALTURA_ANDAR * 0.3
-                q = [(a[0] + dx * f0, a[1] + dy * f0 - y1 + 0), (a[0] + dx * f1, a[1] + dy * f1 - y1),
-                     (a[0] + dx * f1, a[1] + dy * f1 - y0), (a[0] + dx * f0, a[1] + dy * f0 - y0)]
-                q = [(x, y) for x, y in q]
-                pygame.draw.polygon(sprite, vidro if clara else _tom(vidro, -30), q)
-                pygame.draw.line(sprite, brilho_vidro, q[3], (q[3][0] + (q[2][0] - q[3][0]) * 0.5, q[3][1] + (q[2][1] - q[3][1]) * 0.5), 3)
-                pygame.draw.polygon(sprite, CONTORNO, q, 2)
-        pygame.draw.line(sprite, _tom(cor, -70), a, b, 6)   # rodapé
-    # telhado
-    _poligono_grosso(sprite, telhado, teto, GROSSURA)
-    meio = (sum(q[0] for q in teto) / n, sum(q[1] for q in teto) / n)
-    interno = [(meio[0] + (x - meio[0]) * 0.86, meio[1] + (y - meio[1]) * 0.86) for x, y in teto]
-    pygame.draw.polygon(sprite, _tom(telhado, 22), interno, 0)
-    pygame.draw.lines(sprite, _tom(telhado, -30), True, interno, 2)
-    if nome:
-        fonte = pygame.font.Font(None, 30)   # fonte comum em negrito: legível na placa
-        fonte.set_bold(True)
-        texto = fonte.render(nome, True, (255, 248, 230))
-        placa = pygame.Rect(0, 0, texto.get_width() + 18, texto.get_height() + 6)
-        placa.center = (round(meio[0]), round(meio[1]))
-        pygame.draw.rect(sprite, CONTORNO, placa.inflate(6, 6), border_radius=8)
-        pygame.draw.rect(sprite, (64, 52, 92), placa, border_radius=6)
-        pygame.draw.rect(sprite, (240, 196, 90), placa, 2, border_radius=6)
-        sprite.blit(texto, texto.get_rect(center=placa.center))
-    return sprite, (esquerda, topo)
 
 
 def _ruido_suave(rng, h, w, passo):
@@ -375,17 +278,13 @@ def gerar():
         if len(p) < 3 or max(q[0] for q in p) < 0 or min(q[0] for q in p) > W or max(q[1] for q in p) < 0 \
                 or min(q[1] for q in p) > H:
             continue
-        sx = [rec.satelite(g["lat"], g["lon"]) for g in e["geometry"]]
-        mascara = Image.new("L", (satelite.shape[1], satelite.shape[0]), 0)
-        ImageDraw.Draw(mascara).polygon(sx, fill=255)
-        dentro = satelite[np.array(mascara) > 0]
-        media = dentro.mean(axis=0) if len(dentro) else (200, 200, 200)
         andares = int(re.sub(r"\D", "", tg.get("building:levels", "2")) or 2)
         nome = nome_curto(tg.get("name"))
-        telhado = TELHADOS[TELHADO_CONHECIDO[nome]] if nome in TELHADO_CONHECIDO else cor_de_telhado(media)
-        sprite, (esquerda, topo) = desenhar_predio(p, telhado, andares, nome)
         ident = f"predio_{e['id']}"
-        pygame.image.save(sprite, str(SAIDA / "predios" / f"{ident}.png"))
+        sprite, (esquerda, topo) = pintar_predio(p, max(1, andares) * ALTURA_ANDAR,
+                                                 estilo_do_predio(ident, nome or "PREDIO"), nome,
+                                                 zlib.crc32(ident.encode()))
+        sprite.save(SAIDA / "predios" / f"{ident}.png")
         predios.append({"id": ident, "nome": nome or "PREDIO",
                         "poligono": [[round(x), round(y)] for x, y in p],
                         "sprite": f"cenario/predios/{ident}.png", "canto": [esquerda, topo]})
