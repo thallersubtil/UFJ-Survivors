@@ -11,15 +11,15 @@ class Caramelo(ArmaSemMunicao):
     ICONE = "sprites/caramelo.png"
     DESCRICAO = "Um vira-lata caramelo corre em volta de você e morde quem chega perto."
     ATRIBUTOS = {
-        "quantidade": (1, 2, 3, 5),
-        "dano": (7, 9, 12, 22),
+        "quantidade": (1, 2, 3, 12),
+        "dano": (7, 9, 12, 20),
         "raio": (70, 80, 95, 125),
         "velocidade": (3.0, 3.4, 3.8, 6.0),
     }
     MELHORIAS = (
         "Mais 1 caramelo, voltas mais rápidas e mais dano.",
         "Mais 1 caramelo, voltas maiores e mais dano.",
-        "MATILHA DOURADA: 5 caramelos bem maiores, que mordem mais longe, dão voltas maiores e muito mais rápidas.",
+        "MATILHA DOURADA: 12 caramelos pequenos em duas rodas que giram em sentidos opostos, bem mais rápidos.",
     )
 
     def __init__(self):
@@ -33,8 +33,14 @@ class Caramelo(ArmaSemMunicao):
     def _recriar(self, jogo, dono):
         self.ao_remover(jogo)
         quantidade = self.valor("quantidade")
-        classe = CachorroDaMatilha if self.no_maximo else CachorroCaramelo      # no máximo: maiores e mais rápidos
-        self.cachorros = [classe(dono, 2 * math.pi * i / quantidade, self) for i in range(quantidade)]
+        if self.no_maximo:                      # matilha: muitos cachorros pequenos em duas rodas
+            fora = quantidade - quantidade // 3
+            self.cachorros = [CachorroDaMatilha(dono, 2 * math.pi * i / fora, self) for i in range(fora)]
+            dentro = quantidade - fora
+            self.cachorros += [CachorroDaMatilha(dono, 2 * math.pi * i / dentro, self, por_dentro=True)
+                               for i in range(dentro)]
+        else:
+            self.cachorros = [CachorroCaramelo(dono, 2 * math.pi * i / quantidade, self) for i in range(quantidade)]
         for cachorro in self.cachorros:
             self.lancar(jogo, cachorro)
 

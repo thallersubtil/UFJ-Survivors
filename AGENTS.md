@@ -57,12 +57,16 @@ jogo/jogador/          Jogador (abstrata), classes.py (as 7 classes), Passiva e 
                        especiais, Rolamento (esquiva), BonusTemporario, Aparencia (recoloração dos sprites dos alunos)
 jogo/loja/             Centro Acadêmico: Progresso (moedas e compras salvas), Melhoria (abstrata) e as melhorias
                        permanentes, JogoDeAposta (abstrata) e os jogos do cassino
-jogo/inimigos/         Inimigo (abstrata), FabricaDeInimigos, um arquivo por lacaio, Chefe, ChefePossuido e os três chefes
+jogo/inimigos/         Inimigo (abstrata), FabricaDeInimigos, um arquivo por lacaio, Chefe, ChefePossuido e os três chefes,
+                       MiniChefe (abstrata) e os 11 mini-chefes do mapa (mini_chefes.py), LacaioDoCampus e os lacaios deles
+                       (lacaios_do_campus.py)
 jogo/inimigos/materias/  Materia (abstrata) e as cinco matérias: os ataques de cada chefe
 jogo/armas/            Arma, ArmaDeDisparo (usa café), ArmaSemMunicao (não usa café), uma arma por arquivo, colabs.py
-jogo/itens/            Item (abstrata) e os 12 itens (2 só depois de comprados na loja; a Cola só aparece ao subir de nível)
+jogo/itens/            Item (abstrata) e os 14 itens (4 só depois de comprados na loja; a Cola só aparece ao subir de nível)
 jogo/projeteis/  jogo/ajudantes/  jogo/coletaveis/  jogo/efeitos.py   o que as armas e inimigos colocam na arena
 jogo/progressao.py     cartas de nível e prêmio do baú
+jogo/tesouro.py        Raridade (comum, épico, lendário) e Tesouro: o que sai de um baú, com crítico de sorte
+jogo/invocacao.py      LocalDeInvocacao: o círculo do mapa que invoca um mini-chefe opcional
 jogo/cenas/            telas (Cena abstrata) e o HUD
 jogo/ui/               interface em pixel art: CamadaPixel (640x360 ampliada 2x), texto, moldura, barra (pixel.py),
                        papel, madeira, giz, carimbo (materiais.py) e AreaInterativa (área clicável sobre a arte)
@@ -88,7 +92,7 @@ docs/                  entregas, diagrama, registro de uso de IA, especificaçã
 
 **Melhoria permanente nova**: herde de `Melhoria` (`jogo/loja/melhorias.py`) com `CHAVE` única (é o nome salvo no arquivo; não mude depois), `NOME`, `DESCRICAO`, `ICONE`, `NIVEL_MAXIMO`, `CUSTO_BASE` e `aplicar(jogador)`; acrescente em `MELHORIAS`. A loja lista sozinha.
 
-**Jogo novo no cassino**: herde de `JogoDeAposta` (`jogo/loja/cassino.py`), implemente `jogar(aposta, escolha, rng)` devolvendo um `ResultadoDaAposta` e acrescente em `JOGOS_DE_APOSTA`. Teste que o retorno esperado fica abaixo de 100% (veja `testes/test_cassino.py`).
+**Jogo novo no cassino**: herde de `JogoDeAposta` (`jogo/loja/cassino.py`), implemente `sorteios()` (todos os sorteios possíveis, com a mesma chance) e `avaliar(sorteio, escolha)` devolvendo um `Desfecho` (linha da tabela, multiplicador, mensagem, símbolos) e acrescente em `JOGOS_DE_APOSTA`. O sorteio (`jogar`), a tabela de chances da tela (`tabela`) e o `retorno_esperado` saem desses dois métodos; teste que o retorno fica abaixo de 100% (veja `testes/test_cassino.py`). Sem mais nada o jogo aparece numa mesa genérica; para um aparelho animado, crie uma `Mesa` em `jogo/cenas/cassino_mesas.py` e registre em `MESAS`.
 
 **Arte animada (estilo ilustrado, tipo Disgaea)**: os personagens são ilustrações de anime com contorno preto grosso, cores saturadas e cel shading, NÃO pixel art (o gerador de imagens não faz pixel art de verdade; testamos e ficou ruim). Cada personagem tem uma pasta `assets/sprites/<nome>/` com tiras `<animacao>-<n>.png` (`parado` com piscar no 3º quadro, `andar` com 4 quadros: passada, passagem, passada, passagem), já no tamanho de tela (herói ~76 px). A classe aponta para a pasta em `PASTA_SPRITE` e contém um `Animador`. Para criar ou trocar uma animação:
 1. Gere a folha com a ferramenta de imagens do ChatGPT (`edit_image`), passando uma folha existente de `arte_bruta/disgaea/` como referência de estilo e o personagem como referência de design. Prompt que funcionou: "4-frame walk cycle ... in ONE horizontal row ... clean hand-drawn anime game illustration in the style of Disgaea character art, NOT pixel art: smooth bold black outlines, vivid saturated colors, crisp two-tone cel shading with rim light, chibi proportions ... 4 equal cells, clear empty space between frames, same baseline and scale ... transparent background".

@@ -22,7 +22,7 @@ from jogo.jogador.passivas import (Cafeinado, CaronaSolidaria, InstintoOtaku, Pl
 class Otaku(Jogador):
     NOME = "Otaku"
     DESCRICAO = "Resistente e lento. O Caramelo luta junto."
-    VIDA = 130
+    VIDA = 80
     VELOCIDADE = 180
     IMAGEM = "sprites/otaku.png"
     PASTA_SPRITE = "otaku"
@@ -45,7 +45,7 @@ class Otaku(Jogador):
 class Programador(Jogador):
     NOME = "Programador"
     DESCRICAO = "Ágil e frágil. Ataca de longe à base de café."
-    VIDA = 80
+    VIDA = 50
     VELOCIDADE = 230
     IMAGEM = "sprites/programador.png"
     PASTA_SPRITE = "programador"
@@ -66,7 +66,7 @@ class Programador(Jogador):
 class MestreDeRPG(Jogador):
     NOME = "Mestre de RPG"
     DESCRICAO = "Equilibrado. O especial volta logo."
-    VIDA = 100
+    VIDA = 60
     VELOCIDADE = 205
     IMAGEM = "sprites/mestre_de_rpg.png"
     PASTA_SPRITE = "mestre_de_rpg"
@@ -87,7 +87,7 @@ class MestreDeRPG(Jogador):
 class Monitor(Jogador):
     NOME = "Monitor"
     DESCRICAO = "Paciente. Atrasa os inimigos e se cuida sozinho."
-    VIDA = 100
+    VIDA = 60
     VELOCIDADE = 200
     IMAGEM = "sprites/monitor.png"
     PASTA_SPRITE = "monitor"
@@ -108,7 +108,7 @@ class Monitor(Jogador):
 class Gamer(Jogador):
     NOME = "Gamer"
     DESCRICAO = "Rápido e frágil. Vive rolando."
-    VIDA = 95
+    VIDA = 55
     VELOCIDADE = 235
     IMAGEM = "sprites/gamer.png"
     PASTA_SPRITE = "gamer"
@@ -129,7 +129,7 @@ class Gamer(Jogador):
 class Calouro(Jogador):
     NOME = "Calouro"
     DESCRICAO = "Começa fraco, mas aprende rápido."
-    VIDA = 85
+    VIDA = 50
     VELOCIDADE = 215
     IMAGEM = "sprites/calouro.png"
     PASTA_SPRITE = "calouro"
@@ -150,7 +150,7 @@ class Calouro(Jogador):
 class CaraDaCarona(Jogador):
     NOME = "Cara da Carona"
     DESCRICAO = "Todo mundo quer carona. O Fusca vem junto."
-    VIDA = 110
+    VIDA = 65
     VELOCIDADE = 195
     IMAGEM = "sprites/cara_da_carona.png"
     PASTA_SPRITE = "cara_da_carona"

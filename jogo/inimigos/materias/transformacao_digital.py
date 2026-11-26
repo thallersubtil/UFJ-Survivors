@@ -6,7 +6,7 @@ class TransformacaoDigital(Materia):
     NOME = "Transformação Digital"
     COR = (190, 140, 255)
     SIMBOLO = "@"
-    VIDA = 2200
+    VIDA = 16000
     INTERVALO_ATAQUE = 2.9
     INTERVALO_FURIOSO = 2.0
     DANO_PROJETIL = 10

@@ -21,7 +21,8 @@ def test_no_comeco_o_heroi_mais_lento_ainda_corre_mais_que_o_bug():
 def test_heroi_fica_um_pouco_mais_rapido_a_cada_nivel_ate_um_teto():
     j = Programador((0, 0))
     base = j.velocidade
-    j.ganhar_experiencia(sum(j.XP_PRIMEIRO_NIVEL + n * j.XP_A_MAIS_POR_NIVEL for n in range(10)))
+    for _ in range(10):
+        j.ganhar_experiencia(j.experiencia_necessaria - j.experiencia)
     assert j.nivel == 11
     assert j.velocidade == pytest.approx(base * (1 + 10 * Programador.GANHO_VELOCIDADE_POR_NIVEL))
     j.ganhar_experiencia(10 ** 6)

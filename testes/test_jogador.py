@@ -43,7 +43,7 @@ def test_herois_comecam_com_arma_e_especial_proprios():
     agil, forte = Programador((0, 0)), Otaku((0, 0))
     assert isinstance(agil.armas[0], CobraPython)
     assert isinstance(forte.armas[0], Caramelo) and isinstance(forte.especial, SuperSaiyajin)
-    assert agil.vida == 80 and forte.vida == 130
+    assert agil.vida == Programador.VIDA and forte.vida == Otaku.VIDA and forte.vida > agil.vida
     assert agil.velocidade > forte.velocidade
     assert set(CLASSES) >= {Programador, Otaku}
 
@@ -102,10 +102,10 @@ def test_itens_recalculam_atributos_e_curam_a_vida_ganha():
     item = Turbo()
     j.adicionar_item(item)
     assert j.velocidade == pytest.approx(base * 1.5)
-    assert j.vida_maxima == 90 and j.vida == 90
+    assert j.vida_maxima == Programador.VIDA + 10 and j.vida == Programador.VIDA + 10
     j.subir_nivel_item(item)
     assert j.velocidade == pytest.approx(base * 2.0)
-    assert j.vida_maxima == 100
+    assert j.vida_maxima == Programador.VIDA + 20
 
 
 def test_limites_de_armas_e_itens():

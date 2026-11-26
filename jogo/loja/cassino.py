@@ -1,10 +1,20 @@
 """Cassino do Centro Acadêmico: jogos de aposta com as moedas do jogo (nunca dinheiro de verdade).
 
-Cada jogo herda de JogoDeAposta e implementa `jogar`. A casa sempre ganha um
-pouquinho no longo prazo (o retorno esperado de cada jogo fica abaixo de 100%).
+Cada jogo herda de JogoDeAposta e diz duas coisas: quais são os sorteios possíveis (`sorteios`, todos com a
+mesma chance) e quanto cada um paga (`avaliar`). O sorteio de verdade (`jogar`) e a tabela de chances mostrada
+na tela (`tabela`) saem dessas mesmas duas respostas, então a porcentagem exibida nunca diverge do jogo.
+
+A casa sempre ganha um pouquinho no longo prazo: o retorno esperado de cada jogo fica abaixo de 100%
+(`retorno_esperado`), e o prêmio é sempre arredondado para baixo.
 """
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from itertools import product
+
+
+def _com_virgula(numero, casas=2):
+    """1.5 -> '1,5'; 30.0 -> '30'; 0.4630 -> '0,46'."""
+    return f"{numero:.{casas}f}".rstrip("0").rstrip(".").replace(".", ",")
 
 
 @dataclass(frozen=True)
@@ -13,10 +23,40 @@ class ResultadoDaAposta:
     premio: int
     mensagem: str
     simbolos: tuple = ()
+    rotulo: str = ""            # nome da linha da tabela de prêmios em que o sorteio caiu
 
     @property
     def ganhou(self):
         return self.premio > self.aposta
+
+    @property
+    def multiplicador(self):
+        return self.premio / self.aposta if self.aposta else 0.0
+
+
+@dataclass(frozen=True)
+class Desfecho:
+    """O que um sorteio vale: em que linha da tabela ele cai, quanto paga e o que aparece na tela."""
+    rotulo: str
+    multiplicador: float
+    mensagem: str
+    simbolos: tuple
+
+
+@dataclass(frozen=True)
+class LinhaDePremio:
+    """Uma linha da tabela de prêmios: a chance de acontecer e quanto paga."""
+    rotulo: str
+    chance: float               # de 0 a 1
+    multiplicador: float        # prêmio dividido pela aposta (0: perde tudo)
+
+    @property
+    def chance_formatada(self):
+        return f"{_com_virgula(self.chance * 100)}%"
+
+    @property
+    def multiplicador_formatado(self):
+        return f"{_com_virgula(self.multiplicador)}x" if self.multiplicador else "perde"
 
 
 class JogoDeAposta(ABC):
@@ -26,8 +66,50 @@ class JogoDeAposta(ABC):
     ESCOLHAS = (None,)          # o que o jogador escolhe antes de jogar (None: nada)
 
     @abstractmethod
+    def sorteios(self):
+        """Todos os sorteios possíveis, cada um com a mesma chance de sair (uma sequência)."""
+
+    @abstractmethod
+    def avaliar(self, sorteio, escolha):
+        """Devolve o Desfecho de um sorteio para o palpite dado."""
+
+    def sortear(self, rng):
+        """Tira um dos sorteios possíveis. Os jogos sobrescrevem só para girar peça por peça."""
+        return rng.choice(self.sorteios())
+
+    def validar(self, escolha):
+        if escolha not in self.ESCOLHAS:
+            raise ValueError(f"escolha inválida: {escolha!r}")
+
+    @staticmethod
+    def premio_de(aposta, multiplicador):
+        """Prêmio inteiro, arredondado para baixo (a conta é feita em centésimos para não errar por décimos)."""
+        return round(aposta * multiplicador * 100) // 100
+
     def jogar(self, aposta, escolha, rng):
         """Joga uma rodada e devolve um ResultadoDaAposta (o prêmio já inclui a aposta de volta)."""
+        self.validar(escolha)
+        desfecho = self.avaliar(self.sortear(rng), escolha)
+        return ResultadoDaAposta(aposta, self.premio_de(aposta, desfecho.multiplicador), desfecho.mensagem,
+                                 desfecho.simbolos, desfecho.rotulo)
+
+    def tabela(self, escolha=None):
+        """Linhas de prêmio com a chance de cada uma, contadas nos mesmos sorteios que `jogar` usa.
+        Vem do maior multiplicador para o menor."""
+        self.validar(escolha)
+        sorteios = self.sorteios()
+        contagem = {}
+        for sorteio in sorteios:
+            desfecho = self.avaliar(sorteio, escolha)
+            chave = (desfecho.rotulo, desfecho.multiplicador)
+            contagem[chave] = contagem.get(chave, 0) + 1
+        linhas = [LinhaDePremio(rotulo, vezes / len(sorteios), multiplicador)
+                  for (rotulo, multiplicador), vezes in contagem.items()]
+        return sorted(linhas, key=lambda linha: (-linha.multiplicador, linha.chance))
+
+    def retorno_esperado(self, escolha=None):
+        """Quanto volta, em média, de cada moeda apostada. Abaixo de 1: a casa ganha."""
+        return sum(linha.chance * linha.multiplicador for linha in self.tabela(escolha))
 
 
 class MaquinaDeSalgadinho(JogoDeAposta):
@@ -38,17 +120,21 @@ class MaquinaDeSalgadinho(JogoDeAposta):
     SIMBOLOS = ("Pequi", "Café", "Pão de Queijo", "Nota 10", "Caramelo", "67")
     TRIO = {"Pequi": 5, "Café": 5, "Pão de Queijo": 8, "Nota 10": 10, "Caramelo": 15, "67": 30}
     PAR = 1.5
+    ROLOS = 3
 
-    def jogar(self, aposta, escolha, rng):
-        simbolos = tuple(rng.choice(self.SIMBOLOS) for _ in range(3))
-        diferentes = len(set(simbolos))
+    def sorteios(self):
+        return tuple(product(self.SIMBOLOS, repeat=self.ROLOS))
+
+    def sortear(self, rng):
+        return tuple(rng.choice(self.SIMBOLOS) for _ in range(self.ROLOS))
+
+    def avaliar(self, sorteio, escolha):
+        diferentes = len(set(sorteio))
         if diferentes == 1:
-            premio, mensagem = aposta * self.TRIO[simbolos[0]], f"Três {simbolos[0]}!"
-        elif diferentes == 2:
-            premio, mensagem = round(aposta * self.PAR), "Dois iguais."
-        else:
-            premio, mensagem = 0, "Nada desta vez."
-        return ResultadoDaAposta(aposta, premio, mensagem, simbolos)
+            return Desfecho(f"Três {sorteio[0]}", self.TRIO[sorteio[0]], f"Três {sorteio[0]}!", sorteio)
+        if diferentes == 2:
+            return Desfecho("Dois iguais", self.PAR, "Dois iguais.", sorteio)
+        return Desfecho("Nada", 0, "Nada desta vez.", sorteio)
 
 
 class DadoDoMestre(JogoDeAposta):
@@ -61,48 +147,74 @@ class DadoDoMestre(JogoDeAposta):
     PAGAMENTO = 1.9
     CRITICO = 2.5
 
-    def jogar(self, aposta, escolha, rng):
-        if escolha not in self.ESCOLHAS:
-            raise ValueError("escolha 'acima' ou 'abaixo'")
-        valor = rng.randint(1, self.LADOS)
-        if valor == self.LADOS:
-            premio, mensagem = round(aposta * self.CRITICO), "20 natural! Acerto crítico!"
-        elif valor == 1:
-            premio, mensagem = 0, "1 natural... falha crítica."
-        elif (valor > self.LADOS / 2) == (escolha == "acima"):
-            premio, mensagem = round(aposta * self.PAGAMENTO), f"Saiu {valor}. Acertou!"
-        else:
-            premio, mensagem = 0, f"Saiu {valor}. Errou."
-        return ResultadoDaAposta(aposta, premio, mensagem, (str(valor),))
+    def sorteios(self):
+        return tuple(range(1, self.LADOS + 1))
+
+    def sortear(self, rng):
+        return rng.randint(1, self.LADOS)
+
+    def avaliar(self, sorteio, escolha):
+        simbolos = (str(sorteio),)
+        if sorteio == self.LADOS:
+            return Desfecho(f"{self.LADOS} natural", self.CRITICO, f"{self.LADOS} natural! Acerto crítico!", simbolos)
+        if sorteio == 1:
+            return Desfecho("1 natural", 0, "1 natural... falha crítica.", simbolos)
+        if (sorteio > self.LADOS / 2) == (escolha == "acima"):
+            return Desfecho("Acertou o lado", self.PAGAMENTO, f"Saiu {sorteio}. Acertou!", simbolos)
+        return Desfecho("Errou o lado", 0, f"Saiu {sorteio}. Errou.", simbolos)
 
 
 class RoletaDoBandejao(JogoDeAposta):
     """Roleta com o cardápio do RU: cada prato paga uma coisa. A fila não paga nada."""
 
     NOME = "Roleta do Bandejão"
-    DESCRICAO = "Strogonoff paga 3x, bife 2x, frango 1,5x, salada 0,5x. Arroz, feijão, chuchu e fila: nada."
+    DESCRICAO = "Strogonoff paga 3x, bife 2x, frango 1,5x, salada 0,5x. Arroz, feijão, chuchu e Fila: nada."
     SETORES = ("Arroz", "Feijão", "Salada", "Chuchu", "Frango", "Bife", "Strogonoff", "Fila")
     PAGAMENTO = {"Salada": 0.5, "Frango": 1.5, "Bife": 2.0, "Strogonoff": 3.0}
 
-    def jogar(self, aposta, escolha, rng):
-        prato = rng.choice(self.SETORES)
-        multiplicador = self.PAGAMENTO.get(prato, 0)
-        premio = round(aposta * multiplicador)
-        mensagem = f"{prato}! {str(multiplicador).replace('.', ',')}x" if premio else f"{prato}. Nada desta vez."
-        return ResultadoDaAposta(aposta, premio, mensagem, (prato,))
+    def sorteios(self):
+        return self.SETORES
+
+    def avaliar(self, sorteio, escolha):
+        multiplicador = self.PAGAMENTO.get(sorteio, 0)
+        if multiplicador:
+            return Desfecho(sorteio, multiplicador, f"{sorteio}! {_com_virgula(multiplicador)}x", (sorteio,))
+        return Desfecho("Outros e a Fila", 0, f"{sorteio}. Nada desta vez.", (sorteio,))
 
 
 JOGOS_DE_APOSTA = (MaquinaDeSalgadinho, DadoDoMestre, RoletaDoBandejao)
 
 
+class SegredosDoCassino:
+    """Item da loja (aba Desbloqueios): libera a consulta da tabela de prêmios e chances dentro do cassino.
+    Sem ele, o aluno aposta no escuro."""
+
+    NOME = "Segredos do Cassino do CA"
+    DESCRICAO = "O caderninho do tesoureiro: mostra, no cassino, a chance e o valor de cada prêmio."
+    ICONE = "icones/segredos_cassino.png"
+    TIPO = "CASSINO"
+    PRECO_DESBLOQUEIO = 300
+
+
 class Cassino:
+    @staticmethod
+    def aposta_maxima(progresso):
+        """O all in: tudo o que o aluno tem. Nenhuma aposta pode passar disso."""
+        return progresso.moedas
+
     @staticmethod
     def apostar(progresso, jogo, aposta, escolha, rng):
         """Desconta a aposta, joga e paga o prêmio. Sem moedas suficientes, não joga."""
         if aposta <= 0:
             raise ValueError("a aposta precisa ser positiva")
+        jogo.validar(escolha)
         progresso.gastar(aposta)
         resultado = jogo.jogar(aposta, escolha, rng)
         if resultado.premio:
             progresso.ganhar(resultado.premio)
         return resultado
+
+    @staticmethod
+    def apostar_tudo(progresso, jogo, escolha, rng):
+        """All in: aposta o saldo inteiro de uma vez."""
+        return Cassino.apostar(progresso, jogo, Cassino.aposta_maxima(progresso), escolha, rng)

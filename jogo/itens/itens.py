@@ -216,5 +216,27 @@ class Pendrive(Item):
             jogador.mult_especial *= 0.85
 
 
+class MoedaDaSorte(Item):
+    NOME = "Moeda da Sorte"
+    DESCRICAO = "+15% de sorte por nível: mais crítico, desvio, moedas e baús melhores."
+    ICONE = "legado/itens/item_luckycoin.png"
+    MELHORIAS = ("+15% de sorte.", "+15% de sorte.")
+    PRECO_DESBLOQUEIO = 350
+
+    def aplicar(self, jogador):
+        jogador.sorte += 0.15 * self.nivel
+
+
+class JogoDeCintura(Item):
+    NOME = "Jogo de Cintura"
+    DESCRICAO = "5% de chance por nível de desviar de um golpe (a sorte aumenta)."
+    ICONE = "legado/itens/item_smokebomb.png"
+    MELHORIAS = ("+5% de desvio.", "+5% de desvio.")
+    PRECO_DESBLOQUEIO = 300
+
+    def aplicar(self, jogador):
+        jogador.chance_desvio += 0.05 * self.nivel
+
+
 ITENS = (CadernoDeResumos, Energetico, MarmitaDoRU, MochilaPesada, FoneDeOuvido, RelogioDePulso, GarrafaTermica,
-         TenisDeCorrida, OculosDeGrau, Cola, ConviteDaAtletica, Pendrive)
+         TenisDeCorrida, OculosDeGrau, Cola, ConviteDaAtletica, Pendrive, MoedaDaSorte, JogoDeCintura)
