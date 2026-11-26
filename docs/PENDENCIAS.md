@@ -11,14 +11,12 @@ O jogo está completo e jogável (três provas de 5 minutos no mapa do Campus Ja
 - [ ] **Arte das classes novas.** Monitor, Gamer, Calouro e Cara da Carona usam a arte do Programador ou do Otaku; gerar folhas próprias (aluno e aluna), como na receita do `AGENTS.md`.
 - [ ] **Áudio do 67.** `assets/sons/67.wav` é uma voz sintetizada provisória; troquem pelo áudio do meme se quiserem (mesmo nome de arquivo, formato WAV).
 - [ ] **Registro de IA.** Revisar e completar `docs/registro_ia.md` com as próprias palavras (etapas 1 e 2 estão adiantadas).
-- [ ] **Entrega 1 (22/10).** Preencher a linha "Integrantes" em `docs/entregas/etapa1_proposta.md` e entregar a proposta com o diagrama.
 
 ## Centro Acadêmico, rolamento e velocidade (novos em 30/10)
 
 - [ ] **Calibrar a economia.** Preços em `jogo/loja/melhorias.py` e `PRECO_DESBLOQUEIO` das armas e itens novos; ganhos em `Inimigo.CHANCE_MOEDA`, `MOEDAS_GIGANTE`, `Jogo.MOEDAS_POR_PROVA` e `MOEDAS_POR_MINUTO`. Joguem algumas partidas e vejam quantas são precisas para comprar algo.
 - [ ] **Calibrar rolamento e velocidade.** `Rolamento.DURACAO`, `IMPULSO`, `RECARGA`; `Inimigo.GANHO_VELOCIDADE` e `TETO_VELOCIDADE`; `Jogador.GANHO_VELOCIDADE_POR_NIVEL`. O robô do simulador não rola.
 - [ ] Animação própria de rolamento (hoje o sprite gira) e arte própria do projétil do Wi-Fi.
-- [ ] Atualizar `docs/entregas/diagrama_classes.png` a partir do `docs/diagrama_classes.mmd` (já tem `Rolamento`, `Melhoria`, `Progresso` e `JogoDeAposta`).
 - [ ] Ideias tiradas da referência, em ordem de valor: `docs/referencia_holocure.md`.
 
 ## Visual e mapa

@@ -6,9 +6,7 @@ Leia este arquivo inteiro antes de mexer no projeto. Ele vale para qualquer pess
 
 **UFJ Survivors** é o trabalho prático de Programação Orientada a Objetos da UFJ (Profª Emília Alves Nogueira). É um jogo 2D em Pygame no estilo "survivors" (Vampire Survivors, HoloCure): o herói anda pelo Campus Jatobá da UFJ (mapa gerado a partir de satélite e OpenStreetMap), as armas atacam sozinhas, as ondas de inimigos crescem e, no fim de cada uma das três provas de 5 minutos, chega um professor possuído pela própria matéria (Cálculo I; Arquitetura de Computadores e depois ED em C; Transformação Digital e depois POO). O jogador escolhe uma classe (Otaku, Programador, Mestre de RPG, Monitor, Gamer, Calouro, Cara da Carona), cada uma com ativa, passiva, especial e aparência próprios (um chibi na partida, o retrato grande na matrícula e o rosto no HUD); a escolha é feita na tela de matrícula, na secretaria, que imprime a carteirinha. As armas têm 4 níveis e o último é uma forma suprema com mecânica própria; duas armas certas no máximo liberam uma colab secreta. Carrega no máximo 4 armas e 4 itens, rola para esquivar (invencível durante o rolamento) e fica mais rápido aos poucos, enquanto os inimigos também aceleram com a prova; há um modo treino para enfrentar um chefe escolhido. Entre as partidas, o Centro Acadêmico (menu principal) tem a loja de melhorias permanentes e desbloqueios, paga com as moedas das provas, e um cassino com essas moedas. A arte dos monstros é ilustrada e animada, no estilo Disgaea (contorno grosso, cores saturadas); personagens, ícones e efeitos novos são chibis em pixel art. A arte nova é montada a partir de folhas em `nova_arte/_bruto/` (fora do git, como `arte_bruta/`) pelas ferramentas `ferramentas/montar_*.py` e `pintar_predios.py`. Os inimigos são objetos das matérias do semestre que ganharam vida; as armas misturam memes, IAs e anime.
 
-- O enunciado do trabalho está resumido em `docs/superpowers/specs/2026-10-10-ufj-survivors-design.md` (seções 1 e 12). **A especificação é a referência**: se algo aqui ou no código contradizer a especificação, siga a especificação ou converse com o grupo.
-- O plano de implementação que gerou o código está em `docs/superpowers/plans/2026-10-10-ufj-survivors.md`.
-- Animação, pixel art e mapa da UFJ (a partida de 8 minutos descrita ali foi trocada pelas três provas de 5 minutos, veja abaixo): `docs/superpowers/specs/2026-10-14-animacao-mapa-ufj-design.md` (vale sobre a especificação original onde divergirem).
+- O enunciado pede um jogo 2D em Pygame que cumpra os requisitos de POO da tabela abaixo; as entregas e os prazos estão no fim deste arquivo.
 - O que ainda falta fazer está em `docs/PENDENCIAS.md`. **Comece por lá.**
 - Comparação com o HoloCure (estrutura de referência) e lista do que ainda dá para melhorar: `docs/referencia_holocure.md`. A referência serve só para estudar mecânicas; nada da arte, dos sons ou do código dela entra no repositório.
 
@@ -42,7 +40,7 @@ A nota depende de estes pontos continuarem verdadeiros e fáceis de mostrar na d
 Regras que decorrem disso:
 - Comportamento específico de um tipo vai num **método sobrescrito** (`mover`, `ao_morrer`, `desenhar_corpo`, `ao_acertar`, `ao_coletar`, `aplicar`...), nunca num `if type(...)`/`isinstance` dentro dos laços do `Jogo`.
 - Não troque `@property` por atributo público nem remova a validação.
-- Ao criar uma classe nova, encaixe-a na hierarquia existente (veja o diagrama em `docs/entregas/diagrama_classes.png`) e atualize `docs/diagrama_classes.mmd` se ela for importante para a defesa.
+- Ao criar uma classe nova, encaixe-a na hierarquia existente (veja o diagrama em `docs/entregas/diagrama_classes.svg`, redesenhado por `ferramentas/gerar_entrega.py`) e atualize `docs/diagrama_classes.mmd` se ela for importante para a defesa.
 
 ## Mapa do código
 
@@ -79,7 +77,7 @@ assets/                sprites/, icones/, cenario/, sons/, fontes/, legado/ (art
 ferramentas/           pixelizar.py e montar_sprites.py (folhas de animação), gerar_mapa.py (mapa da UFJ),
                        gerar_sons.py, simular_partida.py, preparar_arte.py (imagens soltas, ex.: título)
 testes/                pytest, um arquivo por assunto; fixture `jogo_limpo` em conftest.py
-docs/                  entregas, diagrama, registro de uso de IA, especificação, plano, pendências
+docs/                  entregas, diagrama, registro de uso de IA, guia do código, pendências
 ```
 
 ## Receitas
@@ -127,8 +125,8 @@ Se a pasta não existir, o jogo usa a imagem estática `IMAGEM` ou um círculo c
 
 | Etapa | Data | Entrega |
 |---|---|---|
-| 1 | 22/10 | Proposta e diagrama de classes (`docs/entregas/etapa1_proposta.md`, `diagrama_classes.png`) |
+| 1 | 22/10 | Proposta e diagrama de classes (`docs/entregas/etapa1_proposta.md`) |
 | 2 | 05/11 | Protótipo (tag `etapa-2-prototipo`; a versão atual já é bem mais completa) |
-| 3 | 26/11 | Hierarquia completa e polimorfismo funcionando (`docs/entregas/etapa3_hierarquia_e_polimorfismo.md`; a saída dele vem de `ferramentas/demonstrar_polimorfismo.py`) |
+| 3 | 26/11 | Hierarquia completa e polimorfismo funcionando (`docs/entregas/etapa3_hierarquia_e_polimorfismo.html`, página autocontida gerada por `ferramentas/gerar_entrega.py`; rode de novo depois de mudar classes) |
 | Mostra | 03/12 | A turma joga os jogos e vota em "mais criativo" e "melhor arquitetura" |
 | 4 | 10/12 ou 14/12 | Versão final, defesa oral individual e requisito surpresa (ex.: "crie um inimigo novo em 10 minutos sem alterar as classes existentes") |

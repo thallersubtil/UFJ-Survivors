@@ -10,9 +10,9 @@ Sobreviva às provas do semestre na UFJ. Jogo 2D em Pygame no estilo "survivors"
 
 No chefe de duas matérias, quando a vida da primeira zera, a segunda (mais difícil) possui o professor e a luta continua com a vida cheia.
 
-**Grupo:** Filipe Duarte de Freitas Oliveira, Gabriel Gomes Borges, Gustavo do Nascimento Silva e Thaller Subtil de Carvalho.
+**Grupo:** Filipe Duarte de Freitas Oliveira e Thaller Subtil de Carvalho.
 
-![Captura de tela](docs/entregas/captura_combate.png)
+![Captura de tela](docs/entregas/captura_etapa3.png)
 
 > **Vai trabalhar no projeto (você ou sua IA)?** Leia primeiro o [AGENTS.md](AGENTS.md) e a lista de [pendências](docs/PENDENCIAS.md).
 
@@ -135,7 +135,6 @@ Para simular uma partida inteira sem janela (útil para balancear):
 ```bash
 .venv/bin/python ferramentas/gerar_mapa.py        # mapa do Campus Jatobá (baixa satélite e OpenStreetMap se faltar)
 .venv/bin/python ferramentas/montar_sprites.py    # folhas de animação -> pixel art (precisa das folhas em arte_bruta/)
-.venv/bin/python ferramentas/endurecer_sprite.py ORIGEM DESTINO   # arte "lisa" no tamanho do jogo -> contorno e paleta de pixel art
 .venv/bin/python ferramentas/gerar_sons.py        # efeitos sonoros
 ```
 
@@ -151,7 +150,11 @@ Para simular uma partida inteira sem janela (útil para balancear):
 | Métodos especiais | `jogo/ranking.py` | `RegistroRanking.__lt__`, `__eq__`, `__str__` |
 | `@classmethod` e `@staticmethod` | `jogo/inimigos/fabrica.py`, `jogo/nucleo/colisao.py` | `FabricaDeInimigos.criar()`, `Colisao.circulos_colidem()` |
 
-Diagrama de classes: [docs/entregas/diagrama_classes.png](docs/entregas/diagrama_classes.png). Proposta completa: [docs/entregas/etapa1_proposta.md](docs/entregas/etapa1_proposta.md). Etapa 3 (hierarquia completa e polimorfismo): [docs/entregas/etapa3_hierarquia_e_polimorfismo.md](docs/entregas/etapa3_hierarquia_e_polimorfismo.md).
+![Diagrama de classes: herança a partir de Entidade](docs/entregas/diagrama_classes.svg)
+
+![Diagrama de classes: composição](docs/entregas/diagrama_composicao.svg)
+
+Entregas: [etapa 1, proposta](docs/entregas/etapa1_proposta.md); etapa 2, protótipo na tag `etapa-2-prototipo`; [etapa 3, hierarquia completa e polimorfismo](docs/entregas/etapa3_hierarquia_e_polimorfismo.html) (página HTML autocontida: baixe o arquivo e abra no navegador; ela é gerada por `ferramentas/gerar_entrega.py`).
 
 ## Estrutura
 
@@ -171,7 +174,7 @@ jogo/
 assets/            sprites, ícones, cenário, sons, fontes e a arte reaproveitada (legado/)
 ferramentas/       preparo da arte, geração dos sons, simulador de partida
 testes/            testes automáticos (pytest)
-docs/              entregas, diagrama, registro de uso de IA, especificação e plano
+docs/              entregas, diagrama, registro de uso de IA e guia do código
 ```
 
 ## Como criar um inimigo novo

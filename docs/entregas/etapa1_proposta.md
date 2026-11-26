@@ -71,7 +71,7 @@ Regras principais:
 
 ## 6. Diagrama de classes
 
-![Diagrama de classes](diagrama_classes.png)
+![Diagrama de classes](diagrama_classes.svg)
 
 Fonte editável: `docs/diagrama_classes.mmd` (Mermaid).
 
