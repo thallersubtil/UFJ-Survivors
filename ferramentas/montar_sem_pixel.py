@@ -6,6 +6,8 @@
 - sprites/<pasta>_<animação>_<n>q.png -> assets/sprites/<pasta>/<animação>-<n>.png (tira da partida: os quadros
                            são lidos linha por linha, espelhados para olhar para a direita e postos na mesma
                            altura e na mesma linha de chão)
+- <classe>.png           -> assets/retratos/<classe>.png (arte principal do aluno, na matrícula) e
+                           assets/rostos/<classe>.png (o rosto do HUD e da carteirinha, recortado da cabeça)
 
 Uso: .venv/bin/python ferramentas/montar_sem_pixel.py
 """
@@ -17,8 +19,11 @@ import pygame  # noqa: E402
 
 RAIZ = Path(__file__).resolve().parent.parent
 BRUTO = RAIZ / "nova_arte" / "_bruto" / "sem_pixel"
-CHEFES = ("calculo", "arquitetura_ed", "td_poo")
+# o de Cálculo não entra aqui: a ilustração aprovada dele vem de nova_arte/_bruto/ilustracoes/calculo_flavio_v2.png
+CHEFES = ("arquitetura_ed", "td_poo")
 CRUPIES = ("gamer", "mestre_de_rpg", "monitor")
+ALUNOS = ("otaku", "programador", "mestre_de_rpg", "monitor", "gamer", "calouro", "cara_da_carona")
+ALTURA_RETRATO, LADO_DO_ROSTO = 900, 160
 EXPRESSOES = ("espera", "torcida", "riso", "choro")      # a ordem das poses na folha
 ALTURA_CHEFE, ALTURA_CRUPIE = 900, 360
 # folha, pasta, animação, quadros, linhas da folha, altura na tela
@@ -84,11 +89,29 @@ def montar():
             recorte = pose.subsurface((caixa.x, topo, caixa.w, base - topo)).copy()
             pygame.image.save(na_altura(recorte, ALTURA_CRUPIE), str(destino / f"{expressao}.png"))
         print("crupiê", nome)
+    for nome in ALUNOS:
+        origem = BRUTO / f"{nome}.png"
+        if origem.exists():
+            montar_aluno(pygame.image.load(str(origem)).convert_alpha(), nome)
+            print("aluno", nome)
     for folha, pasta, animacao, quadros, linhas, altura in TIRAS:
         origem = BRUTO / "sprites" / folha
         if origem.exists():
             montar_tira(pygame.image.load(str(origem)).convert_alpha(), pasta, animacao, quadros, linhas, altura)
             print("tira", pasta, animacao)
+
+
+def montar_aluno(arte, nome):
+    """Grava o retrato (o desenho inteiro, sem as margens vazias) e o rosto (um quadrado em volta da cabeça)."""
+    figura = arte.subsurface(arte.get_bounding_rect()).copy()
+    pygame.image.save(na_altura(figura, ALTURA_RETRATO), str(RAIZ / "assets" / "retratos" / f"{nome}.png"))
+    lado = round(figura.get_height() * 0.23)                 # a cabeça ocupa perto de um quinto da altura
+    faixa = pygame.mask.from_surface(figura.subsurface((0, 0, figura.get_width(), lado)), 40)
+    centro_x = round(faixa.centroid()[0])                    # o meio da cabeça, não o do corpo
+    rosto = pygame.Surface((lado, lado), pygame.SRCALPHA)
+    rosto.blit(figura, (lado // 2 - centro_x, round(lado * 0.04)))
+    pygame.image.save(pygame.transform.smoothscale(rosto, (LADO_DO_ROSTO, LADO_DO_ROSTO)),
+                      str(RAIZ / "assets" / "rostos" / f"{nome}.png"))
 
 
 def montar_tira(folha, pasta, animacao, quadros, linhas, altura):
