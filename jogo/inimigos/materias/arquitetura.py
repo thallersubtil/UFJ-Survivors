@@ -10,6 +10,8 @@ class ArquiteturaDeComputadores(Materia):
     INTERVALO_ATAQUE = 2.6
     INTERVALO_FURIOSO = 1.7
     LACAIOS = ("mouse", "pente_ram", "bug")
+    ARTES = {"0": "bit0", "1": "bit1"}
+    ARTE_DA_CHAMADA = "interrupcao"
 
     def ataques(self):
         return [self.clock, self.barramento, self.busca, self.interrupcao]

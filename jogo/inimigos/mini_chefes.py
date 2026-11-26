@@ -14,8 +14,10 @@ from jogo.efeitos import TextoFlutuante
 from jogo.inimigos.fabrica import FabricaDeInimigos
 from jogo.inimigos.inimigo import Inimigo
 from jogo.nucleo.recursos import Recursos
+from jogo.nucleo.desenho import desenhar_faixa_de_aviso
 from jogo.projeteis.do_campus import FeixeDeAbducao, Multa, VeiculoDesgovernado
-from jogo.projeteis.projeteis import ProjetilDaMateria
+from jogo.projeteis.tematicos import (Bumerangue, Carimbada, FrascoDeAcido, Marca, PanelaoDeSopa,
+                                      ProjetilTematico)
 
 
 class Arrancada:
@@ -34,6 +36,10 @@ class Arrancada:
     @property
     def mirando(self):
         return self._carga > 0
+
+    @property
+    def correndo(self):
+        return self._corrida > 0
 
     def comecar(self):
         self._carga = self.carga_total
@@ -58,8 +64,7 @@ class Arrancada:
         if self.mirando:
             inicio = camera.para_tela(chefe.posicao)
             fim = inicio + self.rumo * self.velocidade * self.duracao
-            pygame.draw.line(tela, (255, 240, 150), inicio, fim, largura)
-            pygame.draw.line(tela, (230, 60, 60), inicio, fim, 4)
+            desenhar_faixa_de_aviso(tela, inicio, fim, largura * 2, chefe.COR, self._carga)
 
 
 class MiniChefe(Inimigo):
@@ -75,6 +80,7 @@ class MiniChefe(Inimigo):
     LACAIOS_NA_CHEGADA = 5
     REFORCO_A_CADA = 4           # de quantos em quantos ataques chegam mais lacaios
     LACAIOS_DE_REFORCO = 3
+    SIMBOLO = "!"                # o que aparece no projétil se faltar a arte dele
     RAIO = 30
     PONTOS = 500
     EXPERIENCIA = 45
@@ -83,7 +89,8 @@ class MiniChefe(Inimigo):
     GUARDA = 780                 # até onde ele segue o aluno, contado do posto
     CURA_NO_POSTO = 0.04         # fração da vida por segundo que recupera quando o aluno foge
     COR = (255, 170, 60)
-    GANHO_VELOCIDADE = 0.04      # a dificuldade da prova mexe pouco na velocidade dele
+    GANHO_VELOCIDADE = 0.04      # o tempo de partida mexe pouco na velocidade dele
+    TENACIDADE = 1.0             # nada puxa, atrasa ou prende um mini-chefe no meio do ataque
 
     def __init__(self, posicao, escala=1.0):
         super().__init__(posicao, escala)
@@ -129,7 +136,11 @@ class MiniChefe(Inimigo):
             return
         for i in range(quantos):
             lado = pygame.Vector2(raio, 0).rotate(360 * i / quantos + 20 * self.ataques)
-            jogo.adicionar(FabricaDeInimigos.criar(nome, self.posicao + lado, self.escala))
+            self.receber_lacaio(jogo, FabricaDeInimigos.criar(nome, self.posicao + lado, self.escala))
+
+    def receber_lacaio(self, jogo, lacaio):
+        """Põe o lacaio na arena. Quem conta ou enfeita os próprios lacaios sobrescreve."""
+        jogo.adicionar(lacaio)
 
     def mover(self, dt, jogo):
         if jogo.jogador.posicao.distance_to(self.posto) > self.GUARDA:      # o aluno fugiu: volta e se recupera
@@ -156,18 +167,29 @@ class MiniChefe(Inimigo):
         rumo = jogo.jogador.posicao - self.posicao
         return rumo.normalize() if rumo.length_squared() > 0 else pygame.Vector2(1, 0)
 
-    def disparar(self, jogo, direcao, velocidade, dano, simbolo, raio=12):
-        jogo.adicionar(ProjetilDaMateria(self.posicao, direcao * velocidade, dano * self.fator_de_dano, simbolo,
-                                         self.COR, raio))
+    def criar_projetil(self, direcao, velocidade, dano, arte, raio):
+        """O objeto que este mini-chefe arremessa. Quem joga algo que se comporta diferente sobrescreve."""
+        return ProjetilTematico(self.posicao, direcao * velocidade, dano * self.fator_de_dano, self.SIMBOLO,
+                                self.COR, raio, arte=arte)
 
-    def leque(self, jogo, quantos, abertura, velocidade, dano, simbolo):
+    def disparar(self, jogo, direcao, velocidade, dano, arte, raio=12):
+        jogo.adicionar(self.criar_projetil(direcao, velocidade, dano, arte, raio))
+
+    def leque(self, jogo, quantos, abertura, velocidade, dano, *artes):
+        """Objetos em leque na direção do aluno; com mais de uma arte, elas se revezam."""
         rumo = self.mirar(jogo)
         for i in range(quantos):
-            self.disparar(jogo, rumo.rotate((i - (quantos - 1) / 2) * abertura), velocidade, dano, simbolo)
+            self.disparar(jogo, rumo.rotate((i - (quantos - 1) / 2) * abertura), velocidade, dano,
+                          artes[i % len(artes)])
 
-    def anel(self, jogo, quantos, velocidade, dano, simbolo, giro=0.0):
+    def anel(self, jogo, quantos, velocidade, dano, *artes, giro=0.0):
         for i in range(quantos):
-            self.disparar(jogo, pygame.Vector2(1, 0).rotate(giro + 360 * i / quantos), velocidade, dano, simbolo)
+            self.disparar(jogo, pygame.Vector2(1, 0).rotate(giro + 360 * i / quantos), velocidade, dano,
+                          artes[i % len(artes)])
+
+    def marcar(self, jogo, arte, altura, posicao=None, **opcoes):
+        """Um efeito desenhado (nuvem, garra, uivo) no lugar do mini-chefe ou onde for pedido."""
+        jogo.adicionar(Marca(self.posicao if posicao is None else posicao, arte, altura, **opcoes))
 
     def falar(self, jogo, texto, tamanho=18):
         jogo.adicionar(TextoFlutuante(texto, self.posicao - (0, self.altura_sprite / 2 + 26), self.COR, tamanho,
@@ -184,7 +206,7 @@ class MiniChefe(Inimigo):
         """Nem é possuído pelo Fusca."""
 
     def empurrar(self, direcao, forca=180):
-        super().empurrar(direcao, forca * 0.2)
+        """Nem é empurrado."""
 
     def ao_morrer(self, jogo):
         super().ao_morrer(jogo)
@@ -208,7 +230,8 @@ class MiniChefe(Inimigo):
 
 @FabricaDeInimigos.registrar("tia_da_cantina")
 class TiaDaCantina(MiniChefe):
-    """Enorme. Serve conchadas em leque e, de três em três ataques, vira o panelão: sopa para todo lado."""
+    """Enorme. Arremessa bandejas, pratos feitos e frigideiras em leque e, de três em três ataques, joga o
+    panelão para o alto: ele cai onde o aluno estava e deixa uma poça de sopa quente, com talheres para todo lado."""
 
     NOME = "Tia da Cantina"
     ARTIGO = "Uma"
@@ -223,12 +246,20 @@ class TiaDaCantina(MiniChefe):
     DANO = 16
     COR = (255, 150, 70)
 
+    RAIO_DA_SOPA = 105
+    DANO_DA_SOPA = 14
+
     def atacar(self, jogo):
         if self.ataques % 3 == 0:
-            self.anel(jogo, 14, 190, 9, "~")
+            jogo.adicionar(PanelaoDeSopa(jogo.jogador.posicao, self.RAIO_DA_SOPA,
+                                         self.DANO_DA_SOPA * self.fator_de_dano))
+            self.anel(jogo, 12, 190, 9, "concha", "colher_de_pau")
             self.falar(jogo, "SOPA QUENTE!")
+        elif self.ataques % 3 == 1:
+            self.leque(jogo, 5, 14, 290, 9, "bandeja")
         else:
-            self.leque(jogo, 5, 14, 290, 9, "o")
+            self.leque(jogo, 5, 14, 290, 9, "prato_feito", "frigideira")
+            self.falar(jogo, "Repete o prato!")
 
 
 @FabricaDeInimigos.registrar("vigilante")
@@ -252,7 +283,15 @@ class Vigilante(MiniChefe):
         self.arrancada = Arrancada(carga=0.7, duracao=0.55, velocidade=700)
 
     def atacar(self, jogo):
+        if self.ataques % 2 == 0:                            # antes de correr, solta os batarangues
+            self.leque(jogo, 3, 22, 430, 8, "batarangue")
+            self.falar(jogo, "Parado aí!")
         self.arrancada.comecar()
+
+    def criar_projetil(self, direcao, velocidade, dano, arte, raio):
+        """O batarangue vai e volta."""
+        return Bumerangue(self.posicao, direcao * velocidade, dano * self.fator_de_dano, self.SIMBOLO, self.COR,
+                          raio, arte=arte)
 
     def perseguir(self, dt, jogo):
         if self.arrancada.ativa:
@@ -262,6 +301,13 @@ class Vigilante(MiniChefe):
 
     def desenhar_corpo(self, tela, camera):
         self.arrancada.desenhar_aviso(tela, camera, self)
+        if self.arrancada.mirando:                           # o facho da lanterna em cima do aluno
+            origem = camera.para_tela(self.posicao)
+            rumo = self.arrancada.rumo
+            facho = pygame.Surface(tela.get_size(), pygame.SRCALPHA)
+            pygame.draw.polygon(facho, (255, 240, 150, 70),
+                                [origem, origem + rumo.rotate(-13) * 420, origem + rumo.rotate(13) * 420])
+            tela.blit(facho, (0, 0))
         super().desenhar_corpo(tela, camera)
 
 
@@ -291,6 +337,8 @@ class Bibliotecaria(MiniChefe):
             direcao = pygame.Vector2(1, 0).rotate(giro + 360 * i / self.MULTAS)
             jogo.adicionar(Multa(self.posicao, direcao * 210, self.DANO_DA_MULTA * self.fator_de_dano,
                                  self.VALOR_DA_MULTA, self.COR))
+        if self.ataques % 3 == 0:                            # e um livro de capa dura na direção do aluno
+            self.leque(jogo, 3, 16, 300, 8, "livro")
         self.falar(jogo, "MULTA POR ATRASO!" if self.ataques % 2 else "Vou anotar o seu nome...")
 
 
@@ -313,6 +361,8 @@ class TecnicoDoLaboratorio(MiniChefe):
     INTERVALO_ATAQUE = 2.2
     REGENERACAO = 0.006          # fração da vida por segundo, sempre
     FURIA_ABAIXO_DE = 0.4        # fração da vida em que ele se enfurece
+    RAIO_DO_ACIDO = 85
+    DANO_DO_ACIDO = 12
     VELOCIDADE_EM_FURIA = 1.5
 
     @property
@@ -331,9 +381,11 @@ class TecnicoDoLaboratorio(MiniChefe):
     def atacar(self, jogo):
         rumo = self.mirar(jogo)
         for desvio in ((-12, 0, 12) if self.em_furia else (0,)):
-            self.disparar(jogo, rumo.rotate(desvio), 380, 14, "=>", raio=16)
-        if self.em_furia and self.ataques % 3 == 0:
-            self.falar(jogo, "FÚRIA!", 22)
+            self.disparar(jogo, rumo.rotate(desvio), 380, 14, "seringa", raio=16)
+        if self.ataques % 3 == 0:                            # um frasco para o alto: cai e vira poça de ácido
+            jogo.adicionar(FrascoDeAcido(jogo.jogador.posicao, self.RAIO_DO_ACIDO,
+                                         self.DANO_DO_ACIDO * self.fator_de_dano))
+            self.falar(jogo, "FÚRIA!" if self.em_furia else "Experimento!", 22 if self.em_furia else 18)
 
 
 @FabricaDeInimigos.registrar("reitor")
@@ -345,6 +397,8 @@ class Reitor(MiniChefe):
     ONDE = "na Reitoria"
     GRITO = "Isso não consta no regimento!"
     PASTA_SPRITE = "reitor"
+    RAIO_DO_CARIMBO = 90
+    DANO_DO_CARIMBO = 16
     LACAIO = "carimbo"
     RAIO = 28
     VIDA = 2000
@@ -355,10 +409,12 @@ class Reitor(MiniChefe):
 
     def atacar(self, jogo):
         if self.ataques % 2:
-            self.anel(jogo, 16, 200, 10, "§", giro=11 * self.ataques)
+            self.anel(jogo, 16, 200, 10, "oficio", giro=11 * self.ataques)
+            jogo.adicionar(Carimbada(jogo.jogador.posicao, self.RAIO_DO_CARIMBO,
+                                     self.DANO_DO_CARIMBO * self.fator_de_dano))
             self.falar(jogo, "INDEFERIDO!")
         else:
-            self.leque(jogo, 7, 9, 330, 10, "Nº")
+            self.leque(jogo, 7, 9, 330, 10, "portaria", "caneta")
 
 
 @FabricaDeInimigos.registrar("lobo_guara")
@@ -378,19 +434,30 @@ class LoboGuara(MiniChefe):
     DANO = 14
     COR = (255, 140, 60)
     INTERVALO_ATAQUE = 2.8
+    INTERVALO_DA_GARRA = 0.07
 
     def __init__(self, posicao, escala=1.0):
         super().__init__(posicao, escala)
         self.arrancada = Arrancada(carga=0.45, duracao=0.4, velocidade=780, vezes=2)
+        self._espera_garra = 0.0
 
     def atacar(self, jogo):
         self.arrancada.comecar()
+        self.marcar(jogo, "poeira", 40, self.posicao + (0, self.raio), duracao=0.5)
         if self.ataques % self.REFORCO_A_CADA == 0:
             self.falar(jogo, "AUUUUU!")
+            for lado, angulo in ((60, 0), (-60, 180)):       # o uivo sai para os dois lados
+                self.marcar(jogo, "uivo", 70, self.posicao + (lado, -30), duracao=0.8, angulo=angulo,
+                            crescimento=1.2)
 
     def perseguir(self, dt, jogo):
         if self.arrancada.ativa:
             self.arrancada.avancar(dt, self, jogo)
+            self._espera_garra -= dt
+            if self.arrancada.correndo and self._espera_garra <= 0:      # o bote deixa um rastro de garras
+                self._espera_garra = self.INTERVALO_DA_GARRA
+                rumo = self.arrancada.rumo
+                self.marcar(jogo, "garra", 64, duracao=0.35, angulo=-rumo.as_polar()[1])
         else:
             super().perseguir(dt, jogo)
 
@@ -419,7 +486,9 @@ class Motorizado(MiniChefe):
 
 @FabricaDeInimigos.registrar("loira_da_odontologia")
 class LoiraDaOdontologia(Motorizado):
-    """Não desce do salto: manda os HB20 brancos passarem por cima do aluno, dois ou três de cada vez."""
+    """Não desce do salto e nunca anda sozinha: chama a turma (várias loirinhas iguais a ela, em miniatura),
+    arremessa escova, pasta e espelhinho e, entre uma coisa e outra, manda os HB20 brancos passarem por cima
+    do aluno."""
 
     NOME = "Loira da Odontologia"
     ARTIGO = "Uma"
@@ -427,7 +496,10 @@ class LoiraDaOdontologia(Motorizado):
     ONDE = "nos Laboratórios da Saúde"
     GRITO = "Cuidado com o meu HB20, tá?"
     PASTA_SPRITE = "loira"
-    LACAIO = "dente"
+    LACAIO = "loirinha"
+    LACAIOS_NA_CHEGADA = 6
+    LACAIOS_POR_CHAMADA = 4
+    TURMA_MAXIMA = 14            # loirinhas vivas ao mesmo tempo
     VEICULO = "hb20"
     VIDA = 1300
     VELOCIDADE = 104
@@ -435,10 +507,29 @@ class LoiraDaOdontologia(Motorizado):
     COR = (255, 130, 190)
     INTERVALO_ATAQUE = 2.6
 
+    def __init__(self, posicao, escala=1.0):
+        super().__init__(posicao, escala)
+        self.turma = []
+
     def atacar(self, jogo):
-        for i in range(2 + self.ataques % 2):
-            self.chamar_veiculo(jogo, desvio=(i - 1) * 90)
-        self.falar(jogo, "BI BI!")
+        if self.ataques % 2:
+            self.chamar_lacaios(jogo, self.LACAIOS_POR_CHAMADA, raio=70)
+            self.leque(jogo, 3, 18, 320, 8, "escova", "pasta_de_dente", "espelhinho")
+            self.falar(jogo, "Meninas, vem cá!")
+        else:
+            for i in range(2 + self.ataques // 2 % 2):
+                self.chamar_veiculo(jogo, desvio=(i - 1) * 90)
+            self.falar(jogo, "BI BI!")
+
+    def chamar_lacaios(self, jogo, quantos, nome=None, raio=90):
+        """A turma tem limite: só chama quantas ainda cabem."""
+        self.turma = [loirinha for loirinha in self.turma if loirinha.ativo]
+        super().chamar_lacaios(jogo, min(quantos, self.TURMA_MAXIMA - len(self.turma)), nome, raio)
+
+    def receber_lacaio(self, jogo, lacaio):
+        self.turma.append(lacaio)
+        self.marcar(jogo, "dente", 30, lacaio.posicao - (0, 30), duracao=0.6, subida=50)      # chegam brilhando
+        super().receber_lacaio(jogo, lacaio)
 
 
 @FabricaDeInimigos.registrar("agroboy")
@@ -446,7 +537,7 @@ class Agroboy(Motorizado):
     """O super-herói da Agronomia: joga maços de dinheiro e chama a caminhonete. Derrotado, chove moeda."""
 
     NOME = "Agroboy"
-    PONTO = (620, 7480)          # no meio da lavoura, a oeste
+    PONTO = (770, 7380)          # no cruzamento dos corredores da lavoura, a oeste
     ONDE = "na lavoura das Agrárias"
     GRITO = "O agro não para! Sabe com quem tá falando?"
     PASTA_SPRITE = "agroboy"
@@ -454,6 +545,8 @@ class Agroboy(Motorizado):
     LACAIOS_NA_CHEGADA = 3
     LACAIOS_DE_REFORCO = 2
     VEICULO = "caminhonete"
+    SIMBOLO = "$"
+    ARTE_QUE_VOLTA = "chapeu"
     VELOCIDADE_DO_VEICULO = 560
     DANO_DO_VEICULO = 20
     RAIO_DO_VEICULO = 46
@@ -466,10 +559,17 @@ class Agroboy(Motorizado):
 
     def atacar(self, jogo):
         if self.ataques % 2:
-            self.leque(jogo, 6, 11, 310, 10, "$")
+            self.leque(jogo, 6, 11, 310, 10, "dinheiro", "milho", "dinheiro", "bota")
         else:
             self.chamar_veiculo(jogo)
+            self.disparar(jogo, self.mirar(jogo), 420, 10, "chapeu", raio=14)
             self.falar(jogo, "OLHA A RAM!")
+
+    def criar_projetil(self, direcao, velocidade, dano, arte, raio):
+        """O chapéu volta para a mão dele; o resto ele joga fora mesmo."""
+        classe = Bumerangue if arte == self.ARTE_QUE_VOLTA else ProjetilTematico
+        return classe(self.posicao, direcao * velocidade, dano * self.fator_de_dano, self.SIMBOLO, self.COR, raio,
+                      arte=arte)
 
 
 @FabricaDeInimigos.registrar("grao_mestre_do_culto")
@@ -496,13 +596,16 @@ class GraoMestreDoCulto(MiniChefe):
     GIRO_POR_DISPARO = 13
 
     def atacar(self, jogo):
-        self.anel(jogo, self.BRACOS, 230, 9, "/\\", giro=self.GIRO_POR_DISPARO * self.ataques)
+        arte = "adaga" if self.ataques % 4 == 0 else "chama_dourada"
+        self.anel(jogo, self.BRACOS, 230, 9, arte, giro=self.GIRO_POR_DISPARO * self.ataques)
 
     def chamar_lacaios(self, jogo, quantos, nome=None, raio=90):
         """Os cultistas não nascem do lado do mestre: já aparecem em círculo em volta do aluno."""
         for i in range(quantos):
             lado = pygame.Vector2(260, 0).rotate(360 * i / quantos)
-            jogo.adicionar(FabricaDeInimigos.criar(nome or self.LACAIO, jogo.jogador.posicao + lado, self.escala))
+            self.marcar(jogo, "olho", 46, jogo.jogador.posicao + lado - (0, 50), duracao=0.9, subida=30)
+            self.receber_lacaio(jogo, FabricaDeInimigos.criar(nome or self.LACAIO, jogo.jogador.posicao + lado,
+                                                              self.escala))
 
 
 @FabricaDeInimigos.registrar("gotica_trevosa")
@@ -520,15 +623,18 @@ class GoticaTrevosa(MiniChefe):
     VELOCIDADE = 118
     DANO = 13
     COR = (190, 110, 255)
+    SIMBOLO = "<3"
     INTERVALO_ATAQUE = 2.5
     DISTANCIA_DO_SUSTO = 190
 
     def atacar(self, jogo):
         if self.ataques % 2 == 0:                            # aparece do nada perto do aluno
             lado = pygame.Vector2(self.DISTANCIA_DO_SUSTO, 0).rotate(jogo.rng.uniform(0, 360))
+            self.marcar(jogo, "nuvem_de_morcegos", 110, duracao=0.7)             # some numa nuvem...
             self.posicao = jogo.mapa.empurrar(jogo.jogador.posicao + lado, self.raio)
+            self.marcar(jogo, "nuvem_de_morcegos", 110, duracao=0.7)             # ...e sai de outra
             self.falar(jogo, "Achei você <3")
-        self.anel(jogo, 10, 220, 10, "<3", giro=18 * self.ataques)
+        self.anel(jogo, 10, 220, 10, "coracao_preto", "rosa_negra", giro=18 * self.ataques)
 
 
 @FabricaDeInimigos.registrar("et_de_varginha")

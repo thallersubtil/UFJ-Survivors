@@ -18,6 +18,7 @@ class Mesa(ABC):
     """O aparelho de um jogo em cima da mesa. As coordenadas são da camada de 640x360."""
 
     PASTA_CRUPIE = "monitor"
+    FALAS = {}                   # falas do crupiê desta mesa, por expressão (veja cassino_crupie.py)
     TITULO = None                # nome curto para a aba (None: o nome do jogo)
     CENTRO = (320, 140)
 
@@ -72,6 +73,10 @@ class Mesa(ABC):
     def rotulo_da_escolha(self, escolha):
         return str(escolha).upper()
 
+    def cor_da_escolha(self, escolha):
+        """Cor que identifica o palpite no aparelho (None: não tem)."""
+        return None
+
     def desenhar_rotulo(self, ui, linha, pos, cor):
         """Nome de uma linha da tabela de prêmios."""
         texto(ui, linha.rotulo, pos, cor, 11, contorno=None, media=True)
@@ -101,6 +106,12 @@ class MesaDaMaquina(Mesa):
     """Caça-níquel: três rolos que correm e param um de cada vez, com alavanca."""
 
     PASTA_CRUPIE = "gamer"
+    FALAS = {
+        "espera": ("Bora girar, calouro?", "A máquina tá quente hoje.", "Três iguais e você sai rico."),
+        "torcida": ("Vai, vai, vai!", "Segura esse rolo..."),
+        "riso": ("GG. A casa agradece.", "Quase! Tenta de novo."),
+        "choro": ("Isso foi hack!", "Nerfa esse aluno!"),
+    }
     TITULO = "SALGADINHO"
     ICONES = {
         "Pequi": "icones/pequi.png",
@@ -207,6 +218,12 @@ class MesaDoDado(Mesa):
     """O d20 que quica, gira e cai mostrando o número."""
 
     PASTA_CRUPIE = "mestre_de_rpg"
+    FALAS = {
+        "espera": ("Role o dado, aventureiro.", "Acima ou abaixo? Escolha."),
+        "torcida": ("O destino decide...", "Que os dados falem."),
+        "riso": ("O Mestre sempre vence.", "Falhou no teste de sorte."),
+        "choro": ("Um acerto desses?!", "Meus dados me traíram!"),
+    }
     RAIO = 44
 
     def rotulo_da_escolha(self, escolha):
@@ -262,21 +279,36 @@ class MesaDoDado(Mesa):
 
 
 class MesaDaRoleta(Mesa):
-    """Roda do cardápio: gira rápido, vai perdendo força e para com o prato no ponteiro."""
+    """Roda do RU: o aluno pede um prato (as casas dele acendem) e a roda para com um prato no ponteiro."""
 
     PASTA_CRUPIE = "monitor"
+    FALAS = {
+        "espera": ("Qual vai ser o prato de hoje?", "Peça um prato e gire a roda."),
+        "torcida": ("Tomara que não seja o seu...", "Olha a roda, olha a roda..."),
+        "riso": ("Hoje não tem. Volte amanhã.", "Acabou o seu prato!"),
+        "choro": ("Saiu justo o seu?!", "A tia vai me matar!"),
+    }
     TITULO = "BANDEJÃO"
     RAIO = 73
-    CORES = {"Strogonoff": P.OURO2, "Bife": P.VERM2, "Frango": (214, 110, 40), "Salada": (50, 140, 76)}
-    SEM_PREMIO = ((44, 50, 96), (30, 34, 70))
+    CORES = {"Arroz": (226, 218, 190), "Frango": (224, 128, 44), "Bife": (150, 54, 44), "Strogonoff": (236, 190, 60)}
+    TEXTO = {"Arroz": (70, 60, 50), "Frango": P.BRANCO, "Bife": P.BRANCO, "Strogonoff": (90, 50, 10)}
+
+    def rotulo_da_escolha(self, escolha):
+        paga = f"{self.jogo.PAGAMENTO[escolha]:g}".replace(".", ",")
+        return f"{escolha} {paga}x"
+
+    def cor_da_escolha(self, escolha):
+        return self.CORES[escolha]
+
+    def casa_sorteada(self, cena):
+        return int(cena.resultado.simbolos[1])
 
     def rotacao(self, cena):
-        """Ângulo (radianos) da roda. No fim, o meio do setor sorteado fica embaixo do ponteiro (em cima)."""
-        setores = self.jogo.SETORES
+        """Ângulo (radianos) da roda. No fim, o meio da casa sorteada fica embaixo do ponteiro (em cima)."""
         if cena.resultado is None:
             return cena.tempo * 0.35
-        fatia = 2 * math.pi / len(setores)
-        alvo = -math.pi / 2 - (setores.index(cena.resultado.simbolos[0]) + 0.5) * fatia
+        fatia = 2 * math.pi / len(self.jogo.SETORES)
+        alvo = -math.pi / 2 - (self.casa_sorteada(cena) + 0.5) * fatia
         if cena.fracao_do_giro is None:
             return alvo
         return alvo - 7 * 2 * math.pi * (1 - ease_out(cena.fracao_do_giro))
@@ -291,28 +323,29 @@ class MesaDaRoleta(Mesa):
         setores = self.jogo.SETORES
         fatia = 2 * math.pi / len(setores)
         rot = self.rotacao(cena)
-        sorteado = cena.resultado.simbolos[0] if self.parado_com_resultado(cena) else None
+        pedido = cena.escolha
+        sorteada = self.casa_sorteada(cena) if self.parado_com_resultado(cena) else None
         for i, nome in enumerate(setores):
             a0 = rot + i * fatia
-            cor = self.CORES.get(nome, self.SEM_PREMIO[i % 2])
-            if nome == sorteado and int(cena.tempo * 6) % 2 == 0:
-                cor = clarear(cor, 70)
-            pontos = [(cx, cy)] + [(cx + r * math.cos(a0 + fatia * k / 6), cy + r * math.sin(a0 + fatia * k / 6))
-                                   for k in range(7)]
+            cor = self.CORES[nome]
+            if nome != pedido:                                   # só as casas do prato pedido ficam acesas
+                cor = escurecer_cor(cor, 34)
+            if i == sorteada and int(cena.tempo * 6) % 2 == 0:
+                cor = clarear(self.CORES[nome], 50)
+            pontos = [(cx, cy)] + [(cx + r * math.cos(a0 + fatia * k / 5), cy + r * math.sin(a0 + fatia * k / 5))
+                                   for k in range(6)]
             pygame.draw.polygon(ui, cor, pontos)
             pygame.draw.line(ui, P.ESC, (cx, cy), pontos[1])
+            if nome == pedido:                                   # aro dourado nas casas que pagam
+                pygame.draw.lines(ui, P.BRANCO if int(cena.tempo * 3) % 2 else P.VERDE, False, pontos[1:], 3)
         for i, nome in enumerate(setores):                      # nomes ao longo do raio
             meio = rot + (i + 0.5) * fatia
-            img = fonte(11, True).render(nome, False, P.BRANCO if nome in self.CORES else P.CINZA)
+            img = fonte(11, nome != pedido).render(nome, False, self.TEXTO[nome])
             graus = -math.degrees(meio)
             if math.cos(meio) < 0:
                 graus += 180
             img = pygame.transform.rotate(img, graus)
-            ui.blit(img, img.get_rect(center=(cx + r * 0.55 * math.cos(meio), cy + r * 0.55 * math.sin(meio))))
-        for k in range(16):                                      # lâmpadas do aro
-            a = k * math.pi / 8
-            acesa = (k + int(cena.tempo * (12 if cena.fracao_do_giro is not None else 2))) % 2 == 0
-            pygame.draw.circle(ui, P.BRANCO if acesa else P.OURO, (cx + (r + 3) * math.cos(a), cy + (r + 3) * math.sin(a)), 1)
+            ui.blit(img, img.get_rect(center=(cx + r * 0.58 * math.cos(meio), cy + r * 0.58 * math.sin(meio))))
         pygame.draw.circle(ui, P.ESC, (cx, cy), 6)
         pygame.draw.circle(ui, P.OURO, (cx, cy), 4)
         pygame.draw.circle(ui, P.OURO2, (cx, cy), 2)
@@ -321,6 +354,13 @@ class MesaDaRoleta(Mesa):
         ponta = (cx + bate, cy - r + 5)
         pygame.draw.polygon(ui, P.ESC, [(cx - 8, cy - r - 7), (cx + 8, cy - r - 7), (ponta[0], ponta[1] + 2)])
         pygame.draw.polygon(ui, P.VERM, [(cx - 6, cy - r - 6), (cx + 6, cy - r - 6), ponta])
+        # plaquinha do pedido, ao lado da roda
+        placa = pygame.Rect(cx + r + 14, cy - 22, 104, 44)
+        moldura(ui, placa, fundo=P.NAVY, borda=P.OURO2, raio=4, brilho=False)
+        texto(ui, "SEU PEDIDO", (placa.centerx, placa.y + 5), P.CINZA, 11, contorno=None, ancora="midtop", media=True)
+        pygame.draw.rect(ui, P.ESC, (placa.x + 8, placa.y + 23, 12, 12))
+        pygame.draw.rect(ui, self.CORES[pedido], (placa.x + 9, placa.y + 24, 10, 10))
+        texto(ui, pedido.upper(), (placa.x + 25, placa.y + 23), P.OURO, 11, contorno=None)
 
     def origem_do_premio(self):
         return self.CENTRO

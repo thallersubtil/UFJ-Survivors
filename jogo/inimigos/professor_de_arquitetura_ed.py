@@ -13,6 +13,7 @@ from jogo.inimigos.materias.estrutura_de_dados import EstruturaDeDadosEmC
 class ProfessorDeArquiteturaEED(ChefePossuido):
     NOME = "Professor de Arquitetura e ED"
     NOME_PROFESSOR = "o Professor"
+    NOME_PROPRIO = "Bruno"
     PASTA_SPRITE = "professor_computacao"
     ILUSTRACAO = "chefes/arquitetura_ed.png"
     COR_DA_APRESENTACAO = (70, 220, 150)

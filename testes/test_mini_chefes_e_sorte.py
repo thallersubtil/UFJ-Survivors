@@ -80,12 +80,12 @@ def test_chances_do_bau_crescem_com_a_sorte(jogo_limpo):
 
 
 def test_raridade_define_itens_e_moedas(jogo_limpo):
-    assert (COMUM.itens, EPICO.itens, LENDARIO.itens) == (1, 3, 5)
+    assert (COMUM.itens, EPICO.itens, LENDARIO.itens) == (1, 2, 3)
     assert COMUM.moedas[1] < EPICO.moedas[0] and EPICO.moedas[1] < LENDARIO.moedas[0]
     jogo = jogo_limpo()
     tesouro = Tesouro(LENDARIO, 200)
     premios = tesouro.abrir(jogo)
-    assert len(premios) == 5 and jogo.placar.moedas == tesouro.moedas_ganhas >= 200
+    assert len(premios) == 3 and jogo.placar.moedas == tesouro.moedas_ganhas >= 200
     assert "bau_lendario" in jogo.marcos
 
 
@@ -100,15 +100,65 @@ def test_moedas_do_bau_podem_critar(jogo_limpo):
 
 
 # ---------------------------------------------------------------- mini-chefes
-def test_todas_as_provas_tem_invocacoes_validas():
-    usados = set()
-    for prova in PROVAS:
-        assert prova.INVOCACOES
-        for tempo, nome in prova.INVOCACOES:
-            assert 0 < tempo < prova.DURACAO and nome in MINI_CHEFES
-            assert issubclass(FabricaDeInimigos.classe(nome), MiniChefe)
-            usados.add(nome)
-    assert usados == set(MINI_CHEFES)                 # todo mini-chefe aparece em alguma prova
+def test_todos_os_mini_chefes_ficam_disponiveis_desde_o_inicio():
+    jogo = Jogo(Programador, semente=1)
+    jogo.jogador.imortal = True
+    assert jogo.marcadores() == []
+    while jogo.placar.tempo < ProvaDeCalculo.ABERTURA_DAS_INVOCACOES + 0.2:
+        jogo.atualizar(1 / 30)
+    circulos = jogo.grupos["invocacao"]
+    assert sorted(c.nome_do_inimigo for c in circulos) == sorted(MINI_CHEFES)
+    assert len(jogo.marcadores()) == len(MINI_CHEFES) - 1          # o culto secreto não aparece no mapa
+    for prova in PROVAS:                                           # a prova seguinte não espalha tudo de novo
+        prova().abrir_invocacoes(jogo)
+    jogo._incorporar_novas()
+    assert len(jogo.grupos["invocacao"]) == len(MINI_CHEFES)
+
+
+def test_mini_chefe_fica_mais_forte_com_o_tempo_de_partida(jogo_limpo):
+    def invocado_aos(segundos):
+        jogo = jogo_limpo()
+        jogo.jogador.imortal = True
+        jogo.placar.tempo = segundos
+        local = LocalDeInvocacao(jogo.jogador.posicao, "vigilante")
+        jogo.adicionar(local)
+        jogo._incorporar_novas()
+        return local.invocar(jogo)
+
+    cedo, tarde = invocado_aos(0), invocado_aos(Jogo.TEMPO_DO_MINI_CHEFE * 3)
+    assert cedo.vida_maxima == cedo.VIDA and tarde.vida_maxima == pytest.approx(cedo.VIDA * 4)
+    assert tarde.fator_de_dano > cedo.fator_de_dano == 1
+
+
+def test_mini_chefe_invocado_entra_pela_borda_da_tela(jogo_limpo):
+    jogo = jogo_limpo()
+    jogo.jogador.imortal = True
+    local = LocalDeInvocacao(jogo.jogador.posicao, "reitor")
+    jogo.adicionar(local)
+    jogo._incorporar_novas()
+    jogo.camera.seguir(jogo.jogador.posicao)
+    chefe = local.invocar(jogo)
+    assert not jogo.camera.retangulo.collidepoint(chefe.posicao)             # nasce fora da tela...
+    assert chefe.posicao.distance_to(jogo.jogador.posicao) > 500
+    assert chefe.posto == local.posicao                                      # ...mas guarda o lugar do círculo
+    for _ in range(150):
+        jogo.atualizar(1 / 30)
+    assert jogo.camera.retangulo.collidepoint(chefe.posicao)                 # e vem andando até o aluno
+
+
+def test_chefes_e_mini_chefes_nao_sao_puxados_nem_atrasados(jogo_limpo):
+    jogo = jogo_limpo()
+    for nome in ("vigilante", "chefe_calculo"):
+        forte = FabricaDeInimigos.criar(nome, (2000, 2000))
+        antes = pygame.Vector2(forte.posicao)
+        forte.puxar((50, 0))
+        forte.atrasar(3)
+        forte.empurrar((1, 0), 900)
+        assert forte.posicao == antes and forte.lento == 0 and forte.empurrao.length() == 0
+    bug = FabricaDeInimigos.criar("bug", (2000, 2000))
+    bug.puxar((50, 0))
+    bug.atrasar(3)
+    assert bug.posicao == (2050, 2000) and bug.lento == 3
 
 
 @pytest.mark.parametrize("nome", MINI_CHEFES)
@@ -144,19 +194,15 @@ def test_centro_de_aulas_secreto_51_existe_no_mapa():
     assert FabricaDeInimigos.classe("et_de_varginha").LOCAL == secreto.nome
 
 
-def test_circulo_aparece_perto_do_predio_na_hora_marcada():
-    jogo = Jogo(Programador, fase=ProvaDeCalculo(), semente=1)
-    jogo.jogador.imortal = True
-    tempo, nome = next(i for i in ProvaDeCalculo.INVOCACOES if i[1] == "tia_da_cantina")
-    assert jogo.marcadores() == []
-    jogo.fase.adiantar_para(tempo - 0.01)
-    jogo.atualizar(0.05)
-    (local,) = jogo.marcadores()
-    assert isinstance(local, LocalDeInvocacao) and not local.invocado and local.NOME == "Tia da Cantina"
+def test_circulo_fica_perto_do_predio_do_mini_chefe(jogo_limpo):
+    jogo = jogo_limpo()
+    local = jogo.fase.abrir_invocacao(jogo, "tia_da_cantina")
+    jogo._incorporar_novas()
+    assert jogo.marcadores() == [local] and not local.invocado and local.NOME == "Tia da Cantina"
     esperado = jogo.mapa.local_de("RU")
     if esperado is not None:
         assert local.posicao.distance_to(esperado) < 1 and not jogo.mapa.bloqueado(local.posicao, 60)
-    assert jogo.fase.abrir_invocacao(jogo, nome) is None          # não repete enquanto o primeiro existe
+    assert jogo.fase.abrir_invocacao(jogo, "tia_da_cantina") is None      # não repete enquanto o primeiro existe
 
 
 def test_culto_secreto_so_entra_no_mapa_quando_o_aluno_chega_perto(jogo_limpo):

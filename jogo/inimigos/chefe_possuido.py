@@ -21,7 +21,9 @@ class ChefePossuido(Chefe, ABC):
     PACIENCIA = 70                         # segundos de luta (por matéria) antes de o chefe apertar o passo
     PRESSA_MAXIMA = 2.5                    # teto: no máximo 2,5 vezes mais rápido e mais forte
     GANHO_DE_PRESSA = 0.10                 # +10% de velocidade e de dano de contato a cada 10 s depois disso
-    ARTIGO = "Um"                          # "Um Professor ... selvagem apareceu!"
+    ARTIGO = "Um"                          # "Um Professor ... selvagem apareceu!" (para quem não tem nome)
+    ARTIGO_DEFINIDO = "O"
+    NOME_PROPRIO = ""                      # com nome, a apresentação vira "O Professor de Cálculo Flávio apareceu!"
     ILUSTRACAO = "chefes/calculo.png"      # arte da apresentação (jogo/cenas/chefe.py)
     COR_DA_APRESENTACAO = (236, 72, 110)
     IMAGEM = "sprites/professor.png"

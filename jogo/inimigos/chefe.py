@@ -8,6 +8,7 @@ from jogo.inimigos.inimigo import Inimigo
 
 
 class Chefe(Inimigo, ABC):
+    TENACIDADE = 1.0             # nada puxa, atrasa ou prende um chefe no meio do ataque
     CHANCE_CAFE = 0.0
     CHANCE_POCAO = 0.0
     INTERVALO_ATAQUE = 2.6
@@ -68,7 +69,7 @@ class Chefe(Inimigo, ABC):
         """Professor não cai em trote."""
 
     def empurrar(self, direcao, forca=180):
-        super().empurrar(direcao, forca * 0.1)
+        """Chefe não é empurrado: um golpe não tira ele do ataque que está fazendo."""
 
     def desenhar_corpo(self, tela, camera):
         if self.acao_atual is not None:

@@ -12,6 +12,9 @@ class JogoFalso:
         self.entrada = SimpleNamespace(direcao=pygame.Vector2(direcao), mira=None)
         self.arena = pygame.Rect(0, 0, 3200, 1800)
 
+    def passo_do_chao(self, posicao):
+        return 1.0
+
     def resolver_obstaculos(self, posicao, raio):
         return posicao
 

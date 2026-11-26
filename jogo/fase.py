@@ -168,7 +168,7 @@ class Fase(ABC):
 
     DISTANCIA_SEM_PREDIO = 900     # mapa sem o prédio do mini-chefe: o círculo fica a esta distância do início
 
-    def abrir_invocacao(self, jogo, nome):
+    def abrir_invocacao(self, jogo, nome, anunciar=True):
         """Põe no mapa o círculo de invocação de um mini-chefe opcional (se ele já não estiver por lá)."""
         from jogo.invocacao import LocalDeInvocacao
         classe = FabricaDeInimigos.classe(nome)
@@ -185,9 +185,22 @@ class Fase(ABC):
             posicao = jogo.mapa.empurrar(posicao, 100)
         local = LocalDeInvocacao(posicao, nome)
         jogo.adicionar(local)
-        if not classe.SECRETO:
+        if anunciar and not classe.SECRETO:
             jogo.anunciar(f"{classe.NOME} apareceu {classe.ONDE}!  [M] mapa", 4)
         return local
+
+    ABERTURA_DAS_INVOCACOES = 2.0   # segundos de partida até os círculos dos mini-chefes aparecerem
+
+    def abrir_invocacoes(self, jogo):
+        """Espalha pelo campus os círculos de todos os mini-chefes, uma vez só por partida: eles ficam
+        disponíveis desde o começo e quem decide a hora de enfrentar cada um é o aluno."""
+        from jogo.inimigos.mini_chefes import MINI_CHEFES
+        if jogo.invocacoes_abertas:
+            return
+        jogo.invocacoes_abertas = True
+        for nome in MINI_CHEFES:
+            self.abrir_invocacao(jogo, nome, anunciar=False)
+        jogo.anunciar("Os mini-chefes estão pelo campus  [M] mapa", 4)
 
     def chamar_chefe(self, jogo, nome):
         self.chefe_apareceu = True
@@ -210,15 +223,13 @@ class Prova(Fase):
     FORMACOES = ()               # um lacaio por minuto, alternando círculo e parede
     AVISO_DO_CHEFE = 3.0         # segundos de "PERIGO!" na tela antes do chefe chegar
     MINI_CHEFES = ()             # (segundos, nome do lacaio que vira gigante)
-    INVOCACOES = ()              # (segundos, mini-chefe opcional que aparece no mapa para ser invocado)
     GREVE = None                 # segundos em que começa a greve (None: sem greve)
     MONITOR = None               # segundos em que chega o Monitor Possuído (None: não vem)
 
     def criar_eventos(self):
         eventos = [EventoDaFase(tempo, lambda jogo, n=nome: self.chamar_mini_chefe(jogo, n), f"{nome} gigante")
                    for tempo, nome in self.MINI_CHEFES]
-        eventos += [EventoDaFase(tempo, lambda jogo, n=nome: self.abrir_invocacao(jogo, n), f"Invocação: {nome}")
-                    for tempo, nome in self.INVOCACOES]
+        eventos.append(EventoDaFase(self.ABERTURA_DAS_INVOCACOES, self.abrir_invocacoes, "Mini-chefes no mapa"))
         eventos.append(EventoDaFase(self.DURACAO, lambda jogo: self.chamar_chefe(jogo, self.CHEFE), "Chefe"))
         eventos.append(EventoDaFase(self.DURACAO - self.AVISO_DO_CHEFE,
                                     lambda jogo: jogo.avisar_perigo(self.AVISO_DO_CHEFE), "Aviso do chefe"))
@@ -255,7 +266,6 @@ class ProvaDeCalculo(Prova):
     )
     FORMACOES = ("bug", "calculadora", "pi", "calculadora")
     MINI_CHEFES = ((150, "calculadora"),)
-    INVOCACOES = ((5, "grao_mestre_do_culto"), (60, "tia_da_cantina"), (150, "lobo_guara"), (230, "gotica_trevosa"))
     GREVE = 200
 
 
@@ -277,7 +287,6 @@ class ProvaDeArquiteturaEED(Prova):
     )
     FORMACOES = ("mouse", "ponteiro", "pente_ram", "pilha")
     MINI_CHEFES = ((150, "pente_ram"),)
-    INVOCACOES = ((30, "vigilante"), (100, "bibliotecaria"), (170, "agroboy"), (240, "loira_da_odontologia"))
     GREVE = 210
     MONITOR = 100
 
@@ -302,7 +311,6 @@ class ProvaDeTDEPOO(Prova):
     )
     FORMACOES = ("caixinha", "bug", "ponteiro", "caixinha")
     MINI_CHEFES = ((120, "caixinha"), (210, "ponteiro"))
-    INVOCACOES = ((20, "tecnico_do_laboratorio"), (90, "reitor"), (160, "et_de_varginha"))
     GREVE = 165
     MONITOR = 75
 

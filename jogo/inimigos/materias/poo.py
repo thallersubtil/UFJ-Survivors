@@ -1,5 +1,6 @@
 """Programação Orientada a Objetos: a fase final. Herança, polimorfismo, encapsulamento e new."""
 from jogo.inimigos.materias.materia import Materia
+from jogo.projeteis.tematicos import Marca
 
 
 class ProgramacaoOrientadaAObjetos(Materia):
@@ -12,6 +13,8 @@ class ProgramacaoOrientadaAObjetos(Materia):
     DANO_PROJETIL = 14
     VELOCIDADE_PROJETIL = 320
     LACAIOS = ("caixinha", "bug")
+    ARTES = {"new": "new", "self": "self", "{}": "chaves"}
+    ARTE_DA_CHAMADA = "classe"
     DURACAO_ESCUDO = 2.5
 
     def __init__(self):
@@ -35,6 +38,8 @@ class ProgramacaoOrientadaAObjetos(Materia):
     def encapsulamento(self, chefe, jogo):
         """Fica protegido (atributo privado!) e solta um anel de chaves."""
         chefe.proteger(self.DURACAO_ESCUDO)
+        jogo.adicionar(Marca(chefe.posicao - (0, chefe.altura_sprite / 2 + 30), "cadeado", 54,
+                             duracao=self.DURACAO_ESCUDO, crescimento=0.0, dono=chefe))
         self.anel(chefe, jogo, 12, velocidade=240)
         self.gritar(chefe, jogo, "PRIVADO!")
 

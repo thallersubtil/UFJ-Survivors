@@ -57,7 +57,7 @@ def test_roleta_do_bandejao_tem_retorno_abaixo_de_100():
     assert RoletaDoBandejao in JOGOS_DE_APOSTA
     roleta = RoletaDoBandejao()
     rng = random.Random(7)
-    total = sum(roleta.jogar(100, None, rng).premio for _ in range(20000))
+    total = sum(roleta.jogar(100, "Frango", rng).premio for _ in range(20000))
     assert 0.75 < total / (100 * 20000) < 0.98
 
 

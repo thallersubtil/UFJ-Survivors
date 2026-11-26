@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 
 import pygame
 
+from jogo.nucleo.desenho import desenhar_faixa_de_aviso
+
 
 class AcaoDoChefe(ABC):
     """Ação que dura alguns quadros. O chefe chama a ação a cada quadro até ela terminar."""
@@ -54,7 +56,7 @@ class Investida(AcaoDoChefe):
             return
         inicio = camera.para_tela(self.chefe.posicao)
         fim = inicio + self.direcao * self.velocidade * self.duracao
-        pygame.draw.line(tela, (230, 60, 60), inicio, fim, 6)
+        desenhar_faixa_de_aviso(tela, inicio, fim, self.chefe.raio * 1.4, tempo=self.carga)
 
 
 class Rajada(AcaoDoChefe):

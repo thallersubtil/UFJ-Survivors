@@ -8,7 +8,7 @@ import pygame
 
 from jogo.inimigos.fabrica import FabricaDeInimigos
 from jogo.inimigos.inimigo import Inimigo
-from jogo.projeteis.projeteis import ProjetilDaMateria
+from jogo.projeteis.tematicos import ProjetilTematico
 
 
 class LacaioDoCampus(Inimigo):
@@ -153,6 +153,20 @@ class Dente(LacaioDoCampus):
     DANO = 9
 
 
+@FabricaDeInimigos.registrar("loirinha")
+class Loirinha(LacaioEmZiguezague):
+    """A turma da Loira da Odontologia: iguais a ela, em miniatura, e sempre em bando. Vêm desfilando."""
+    NOME = "Loirinha"
+    PASTA_SPRITE = "loirinha"
+    ALTURA = 56
+    RAIO = 14
+    VIDA = 10
+    VELOCIDADE = 165
+    DANO = 5
+    AMPLITUDE = 60
+    FREQUENCIA = 4.0
+
+
 @FabricaDeInimigos.registrar("cultista")
 class Cultista(LacaioDoCampus):
     """Roda em volta do aluno, fechando o círculo aos poucos."""
@@ -199,7 +213,8 @@ class MiniOvni(LacaioDoCampus):
         self._espera -= dt
         if self._espera <= 0 and distancia > 0:
             self._espera = self.INTERVALO
-            jogo.adicionar(ProjetilDaMateria(self.posicao, falta / distancia * 250, self.DANO, "*", self.COR, raio=9))
+            jogo.adicionar(ProjetilTematico(self.posicao, falta / distancia * 250, self.DANO, "*", self.COR, raio=9,
+                                            arte="laser"))
 
     def balanco(self):
         return 10 + 4 * math.sin(self.tempo * 5)

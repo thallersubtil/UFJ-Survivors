@@ -242,7 +242,7 @@ def test_cada_jogo_tem_mesa_e_jogo_novo_cai_na_generica(tmp_path):
 
 def test_cassino_desenha_ganho_e_perda_em_todos_os_jogos(tmp_path):
     for indice, valores in ((0, ("67", "67", "67")), (0, ("Pequi", "Café", "67")), (1, (20,)), (1, (1,)),
-                            (2, ("Strogonoff",)), (2, ("Fila",))):
+                            (2, (0,)), (2, (6,))):
         app, cena = cena_com(tmp_path, 300, *valores)
         cena._selecionar_jogo(indice)
         app.passo(1 / 60, [tecla(CenaCassino.TECLA_ALL_IN), tecla(pygame.K_RETURN)])
@@ -296,3 +296,60 @@ def test_loja_vende_os_segredos_do_cassino(tmp_path):
     assert loja.linhas()[loja.indice].preco is None              # não dá para comprar duas vezes
     for _ in range(30):
         app.passo(1 / 60, [])
+
+
+# ---------------------------------------------------------------- roleta do bandejão e crupiês
+
+from jogo.cenas.cassino_crupie import Crupie  # noqa: E402
+from jogo.loja.cassino import RoletaDoBandejao  # noqa: E402
+
+
+def test_roleta_paga_o_prato_pedido_e_o_raro_paga_mais():
+    roleta = RoletaDoBandejao()
+    assert roleta.SETORES[6] == "Strogonoff" and roleta.SETORES.count("Strogonoff") == 1
+    assert roleta.jogar(10, "Strogonoff", RngFixo(6)).premio == 110
+    assert roleta.jogar(10, "Arroz", RngFixo(6)).premio == 0             # saiu strogonoff, pediu arroz
+    assert roleta.jogar(10, "Arroz", RngFixo(0)).premio == 22
+    chances = {escolha: roleta.tabela(escolha)[0] for escolha in roleta.ESCOLHAS}
+    assert chances["Arroz"].chance == pytest.approx(5 / 12) and chances["Strogonoff"].chance == pytest.approx(1 / 12)
+    assert chances["Strogonoff"].multiplicador > chances["Bife"].multiplicador > chances["Arroz"].multiplicador
+    with pytest.raises(ValueError):
+        roleta.jogar(10, None, RngFixo(0))                               # sem pedido não gira
+
+
+def test_roleta_na_tela_escolhe_o_prato_por_tecla_e_por_clique(tmp_path):
+    app, cena = cena_com(tmp_path, 100, 3)                               # a casa 3 é de bife
+    cena._selecionar_jogo(2)
+    assert cena.escolha == "Arroz"
+    app.passo(1 / 60, [tecla(pygame.K_s)])
+    assert cena.escolha == "Frango"
+    app.passo(1 / 60, [clique(cena.caixa_do_palpite(2))])
+    assert cena.escolha == "Bife"
+    app.passo(1 / 60, [tecla(pygame.K_RETURN)])
+    assert cena.resultado.premio == 55 and app.progresso.moedas == 145
+
+
+def test_crupie_muda_de_expressao_conforme_o_jogo(tmp_path):
+    app, cena = cena_com(tmp_path, 100, "Pequi", "Café", "67", "67", "67", "67")
+    assert cena.crupie.expressao == "espera" and cena.crupie.fala
+    app.passo(1 / 60, [tecla(pygame.K_RETURN)])
+    assert cena.crupie.expressao == "torcida"
+    for _ in range(110):
+        app.passo(1 / 60, [])
+    assert cena.crupie.expressao == "riso"                               # o aluno perdeu: a casa ri
+    for _ in range(int(Crupie.DURACAO_DA_REACAO * 60) + 10):
+        app.passo(1 / 60, [])
+    assert cena.crupie.expressao == "espera"
+    app.passo(1 / 60, [tecla(pygame.K_RETURN)])
+    for _ in range(110):
+        app.passo(1 / 60, [])
+    assert cena.crupie.expressao == "choro"                              # jackpot: a casa chora
+
+
+def test_cada_mesa_tem_crupie_com_as_quatro_expressoes(tmp_path):
+    app, cena = cena_com(tmp_path, 0)
+    for crupie in cena.crupies:
+        assert crupie.tem_arte
+        for expressao in Crupie.EXPRESSOES:
+            assert crupie.imagem(expressao).get_height() == Crupie.ALTURA
+            assert crupie.falas[expressao]

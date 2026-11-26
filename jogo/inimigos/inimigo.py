@@ -39,6 +39,8 @@ class Inimigo(SerVivo, ABC):
     TETO_VELOCIDADE = 1.6     # nunca mais que 60% acima da velocidade base
     GANHO_DANO = 0.12         # por ponto de dificuldade: no fim do semestre o encostão dói ~50% a mais
 
+    TENACIDADE = 0.0          # 0 a 1: quanto resiste a puxão, lentidão e empurrão (chefes e mini-chefes: 1)
+
     ESCALA_GIGANTE = 3
     VIDA_GIGANTE = 30
     PONTOS_GIGANTE = 20
@@ -168,8 +170,12 @@ class Inimigo(SerVivo, ABC):
         self.assustado = max(self.assustado, duracao)
 
     def atrasar(self, duracao):
-        """Quadro Branco: por um tempo, anda mais devagar."""
-        self.lento = max(self.lento, duracao)
+        """Quadro Branco: por um tempo, anda mais devagar (quem tem tenacidade total nem sente)."""
+        self.lento = max(self.lento, duracao * (1 - self.TENACIDADE))
+
+    def puxar(self, deslocamento):
+        """Arrasta o inimigo (redemoinho da Aula Magna). A tenacidade desconta: chefe não sai do lugar."""
+        self.posicao += pygame.Vector2(deslocamento) * (1 - self.TENACIDADE)
 
     def _fugir(self, dt, jogo):
         longe = self.posicao + (self.posicao - jogo.jogador.posicao)

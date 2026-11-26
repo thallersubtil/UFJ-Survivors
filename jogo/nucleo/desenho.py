@@ -1,4 +1,6 @@
 """Funções de desenho de sprites com animação simples feita por código."""
+import math
+
 import pygame
 
 from jogo.nucleo.recursos import Recursos
@@ -47,3 +49,33 @@ def desenhar_sprite(tela, camera, imagem, posicao, *, espelhar=False, piscar=Fal
         img = img.copy()
         img.set_alpha(alfa)
     tela.blit(img, retangulo)
+
+
+def desenhar_faixa_de_aviso(tela, inicio, fim, largura, cor=(235, 60, 60), tempo=0.0):
+    """Faixa translúcida no chão, com setas correndo, que mostra por onde um golpe em linha reta vai passar."""
+    inicio, fim = pygame.Vector2(inicio), pygame.Vector2(fim)
+    rumo = fim - inicio
+    comprimento = rumo.length()
+    if comprimento < 1:
+        return
+    rumo /= comprimento
+    lado = pygame.Vector2(-rumo.y, rumo.x) * (largura / 2)
+    caixa = pygame.Rect(min(inicio.x, fim.x) - largura, min(inicio.y, fim.y) - largura,
+                        abs(fim.x - inicio.x) + largura * 2, abs(fim.y - inicio.y) + largura * 2).clip(tela.get_rect())
+    if caixa.width <= 0 or caixa.height <= 0:
+        return
+    origem = pygame.Vector2(caixa.topleft)
+    faixa = pygame.Surface(caixa.size, pygame.SRCALPHA)
+    cantos = [inicio + lado - origem, fim + lado - origem, fim - lado - origem, inicio - lado - origem]
+    pulso = 0.5 + 0.5 * math.sin(tempo * 14)
+    pygame.draw.polygon(faixa, (*cor, round(45 + 40 * pulso)), cantos)
+    pygame.draw.line(faixa, (*cor, 220), cantos[0], cantos[1], 3)
+    pygame.draw.line(faixa, (*cor, 220), cantos[3], cantos[2], 3)
+    passo = max(40.0, largura * 1.6)
+    avanco = (tempo * 260) % passo
+    for i in range(int(comprimento // passo) + 1):          # setas apontando para onde o golpe vai
+        ponta = inicio + rumo * min(comprimento, i * passo + avanco + largura * 0.35) - origem
+        asa = rumo * (largura * 0.35)
+        pygame.draw.lines(faixa, (255, 240, 200, 190), False,
+                          [ponta - asa + lado * 0.7, ponta, ponta - asa - lado * 0.7], max(3, round(largura / 8)))
+    tela.blit(faixa, caixa.topleft)

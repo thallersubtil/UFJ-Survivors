@@ -60,7 +60,7 @@ py -3.12 -m venv .venv
 
 - **Greve:** uma vez por prova (3:20 na 1ª, 3:30 na 2ª, 2:45 na 3ª), por 30 s não chega ninguém novo, os inimigos em campo se assustam e chovem notas em volta do aluno.
 - **Monitor Possuído:** mini-chefe da 2ª e da 3ª prova. Persegue o aluno e arremessa listas de exercícios (três de cada vez); ao morrer solta baú e moedas. Usa a arte do aluno tingida de roxo até ter arte própria.
-- **Mini-chefes do mapa (opcionais):** em horas marcadas de cada prova aparece um círculo de invocação no campus, com o rosto do mini-chefe em cima. Ficar dentro do círculo por 2,5 s invoca (sair esvazia), a partida para e ele é apresentado com ilustração própria, como os chefes. Cada um guarda o seu lugar (segue o aluno só até certa distância e se recupera se ele fugir), traz os próprios lacaios, é forte para quem não tem melhorias e deixa um **baú garantido** e moedas. O tom é de piada interna:
+- **Mini-chefes do mapa (opcionais):** desde o começo da partida há um círculo de invocação de cada um pelo campus, com o rosto do mini-chefe em cima. Ficar dentro do círculo por 2,5 s invoca (sair esvazia): a partida para, ele é apresentado com ilustração própria, como os chefes, e entra andando pela borda da tela. Quanto mais tarde na partida, mais forte ele vem (a vida base de novo a cada 3 minutos). Chefes e mini-chefes não são puxados, atrasados nem empurrados. Cada um guarda o seu lugar (segue o aluno só até certa distância e se recupera se ele fugir), traz os próprios lacaios, é forte para quem não tem melhorias e deixa um **baú garantido** e moedas. O tom é de piada interna:
 
   | Mini-chefe | Onde | Como ataca | Lacaios |
   |---|---|---|---|
@@ -77,7 +77,8 @@ py -3.12 -m venv .venv
   | ET de Varginha | Centro de Aulas Secreto 51 | feixes de abdução no chão | gatos alienígenas e mini OVNIs |
 
   O Centro de Aulas Secreto 51 é um prédio inventado, num descampado a nordeste (`ferramentas/acrescentar_predio_secreto.py`). O culto não é anunciado e só entra no mapa quando o aluno passa perto. A tecla **M** abre o mini-mapa do campus com o aluno e o rosto de cada mini-chefe no lugar dele; clicar num rosto marca o mini-chefe, e só os marcados ganham seta na borda da tela.
-- **Baús:** comum (1 prêmio e poucas moedas), épico (3 prêmios, 12% de chance) e lendário (5 prêmios e muitas moedas, 2%), cada um com abertura própria. As moedas do baú têm 15% de chance de crítico (3x).
+- **Biomas do mapa:** gramado, mata, lavoura, terra batida e o descampado do Centro de Aulas Secreto 51 têm cada um a própria decoração de chão (`MapaUFJ.BIOMAS`). A lavoura fica em talhões retangulares em três áreas agrícolas (`MapaUFJ.LAVOURAS`), plantados com soja, milho e trigo em fileiras de pés em pé (o aluno passa por trás e pela frente), com corredores de terra, espantalhos e fardos, e sem árvores. As árvores ficam só nas manchas de verde-escuro, longe de ruas e calçadas; postes e bancos, à beira das ruas; e há faixa de pedestre onde um caminho cruza a rua. Andar na plantação e no mato fechado é mais lento (milho 60%, trigo 72%, soja 80%, mata 88% da velocidade); o rolamento não é afetado.
+- **Baús:** comum (1 prêmio e poucas moedas), épico (2 prêmios, 12% de chance) e lendário (3 prêmios e muitas moedas, 2%), cada um com abertura própria. As moedas do baú têm 15% de chance de crítico (3x).
 - **Sorte:** atributo do aluno que multiplica tudo que depende de chance: crítico, desvio, moeda ao matar, Carona Solidária, raridade do baú e crítico das moedas. Vem da Moeda da Sorte (item, +15% por nível), da Sorte de Calouro (loja, +5% por nível); o Jogo de Cintura (item) dá a chance de desviar de golpes.
 
 ## Centro Acadêmico
@@ -87,7 +88,7 @@ No menu principal. As moedas pegas nas provas (mais um bônus por prova aprovada
 
 **Lanches da Cantina** (aba LANCHES da loja): um por vez, valem só para a próxima partida (fora do treino): Pão de Queijo (+20 de vida máxima), Coxinha (+15% de experiência), Café Coado (armas 10% mais rápidas), Açaí (+10% de velocidade), Pastel de Feira (+10% de dano).
 
-**Cassino:** além da Máquina de Salgadinho e do Dado do Mestre, a **Roleta do Bandejão** (strogonoff 3x, bife 2x, frango 1,5x, salada 0,5x; o resto não paga).
+**Cassino:** além da Máquina de Salgadinho e do Dado do Mestre, a **Roleta do Bandejão** (o aluno pede um prato e ganha se a roda parar nele: arroz 2,2x, frango 2,8x, bife 5,5x, strogonoff 11x).
 
 **Conquistas** (botão CONQUISTAS): 10 metas que pagam moedas uma vez só, conferidas no fim de cada partida: passar em Cálculo, semestre aprovado, combo 67, mil eliminações, nível 40, fazer uma colab, ser pego colando, chegar ao fim de uma greve, afiar a mesma arma 3 vezes e jogar com todas as classes.
 ## Classes
