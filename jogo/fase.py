@@ -166,6 +166,29 @@ class Fase(ABC):
         jogo.adicionar(gigante)
         jogo.anunciar(f"Mini-chefe: {gigante.NOME} Gigante!", 3)
 
+    DISTANCIA_SEM_PREDIO = 900     # mapa sem o prédio do mini-chefe: o círculo fica a esta distância do início
+
+    def abrir_invocacao(self, jogo, nome):
+        """Põe no mapa o círculo de invocação de um mini-chefe opcional (se ele já não estiver por lá)."""
+        from jogo.invocacao import LocalDeInvocacao
+        classe = FabricaDeInimigos.classe(nome)
+        if any(m.NOME == classe.NOME for m in jogo.marcadores()):
+            return None
+        posicao = jogo.mapa.local_de(classe.LOCAL) if classe.LOCAL else None
+        if posicao is None and classe.PONTO is not None and jogo.arena.collidepoint(classe.PONTO):
+            posicao = jogo.mapa.empurrar(classe.PONTO, 100)
+        if posicao is None:
+            rumo = pygame.Vector2(self.DISTANCIA_SEM_PREDIO, 0).rotate(jogo.rng.uniform(0, 360))
+            posicao = jogo.mapa.inicio + rumo
+            posicao.x = max(jogo.arena.left + 120, min(posicao.x, jogo.arena.right - 120))
+            posicao.y = max(jogo.arena.top + 120, min(posicao.y, jogo.arena.bottom - 120))
+            posicao = jogo.mapa.empurrar(posicao, 100)
+        local = LocalDeInvocacao(posicao, nome)
+        jogo.adicionar(local)
+        if not classe.SECRETO:
+            jogo.anunciar(f"{classe.NOME} apareceu {classe.ONDE}!  [M] mapa", 4)
+        return local
+
     def chamar_chefe(self, jogo, nome):
         self.chefe_apareceu = True
         jogo.iniciar_chefe(FabricaDeInimigos.criar(nome, self.posicao_de_nascimento(jogo)))
@@ -187,12 +210,15 @@ class Prova(Fase):
     FORMACOES = ()               # um lacaio por minuto, alternando círculo e parede
     AVISO_DO_CHEFE = 3.0         # segundos de "PERIGO!" na tela antes do chefe chegar
     MINI_CHEFES = ()             # (segundos, nome do lacaio que vira gigante)
+    INVOCACOES = ()              # (segundos, mini-chefe opcional que aparece no mapa para ser invocado)
     GREVE = None                 # segundos em que começa a greve (None: sem greve)
     MONITOR = None               # segundos em que chega o Monitor Possuído (None: não vem)
 
     def criar_eventos(self):
         eventos = [EventoDaFase(tempo, lambda jogo, n=nome: self.chamar_mini_chefe(jogo, n), f"{nome} gigante")
                    for tempo, nome in self.MINI_CHEFES]
+        eventos += [EventoDaFase(tempo, lambda jogo, n=nome: self.abrir_invocacao(jogo, n), f"Invocação: {nome}")
+                    for tempo, nome in self.INVOCACOES]
         eventos.append(EventoDaFase(self.DURACAO, lambda jogo: self.chamar_chefe(jogo, self.CHEFE), "Chefe"))
         eventos.append(EventoDaFase(self.DURACAO - self.AVISO_DO_CHEFE,
                                     lambda jogo: jogo.avisar_perigo(self.AVISO_DO_CHEFE), "Aviso do chefe"))
@@ -218,7 +244,7 @@ class ProvaDeCalculo(Prova):
     MATERIA = "Cálculo I"
     CHEFE = "chefe_calculo"
     ROTULO = "Cálculo I"
-    NIVEL_TREINO = 13
+    NIVEL_TREINO = 7
     INICIO_DIFICULDADE = 0
     APRESENTACOES = (          # (segundos, inimigo, peso no sorteio): os da matéria aparecem mais
         (0, "bug", 2.0),
@@ -229,6 +255,7 @@ class ProvaDeCalculo(Prova):
     )
     FORMACOES = ("bug", "calculadora", "pi", "calculadora")
     MINI_CHEFES = ((150, "calculadora"),)
+    INVOCACOES = ((5, "grao_mestre_do_culto"), (60, "tia_da_cantina"), (150, "lobo_guara"), (230, "gotica_trevosa"))
     GREVE = 200
 
 
@@ -237,7 +264,7 @@ class ProvaDeArquiteturaEED(Prova):
     MATERIA = "Arquitetura de Computadores e Estrutura de Dados em C"
     CHEFE = "chefe_arquitetura_ed"
     ROTULO = "Arquitetura -> Estrutura de Dados em C"
-    NIVEL_TREINO = 34
+    NIVEL_TREINO = 11
     INICIO_DIFICULDADE = 240
     MULT_MOEDAS = 1.2
     APRESENTACOES = (
@@ -250,6 +277,7 @@ class ProvaDeArquiteturaEED(Prova):
     )
     FORMACOES = ("mouse", "ponteiro", "pente_ram", "pilha")
     MINI_CHEFES = ((150, "pente_ram"),)
+    INVOCACOES = ((30, "vigilante"), (100, "bibliotecaria"), (170, "agroboy"), (240, "loira_da_odontologia"))
     GREVE = 210
     MONITOR = 100
 
@@ -259,7 +287,7 @@ class ProvaDeTDEPOO(Prova):
     MATERIA = "Transformação Digital e Programação Orientada a Objetos"
     CHEFE = "chefe_td_poo"
     ROTULO = "Transformação Digital -> POO"
-    NIVEL_TREINO = 50
+    NIVEL_TREINO = 14
     INICIO_DIFICULDADE = 480
     MULT_MOEDAS = 1.4
     APRESENTACOES = (
@@ -274,6 +302,7 @@ class ProvaDeTDEPOO(Prova):
     )
     FORMACOES = ("caixinha", "bug", "ponteiro", "caixinha")
     MINI_CHEFES = ((120, "caixinha"), (210, "ponteiro"))
+    INVOCACOES = ((20, "tecnico_do_laboratorio"), (90, "reitor"), (160, "et_de_varginha"))
     GREVE = 165
     MONITOR = 75
 

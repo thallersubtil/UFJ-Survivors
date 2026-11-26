@@ -37,6 +37,7 @@ class Inimigo(SerVivo, ABC):
 
     GANHO_VELOCIDADE = 0.10   # por ponto de dificuldade: a prova vai ficando mais corrida
     TETO_VELOCIDADE = 1.6     # nunca mais que 60% acima da velocidade base
+    GANHO_DANO = 0.12         # por ponto de dificuldade: no fim do semestre o encostão dói ~50% a mais
 
     ESCALA_GIGANTE = 3
     VIDA_GIGANTE = 30
@@ -155,7 +156,12 @@ class Inimigo(SerVivo, ABC):
 
     def tocar_jogador(self, jogo):
         if Colisao.circulos_colidem(self, jogo.jogador):
-            jogo.ferir_jogador(self.DANO)
+            jogo.ferir_jogador(self.dano_de_contato)
+
+    @property
+    def dano_de_contato(self):
+        """O encostão dói mais conforme a prova avança (a mesma escala que dá vida e velocidade ao inimigo)."""
+        return self.DANO * (1 + max(0.0, self.escala - 1) * self.GANHO_DANO)
 
     def assustar(self, duracao):
         """Trote Reverso: por um tempo, foge do aluno em vez de atacar."""
@@ -210,7 +216,7 @@ class Inimigo(SerVivo, ABC):
             jogo.adicionar(CopoDeCafe(self.posicao + (10, 0)))
         if self.gigante:
             jogo.adicionar(Moeda(self.posicao - (12, 0), self.MOEDAS_GIGANTE))
-        elif jogo.rng.random() < self.CHANCE_MOEDA:
+        elif jogo.rng.random() < jogo.jogador.chance(self.CHANCE_MOEDA):
             jogo.adicionar(Moeda(self.posicao - (10, 0)))
         if self.solta_bau:
             jogo.adicionar(Bau(self.posicao))

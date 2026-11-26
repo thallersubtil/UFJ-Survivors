@@ -13,8 +13,8 @@ class MouseDeBolinha(Inimigo):
     NOME = "Mouse de Bolinha"
     IMAGEM = "sprites/mouse.png"
     PASTA_SPRITE = "mouse"
-    ALTURA = 34
-    RAIO = 16
+    ALTURA = 52          # maior e com contorno escuro: antes sumia no gramado
+    RAIO = 22
     VIDA = 12
     VELOCIDADE = 320
     DANO = 7

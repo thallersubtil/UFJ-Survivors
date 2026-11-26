@@ -13,6 +13,7 @@ from jogo.cenas.titulo import CenaTitulo
 from jogo.jogador.classes import Programador, Otaku
 from jogo.loja.progresso import Progresso
 from jogo.ranking import Ranking
+from jogo.tesouro import COMUM, Tesouro
 
 
 def tecla(k):
@@ -94,9 +95,11 @@ def test_bau_abre_aplica_premio_e_fecha(app):
     partida.jogo.baus_pendentes = 1
     app.passo(1 / 60, [])
     assert isinstance(app.cena_atual, CenaBau)
-    for _ in range(80):
+    app.cena_atual.tesouro = Tesouro(COMUM, 10)
+    for _ in range(110):
         app.passo(1 / 60, [])
     assert partida.jogo.jogador.armas[0].nivel == 2
+    assert partida.jogo.placar.moedas >= 10
     app.passo(1 / 60, [tecla(pygame.K_RETURN)])
     assert app.cena_atual is partida and partida.jogo.baus_pendentes == 0
 

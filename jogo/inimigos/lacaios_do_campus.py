@@ -1,0 +1,228 @@
+"""Lacaios que acompanham os mini-chefes do mapa. Só aparecem chamados por eles, nunca na linha do tempo da prova.
+
+Cada jeito de andar é uma classe base pequena; o lacaio só escolhe o jeito e preenche os números.
+"""
+import math
+
+import pygame
+
+from jogo.inimigos.fabrica import FabricaDeInimigos
+from jogo.inimigos.inimigo import Inimigo
+from jogo.projeteis.projeteis import ProjetilDaMateria
+
+
+class LacaioDoCampus(Inimigo):
+    """Base: sem arte solta (só a tira animada), pouca experiência e nenhum prêmio extra."""
+
+    ALTURA = 36
+    RAIO = 15
+    VIDA = 12
+    DANO = 5
+    PONTOS = 8
+    CHANCE_CAFE = 0.0
+    CHANCE_POCAO = 0.0
+
+    def mover(self, dt, jogo):
+        self.ir_em_direcao(jogo.jogador.posicao, dt)
+
+
+class LacaioEmZiguezague(LacaioDoCampus):
+    """Vai até o aluno balançando para os lados (morcego, gato)."""
+
+    AMPLITUDE = 110
+    FREQUENCIA = 5.0
+
+    def mover(self, dt, jogo):
+        rumo = jogo.jogador.posicao - self.posicao
+        if rumo.length_squared() < 1:
+            return
+        rumo.normalize_ip()
+        lado = pygame.Vector2(-rumo.y, rumo.x) * math.sin(self.tempo * self.FREQUENCIA + id(self) % 7)
+        self.posicao += (rumo * self.velocidade + lado * self.AMPLITUDE) * dt
+        self.olhando_esquerda = rumo.x < 0
+
+
+class LacaioQueMergulha(LacaioDoCampus):
+    """Mira, dispara em linha reta, passa do ponto e mira de novo (livro, boi)."""
+
+    TEMPO_DE_MERGULHO = 1.6
+
+    def __init__(self, posicao, escala=1.0):
+        super().__init__(posicao, escala)
+        self.direcao = pygame.Vector2(1, 0)
+        self._mira = 0.0
+
+    def mover(self, dt, jogo):
+        self._mira -= dt
+        if self._mira <= 0:
+            falta = jogo.jogador.posicao - self.posicao
+            if falta.length_squared() > 0:
+                self.direcao = falta.normalize()
+            self._mira = self.TEMPO_DE_MERGULHO
+        self.posicao += self.direcao * self.velocidade * dt
+        self.olhando_esquerda = self.direcao.x < 0
+
+
+class LacaioQuePula(LacaioDoCampus):
+    """Anda aos pulos: só avança enquanto está no ar (carimbo)."""
+
+    CICLO = 0.9
+    PULO = 0.4
+
+    def _no_ar(self):
+        return self.tempo % self.CICLO < self.PULO
+
+    def mover(self, dt, jogo):
+        if self._no_ar():
+            self.ir_em_direcao(jogo.jogador.posicao, dt)
+
+    def balanco(self):
+        fase = self.tempo % self.CICLO
+        return math.sin(math.pi * fase / self.PULO) * 16 if fase < self.PULO else 0
+
+
+@FabricaDeInimigos.registrar("coxinha")
+class Coxinha(LacaioDoCampus):
+    """Salgado da cantina com raiva. Vem em fornada."""
+    NOME = "Coxinha"
+    PASTA_SPRITE = "coxinha"
+    VIDA = 14
+    VELOCIDADE = 150
+    TAMANHO_GRUPO = (4, 6)
+
+
+@FabricaDeInimigos.registrar("morcego")
+class Morcego(LacaioEmZiguezague):
+    """Voa em ziguezague. Acompanha o Vigilante e a Gótica."""
+    NOME = "Morcego"
+    PASTA_SPRITE = "morcego"
+    VIDA = 8
+    VELOCIDADE = 170
+    DANO = 4
+
+
+@FabricaDeInimigos.registrar("livro_atrasado")
+class LivroAtrasado(LacaioQueMergulha):
+    """Livro que passou do prazo e voa em cima de quem pegou emprestado."""
+    NOME = "Livro Atrasado"
+    PASTA_SPRITE = "livro_atrasado"
+    VIDA = 16
+    VELOCIDADE = 300
+    DANO = 6
+
+
+@FabricaDeInimigos.registrar("cobaia")
+class Cobaia(LacaioDoCampus):
+    """Rato de laboratório que tomou o que não devia. Rápido e frágil."""
+    NOME = "Cobaia"
+    PASTA_SPRITE = "cobaia"
+    RAIO = 13
+    VIDA = 8
+    VELOCIDADE = 200
+    DANO = 4
+
+
+@FabricaDeInimigos.registrar("carimbo")
+class Carimbo(LacaioQuePula):
+    """Carimbo da burocracia: vem aos pulos para carimbar o aluno."""
+    NOME = "Carimbo"
+    PASTA_SPRITE = "carimbo"
+    RAIO = 17
+    VIDA = 24
+    VELOCIDADE = 240
+    DANO = 9
+
+
+@FabricaDeInimigos.registrar("lobinho")
+class Lobinho(LacaioDoCampus):
+    """Filhote de lobo-guará. Corre muito."""
+    NOME = "Lobinho"
+    PASTA_SPRITE = "lobinho"
+    VIDA = 12
+    VELOCIDADE = 215
+
+
+@FabricaDeInimigos.registrar("dente")
+class Dente(LacaioDoCampus):
+    """Dente com cárie: lento, mas aguenta muita pancada."""
+    NOME = "Dente"
+    PASTA_SPRITE = "dente"
+    RAIO = 17
+    VIDA = 42
+    VELOCIDADE = 75
+    DANO = 9
+
+
+@FabricaDeInimigos.registrar("cultista")
+class Cultista(LacaioDoCampus):
+    """Roda em volta do aluno, fechando o círculo aos poucos."""
+    NOME = "Cultista"
+    PASTA_SPRITE = "cultista"
+    VIDA = 20
+    VELOCIDADE = 130
+    DANO = 7
+    RAIO_DO_CIRCULO = 230
+    APERTO = 22                  # pixels por segundo que o círculo fecha
+
+    def mover(self, dt, jogo):
+        raio = max(0.0, self.RAIO_DO_CIRCULO - self.APERTO * self.tempo)
+        afastado = self.posicao - jogo.jogador.posicao
+        if afastado.length_squared() < 1:
+            afastado = pygame.Vector2(1, 0)
+        alvo = jogo.jogador.posicao + afastado.normalize().rotate(35) * raio
+        self.ir_em_direcao(alvo, dt)
+
+
+@FabricaDeInimigos.registrar("mini_ovni")
+class MiniOvni(LacaioDoCampus):
+    """Disco voador pequeno: fica à distância e atira."""
+    NOME = "Mini OVNI"
+    PASTA_SPRITE = "mini_ovni"
+    VIDA = 18
+    VELOCIDADE = 140
+    DANO = 5
+    DISTANCIA = 260
+    INTERVALO = 2.4
+    COR = (130, 255, 110)
+
+    def __init__(self, posicao, escala=1.0):
+        super().__init__(posicao, escala)
+        self._espera = self.INTERVALO
+
+    def mover(self, dt, jogo):
+        falta = jogo.jogador.posicao - self.posicao
+        distancia = falta.length()
+        if distancia > self.DISTANCIA + 30:
+            self.ir_em_direcao(jogo.jogador.posicao, dt)
+        elif distancia < self.DISTANCIA - 30 and distancia > 0:
+            self.posicao -= falta / distancia * self.velocidade * dt
+        self._espera -= dt
+        if self._espera <= 0 and distancia > 0:
+            self._espera = self.INTERVALO
+            jogo.adicionar(ProjetilDaMateria(self.posicao, falta / distancia * 250, self.DANO, "*", self.COR, raio=9))
+
+    def balanco(self):
+        return 10 + 4 * math.sin(self.tempo * 5)
+
+
+@FabricaDeInimigos.registrar("boi")
+class Boi(LacaioQueMergulha):
+    """Boi do Agroboy: abaixa a cabeça e arranca em linha reta."""
+    NOME = "Boi"
+    PASTA_SPRITE = "boi"
+    RAIO = 22
+    VIDA = 45
+    VELOCIDADE = 260
+    DANO = 10
+    TEMPO_DE_MERGULHO = 2.0
+
+
+@FabricaDeInimigos.registrar("gato_alienigena")
+class GatoAlienigena(LacaioEmZiguezague):
+    """Gato verde do ET de Varginha: corre em ziguezague, difícil de acertar."""
+    NOME = "Gato Alienígena"
+    PASTA_SPRITE = "gato_alienigena"
+    VIDA = 12
+    VELOCIDADE = 190
+    AMPLITUDE = 150
+    FREQUENCIA = 7.0

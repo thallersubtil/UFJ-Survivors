@@ -6,7 +6,7 @@ class ProgramacaoOrientadaAObjetos(Materia):
     NOME = "Programação Orientada a Objetos"
     COR = (255, 96, 128)
     SIMBOLO = "{}"
-    VIDA = 3800
+    VIDA = 26000
     INTERVALO_ATAQUE = 2.2
     INTERVALO_FURIOSO = 1.3
     DANO_PROJETIL = 14

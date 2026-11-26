@@ -60,6 +60,25 @@ py -3.12 -m venv .venv
 
 - **Greve:** uma vez por prova (3:20 na 1ª, 3:30 na 2ª, 2:45 na 3ª), por 30 s não chega ninguém novo, os inimigos em campo se assustam e chovem notas em volta do aluno.
 - **Monitor Possuído:** mini-chefe da 2ª e da 3ª prova. Persegue o aluno e arremessa listas de exercícios (três de cada vez); ao morrer solta baú e moedas. Usa a arte do aluno tingida de roxo até ter arte própria.
+- **Mini-chefes do mapa (opcionais):** em horas marcadas de cada prova aparece um círculo de invocação no campus, com o rosto do mini-chefe em cima. Ficar dentro do círculo por 2,5 s invoca (sair esvazia), a partida para e ele é apresentado com ilustração própria, como os chefes. Cada um guarda o seu lugar (segue o aluno só até certa distância e se recupera se ele fugir), traz os próprios lacaios, é forte para quem não tem melhorias e deixa um **baú garantido** e moedas. O tom é de piada interna:
+
+  | Mini-chefe | Onde | Como ataca | Lacaios |
+  |---|---|---|---|
+  | Tia da Cantina (enorme) | RU | conchadas em leque e sopa em anel | coxinhas |
+  | Lobo-Guará (mascote) | Eng. Florestal | dois botes seguidos e uivo | lobinhos |
+  | Gótica Trevosa | Convivência | some e reaparece colada no aluno, anel de corações | morcegos |
+  | Grão-Mestre do Culto (**secreto**) | mata do canto sudeste | espiral de três braços sem parar | cultistas em círculo |
+  | Vigilante (fantasiado de morcego) | Centro de Aulas II | mira com a lanterna e arranca | morcegos |
+  | Bibliotecária (caderno "Multa Note") | Biblioteca | multas de atraso que tiram 8 moedas cada | livros atrasados |
+  | Agroboy | lavoura das Agrárias | maços de dinheiro e a caminhonete; solta 150 moedas | bois |
+  | Loira da Odontologia | Lab. Saúde | HB20 brancos atravessando a tela | dentes |
+  | Técnico do Laboratório (mutante) | Laboratórios | seringas, regenera e entra em fúria | cobaias |
+  | Reitor (muito alto) | Reitoria | ofícios em anel e portarias | carimbos |
+  | ET de Varginha | Centro de Aulas Secreto 51 | feixes de abdução no chão | gatos alienígenas e mini OVNIs |
+
+  O Centro de Aulas Secreto 51 é um prédio inventado, num descampado a nordeste (`ferramentas/acrescentar_predio_secreto.py`). O culto não é anunciado e só entra no mapa quando o aluno passa perto. A tecla **M** abre o mini-mapa do campus com o aluno e o rosto de cada mini-chefe no lugar dele; clicar num rosto marca o mini-chefe, e só os marcados ganham seta na borda da tela.
+- **Baús:** comum (1 prêmio e poucas moedas), épico (3 prêmios, 12% de chance) e lendário (5 prêmios e muitas moedas, 2%), cada um com abertura própria. As moedas do baú têm 15% de chance de crítico (3x).
+- **Sorte:** atributo do aluno que multiplica tudo que depende de chance: crítico, desvio, moeda ao matar, Carona Solidária, raridade do baú e crítico das moedas. Vem da Moeda da Sorte (item, +15% por nível), da Sorte de Calouro (loja, +5% por nível); o Jogo de Cintura (item) dá a chance de desviar de golpes.
 
 ## Centro Acadêmico
 

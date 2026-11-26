@@ -176,7 +176,11 @@ classDiagram
     class RoletaDoBandejao
     class JogoDeAposta {
         <<abstract>>
-        +jogar(aposta, escolha, rng)*
+        +sorteios()*
+        +avaliar(sorteio, escolha)*
+        +jogar(aposta, escolha, rng)
+        +tabela(escolha)
+        +retorno_esperado(escolha)
     }
     class MaquinaDeSalgadinho
     class DadoDoMestre
@@ -294,6 +298,24 @@ classDiagram
     Inimigo <|-- Ponteiro
     Inimigo <|-- PilhaAA
     Inimigo <|-- MonitorPossuido
+    Inimigo <|-- MiniChefe
+    MiniChefe <|-- TiaDaCantina
+    MiniChefe <|-- Vigilante
+    MiniChefe <|-- Bibliotecaria
+    MiniChefe <|-- TecnicoDoLaboratorio
+    MiniChefe <|-- Reitor
+    MiniChefe <|-- LoboGuara
+    MiniChefe <|-- GraoMestreDoCulto
+    MiniChefe <|-- GoticaTrevosa
+    MiniChefe <|-- ETDeVarginha
+    MiniChefe <|-- Motorizado
+    Motorizado <|-- LoiraDaOdontologia
+    Motorizado <|-- Agroboy
+    Vigilante *-- Arrancada
+    LoboGuara *-- Arrancada
+    Inimigo <|-- LacaioDoCampus
+    Entidade <|-- LocalDeInvocacao
+    LocalDeInvocacao ..> MiniChefe : invoca
     Inimigo <|-- PenteDeRAM
     Inimigo <|-- Chefe
     Chefe <|-- ChefePossuido

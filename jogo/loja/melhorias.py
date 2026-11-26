@@ -103,12 +103,13 @@ class AulaDeParkour(Melhoria):
 class SorteDeCalouro(Melhoria):
     CHAVE = "critico"
     NOME = "Sorte de Calouro"
-    DESCRICAO = "+2% de chance de acerto crítico por nível."
+    DESCRICAO = "+1% de crítico e +5% de sorte por nível (crítico, desvio, moedas e baús)."
     ICONE = "legado/itens/item_dice.png"
     CUSTO_BASE = 90
 
     def aplicar(self, jogador):
-        jogador.chance_critico += 0.02 * self.nivel
+        jogador.chance_critico += 0.01 * self.nivel
+        jogador.sorte += 0.05 * self.nivel
 
 
 class ImaDaRepublica(Melhoria):

@@ -6,7 +6,7 @@ class ArquiteturaDeComputadores(Materia):
     NOME = "Arquitetura de Computadores"
     COR = (90, 200, 255)
     SIMBOLO = "1"
-    VIDA = 2400
+    VIDA = 10000
     INTERVALO_ATAQUE = 2.6
     INTERVALO_FURIOSO = 1.7
     LACAIOS = ("mouse", "pente_ram", "bug")

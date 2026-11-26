@@ -88,6 +88,9 @@ class CenaChefe(Cena):
             linhas = self._quebrar(self.frase[:visiveis], 26)
             for i, linha in enumerate(linhas):
                 texto(tela, linha, (faixa.x + 34, faixa.y + 26 + i * 50), P.BRANCO if i else P.OURO, 46)
+        grito = getattr(self.chefe, "GRITO", "")
+        if grito and self.tempo >= 1.2:                         # a fala dele, em itálico de mentira: entre aspas
+            texto(tela, f"“{grito}”", (faixa.x + 34, faixa.bottom + 18), cor, 23)
         if self.tempo >= self.TEMPO_MINIMO and int(self.tempo * 3) % 2:
             texto(tela, "Enter: lutar", (largura - 30, altura - 44), P.CINZA, 23, ancora="topright")
 

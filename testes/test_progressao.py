@@ -21,7 +21,7 @@ def no_maximo(arma):
 
 
 def test_tabelas_dos_itens():
-    assert len(ITENS) == 12
+    assert len(ITENS) == 14
     for classe in ITENS:
         assert len(classe.MELHORIAS) == classe.NIVEL_MAXIMO - 1
         assert classe.NOME and classe.DESCRICAO and classe.ICONE

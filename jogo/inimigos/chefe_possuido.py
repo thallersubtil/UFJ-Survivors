@@ -18,6 +18,9 @@ class ChefePossuido(Chefe, ABC):
     """
 
     NOME_PROFESSOR = "o Professor"
+    PACIENCIA = 70                         # segundos de luta (por matéria) antes de o chefe apertar o passo
+    PRESSA_MAXIMA = 2.5                    # teto: no máximo 2,5 vezes mais rápido e mais forte
+    GANHO_DE_PRESSA = 0.10                 # +10% de velocidade e de dano de contato a cada 10 s depois disso
     ARTIGO = "Um"                          # "Um Professor ... selvagem apareceu!"
     ILUSTRACAO = "chefes/calculo.png"      # arte da apresentação (jogo/cenas/chefe.py)
     COR_DA_APRESENTACAO = (236, 72, 110)
@@ -45,6 +48,7 @@ class ChefePossuido(Chefe, ABC):
         self.escudo = 0.0
         self._anunciar_troca = False
         super().__init__(posicao, escala)
+        self._velocidade_base = self.velocidade
         self._assumir(self.materias[0])
 
     @property
@@ -82,6 +86,7 @@ class ChefePossuido(Chefe, ABC):
         return self.troca > 0 or self.escudo > 0
 
     def _assumir(self, materia):
+        self.tempo_de_luta = 0.0               # cada matéria tem a sua paciência
         self.vida_maxima = materia.VIDA
         self.vida = materia.VIDA
         self._indice = 0
@@ -117,7 +122,25 @@ class ChefePossuido(Chefe, ABC):
             self.troca -= dt
             return
         self.escudo = max(0.0, self.escudo - dt)
+        self._perder_a_paciencia(dt, jogo)
         super().mover(dt, jogo)
+
+    @property
+    def pressa(self):
+        """Multiplicador de velocidade e dano: 1 no começo; cresce depois que a paciência acaba."""
+        return min(self.PRESSA_MAXIMA, 1 + max(0.0, self.tempo_de_luta - self.PACIENCIA) / 10 * self.GANHO_DE_PRESSA)
+
+    def _perder_a_paciencia(self, dt, jogo):
+        """A luta é um teste de dano: quem demora demais enfrenta um chefe cada vez mais rápido e forte."""
+        antes = self.tempo_de_luta
+        self.tempo_de_luta += dt
+        if antes < self.PACIENCIA <= self.tempo_de_luta:
+            jogo.anunciar(f"{self.NOME_PROFESSOR[0].upper()}{self.NOME_PROFESSOR[1:]} perdeu a paciência!", 3)
+        self.velocidade = self._velocidade_base * self.pressa
+
+    @property
+    def dano_de_contato(self):
+        return super().dano_de_contato * self.pressa
 
     def tocar_jogador(self, jogo):
         """Durante a troca de matéria o chefe fica parado e não machuca."""

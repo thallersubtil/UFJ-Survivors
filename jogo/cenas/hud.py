@@ -4,6 +4,7 @@ import math
 import pygame
 
 from jogo.config import COMBO_ESPECIAL
+from jogo.nucleo.recursos import Recursos
 from jogo.ui.pixel import (A, ESCALA, L, CamadaPixel, Paleta as P, barra, ease_back, fonte, icone, janela, moldura,
                            no_quadrado, texto)
 
@@ -52,8 +53,36 @@ class Hud:
         self._anuncios(ui, jogo)
         self.camada.apresentar(tela)
         self._rosto_nitido(tela, jogo.jogador)
+        self._rumo_dos_mini_chefes(tela, jogo)
         if jogo.perigo > 0:
             self._perigo(tela)
+
+    MARGEM_DO_RUMO = 70
+
+    def _rumo_dos_mini_chefes(self, tela, jogo):
+        """Mini-chefe marcado no mini-mapa e fora da tela: o rosto aparece na borda, com uma seta para ele."""
+        largura, altura = tela.get_size()
+        meio = pygame.Vector2(largura / 2, altura / 2)
+        for marcador in jogo.marcadores():
+            if marcador.NOME not in jogo.marcados:
+                continue
+            na_tela = jogo.camera.para_tela(marcador.posicao)
+            if 0 <= na_tela.x <= largura and 0 <= na_tela.y <= altura:
+                continue
+            rumo = na_tela - meio
+            fator = min((largura / 2 - self.MARGEM_DO_RUMO) / max(1.0, abs(rumo.x)),
+                        (altura / 2 - self.MARGEM_DO_RUMO) / max(1.0, abs(rumo.y)))
+            ponto = meio + rumo * fator
+            centro = (round(ponto.x), round(ponto.y))
+            cor = (255, 214, 92)
+            direcao = rumo.normalize()
+            ponta = ponto + direcao * (34 + 4 * math.sin(self.tempo * 6))
+            lado = pygame.Vector2(-direcao.y, direcao.x) * 9
+            pygame.draw.polygon(tela, cor, [ponta, ponto + direcao * 22 + lado, ponto + direcao * 22 - lado])
+            pygame.draw.circle(tela, (16, 12, 24), centro, 22)
+            rosto = Recursos.imagem(marcador.rosto, 36)
+            tela.blit(rosto, rosto.get_rect(center=centro))
+            pygame.draw.circle(tela, cor, centro, 22, 3)
 
     def _perigo(self, tela):
         """Aviso de chefe chegando: faixas zebradas correndo, borda vermelha pulsando e PERIGO! piscando."""

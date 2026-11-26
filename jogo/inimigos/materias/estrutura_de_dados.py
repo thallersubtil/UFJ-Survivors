@@ -6,7 +6,7 @@ class EstruturaDeDadosEmC(Materia):
     NOME = "Estrutura de Dados em C"
     COR = (110, 240, 130)
     SIMBOLO = "*p"
-    VIDA = 3400
+    VIDA = 13000
     INTERVALO_ATAQUE = 2.2
     INTERVALO_FURIOSO = 1.3
     DANO_PROJETIL = 14

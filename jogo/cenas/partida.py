@@ -4,6 +4,7 @@ from jogo.cenas.bau import CenaBau
 from jogo.cenas.cena import Cena
 from jogo.cenas.fim import CenaFimDeJogo
 from jogo.cenas.hud import Hud
+from jogo.cenas.minimapa import CenaMiniMapa
 from jogo.cenas.nivel import CenaNivel
 from jogo.cenas.chefe import CenaChefe
 from jogo.cenas.pausa import CenaPausa
@@ -38,6 +39,8 @@ class CenaPartida(Cena):
             return
         if evento.key == pygame.K_ESCAPE:
             self.app.empilhar(CenaPausa(self.app, self))
+        elif evento.key == pygame.K_m:
+            self.app.empilhar(CenaMiniMapa(self.app, self.jogo))
         elif evento.key == pygame.K_SPACE:
             self.jogo.jogador.usar_especial(self.jogo)
         elif evento.key in (pygame.K_LSHIFT, pygame.K_RSHIFT):

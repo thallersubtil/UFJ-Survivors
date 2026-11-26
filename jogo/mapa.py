@@ -99,6 +99,17 @@ class Mapa(ABC):
     def obstaculos_perto(self, posicao, raio):
         return []
 
+    def local_de(self, nome):
+        """Um ponto livre em frente ao prédio chamado `nome`, ou None se o mapa não tem esse prédio."""
+        return None
+
+    def miniatura(self, altura):
+        """Desenho do mapa inteiro com `altura` pixels (para o mini-mapa)."""
+        largura = max(1, round(altura * self.arena.width / self.arena.height))
+        imagem = pygame.Surface((largura, altura))
+        imagem.fill((52, 92, 52))
+        return imagem
+
     def empurrar(self, posicao, raio):
         """Posição corrigida para não ficar dentro de nenhum obstáculo."""
         posicao = pygame.Vector2(posicao)
@@ -130,6 +141,7 @@ class MapaUFJ(Mapa):
         self.predios = [Predio(p["nome"], p["poligono"], p["sprite"], p["canto"], escala_predios)
                         for p in dados["predios"]]
         self._blocos = OrderedDict()
+        self._miniaturas = {}
         self.decoracoes = [Decoracao((d["x"], d["y"]), pasta=self.DECORACOES.get(d["tipo"], d["tipo"]))
                            for d in dados["decoracoes"]]
         self._celulas = {}
@@ -149,6 +161,34 @@ class MapaUFJ(Mapa):
 
     def entidades(self):
         return self.predios + self.decoracoes
+
+    FRENTE_DO_PREDIO = 150       # distância da base do prédio até o ponto de referência
+
+    def local_de(self, nome):
+        """Ponto livre em frente ao prédio; se a frente está tomada por outro prédio, o livre mais próximo."""
+        for predio in self.predios:
+            if predio.nome == nome:
+                frente = pygame.Vector2(predio.posicao.x, predio.contorno.bottom + self.FRENTE_DO_PREDIO)
+                candidatos = [frente] + [frente + pygame.Vector2(passo, 0).rotate(angulo)
+                                         for passo in range(120, 1201, 120) for angulo in range(0, 360, 30)]
+                for ponto in candidatos:
+                    if self.arena.inflate(-240, -240).collidepoint(ponto) and not self.bloqueado(ponto, 110):
+                        return ponto
+                return self.empurrar(frente, 100)
+        return None
+
+    def miniatura(self, altura):
+        """O chão reduzido com os prédios pintados por cima (guardada: só é montada uma vez por altura)."""
+        if altura not in self._miniaturas:
+            fator = altura / self.arena.height
+            chao = Recursos.imagem(self.chao)
+            imagem = pygame.transform.smoothscale(chao, (max(1, round(self.arena.width * fator)), altura))
+            for predio in self.predios:
+                pontos = [(x * fator, y * fator) for x, y in predio.poligono]
+                pygame.draw.polygon(imagem, (196, 150, 110), pontos)
+                pygame.draw.polygon(imagem, (70, 44, 40), pontos, 1)
+            self._miniaturas[altura] = imagem
+        return self._miniaturas[altura]
 
     def obstaculos_perto(self, posicao, raio):
         x0, y0 = int((posicao[0] - raio) // self.CELULA), int((posicao[1] - raio) // self.CELULA)

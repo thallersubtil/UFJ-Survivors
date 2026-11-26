@@ -117,20 +117,28 @@ class CobraRei(MovimentoSerpente, ProjetilDoHeroi):
 
 
 class CachorroDaMatilha(CachorroCaramelo):
-    """Caramelo no máximo: cachorros maiores, que mordem mais longe e dão a volta bem mais rápido."""
+    """Caramelo no máximo: uma matilha de muitos cachorros pequenos, em duas rodas, bem mais rápidos."""
 
-    ALTURA = 58
-    RAIO = 28
-    ESPERA_MORDIDA = 0.35
+    ALTURA_DO_DESENHO = 30                 # com o contorno dourado fica do tamanho do cachorro comum
+    FATOR_DA_RODA_DE_DENTRO = 0.6
 
-    def __init__(self, dono, angulo, arma):
+    def __init__(self, dono, angulo, arma, por_dentro=False):
         super().__init__(dono, angulo, arma)
-        self.raio = self.RAIO
+        self.por_dentro = por_dentro
+
+    def atualizar(self, dt, jogo):
+        super().atualizar(dt, jogo)
+        if self.por_dentro:                # a roda de dentro gira no outro sentido, mais perto do herói
+            self.angulo -= 2 * self.arma.valor("velocidade") * dt
+            raio = self.arma.valor("raio") * self.FATOR_DA_RODA_DE_DENTRO
+            nova = self.dono.posicao + pygame.Vector2(math.cos(self.angulo), math.sin(self.angulo)) * raio
+            self.olhando_esquerda = nova.x < self.posicao.x
+            self.posicao = nova
 
     def desenhar(self, tela, camera):
-        imagem = Recursos.na_altura(Recursos.imagem(PASTA + "caramelo_cacador.png"), self.ALTURA)
+        imagem = Recursos.na_altura(self.animador.quadro_atual, self.ALTURA_DO_DESENHO)
         desenhar_sprite(tela, camera, imagem, self.posicao, espelhar=self.olhando_esquerda, aura=self.aura,
-                        deslocamento_y=abs(math.sin(self.tempo * 16)) * 5)
+                        deslocamento_y=abs(math.sin(self.tempo * 14)) * 4)
 
 
 class EstrelaSupernova(EstrelaGemini):

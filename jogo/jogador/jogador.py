@@ -32,8 +32,13 @@ class Jogador(SerVivo, ABC):
     MAX_ARMAS = 4                # habilidades ativas; no limite, só melhorias (uma colab libera vaga)
     MOLETOM_ORIGINAL = "verde"    # como achar o moletom na arte, para trocar a cor
     PASTA_SPRITE_FEMININA = None        # arte da versão feminina; sem ela, usa a masculina
-    XP_PRIMEIRO_NIVEL = 10
-    XP_A_MAIS_POR_NIVEL = 8
+    DURACAO_DA_CARETA = 0.45
+    # Custo do nível n: BASE + LINEAR*(n-1) + QUADRATICO*(n-1)². Os primeiros níveis vêm rápido e os
+    # últimos custam caro: só com as notas chega-se perto dos níveis 7, 11 e 14 nos três chefes. Quem quer
+    # ficar mais forte que isso vai atrás dos mini-chefes do mapa (baú garantido) e das melhorias da loja.
+    XP_BASE = 18
+    XP_LINEAR = 10
+    XP_QUADRATICO = 3.4
     APARENCIA_FIXA = False       # True: a arte já é o visual final e não troca de gênero nem de cor
     PASTA_TRANSFORMADO_FEMININA = None
     MAX_ITENS = 4                # habilidades passivas
@@ -54,6 +59,7 @@ class Jogador(SerVivo, ABC):
         self.movendo = False
         self.olhando_esquerda = False
         self.invencivel = 0.0
+        self.careta = 0.0             # segundos que ainda mostra o quadro de dano (a careta)
         self.aparencia = None         # Aparencia escolhida na personalização
         self.imortal = False          # modo treino
         self.melhorias = []           # melhorias permanentes compradas no Centro Acadêmico
@@ -91,6 +97,8 @@ class Jogador(SerVivo, ABC):
         self.mult_especial = 1.0
         self.mult_rolamento = 1.0     # fator da recarga do rolamento (menor é mais rápido)
         self.chance_critico = 0.0
+        self.chance_desvio = 0.0      # chance de um golpe passar direto (Jogo de Cintura)
+        self.sorte = 0.0              # +0.10 = tudo que depende de chance fica 10% mais provável
         self.mult_cafe = 1.0
         self.regeneracao = 0.0
         self.alcance_coleta = self.ALCANCE_COLETA_BASE
@@ -120,6 +128,10 @@ class Jogador(SerVivo, ABC):
             self.especial.cargas_maximas = self.cargas_especial
         if self.vida_maxima > maxima_antes:
             self.curar(self.vida_maxima - maxima_antes)
+
+    def chance(self, base):
+        """Chance `base` (0 a 1) já com a sorte do aluno: crítico, desvio, moedas, baús."""
+        return max(0.0, base * (1 + self.sorte))
 
     def receber_melhorias(self, melhorias):
         """Começa a partida com as melhorias permanentes da loja."""
@@ -195,8 +207,10 @@ class Jogador(SerVivo, ABC):
 
     @property
     def experiencia_necessaria(self):
-        """Cada nível custa bem mais que o anterior: poucos níveis por partida (uns 30), cada um pesa."""
-        return self.XP_PRIMEIRO_NIVEL + (self.nivel - 1) * self.XP_A_MAIS_POR_NIVEL
+        """Cada nível custa bem mais que o anterior: sem as melhorias da loja não dá para levar tudo ao
+        máximo (são 27 escolhas), então o jogador precisa decidir em que armas apostar."""
+        n = self.nivel - 1
+        return round(self.XP_BASE + self.XP_LINEAR * n + self.XP_QUADRATICO * n * n)
 
     def ganhar_experiencia(self, quantidade):
         """Soma experiência e retorna quantos níveis o herói subiu."""
@@ -226,6 +240,7 @@ class Jogador(SerVivo, ABC):
     def receber_dano(self, quantidade):
         morreu = super().receber_dano(quantidade)
         self.invencivel = INVENCIBILIDADE_APOS_DANO
+        self.careta = self.DURACAO_DA_CARETA
         return morreu
 
     @classmethod
@@ -268,7 +283,10 @@ class Jogador(SerVivo, ABC):
         if transformado != self.transformado:
             self.transformado = transformado
             self.animador.trocar_conjunto(self._animacoes())
-        self.animador.tocar("andar" if self.movendo else "parado")
+        if self.careta > 0 and "dano" in self.animador.animacoes:
+            self.animador.tocar("dano")          # levou dano: faz careta por um instante
+        else:
+            self.animador.tocar("andar" if self.movendo else "parado")
         self.animador.atualizar(dt)
 
     def usar_especial(self, jogo):
@@ -278,6 +296,7 @@ class Jogador(SerVivo, ABC):
         self.tempo += dt
         self.piscar = max(0.0, self.piscar - dt)
         self.invencivel = max(0.0, self.invencivel - dt)
+        self.careta = max(0.0, self.careta - dt)
         direcao = pygame.Vector2(jogo.entrada.direcao)
         self.movendo = direcao.length_squared() > 0
         if self.rolamento.rolando:

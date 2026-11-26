@@ -69,6 +69,7 @@ class Jogo:
         self.terminou = False
         self.venceu = False
         self.anuncios = []
+        self.marcados = set()         # nomes dos mini-chefes que o aluno marcou no mini-mapa (ganham seta na tela)
         self.marcos = set()           # coisas que aconteceram na partida (para as conquistas)
         self.notas = []               # nota de cada prova vencida (para o boletim do fim de jogo)
         self._ultima_nota = None
@@ -101,6 +102,13 @@ class Jogo:
     @property
     def inimigos(self):
         return self.grupos["inimigo"]
+
+    def marcadores(self):
+        """O que aparece no mini-mapa: círculos de invocação à espera e mini-chefes já invocados e vivos."""
+        esperando = [e for e in self.grupos["invocacao"] + self._novas
+                     if e.ativo and e.grupo == "invocacao" and e.no_mapa]
+        vivos = [e for e in self.inimigos if e.ativo and getattr(e, "ROSTO", "")]
+        return esperando + vivos
 
     def adicionar(self, entidade):
         self._novas.append(entidade)
@@ -183,7 +191,8 @@ class Jogo:
             return False
         critico = self._rolar_critico()
         if critico:
-            dano *= self.jogador.MULT_CRITICO + max(0.0, self.jogador.chance_critico - 1)   # passou de 100%: crítico mais forte
+            sobra = self.jogador.chance(self.jogador.chance_critico) - 1
+            dano *= self.jogador.MULT_CRITICO + max(0.0, sobra)   # passou de 100%: crítico mais forte
         dano = max(1, round(dano * self.rng.uniform(1 - self.VARIACAO_DANO, 1 + self.VARIACAO_DANO)))
         morreu = inimigo.receber_dano(dano)
         if direcao is not None:
@@ -201,16 +210,19 @@ class Jogo:
             self._registrar_morte(inimigo)
         return morreu
 
+    DESVIO_MAXIMO = 0.6           # nem com muita sorte o aluno desvia de tudo
+    FOLGA_DO_DESVIO = 0.25        # segundos sem levar dano depois de desviar (o mesmo golpe não acerta em seguida)
     VARIACAO_DANO = 0.10          # cada golpe varia ±10%, para os números não repetirem
 
     def _rolar_critico(self):
-        """Sorteia um acerto crítico com a chance do herói (só gasta o sorteio se a chance existir)."""
-        chance = self.jogador.chance_critico
+        """Sorteia um acerto crítico com a chance do herói, já com a sorte (só sorteia se a chance existir)."""
+        chance = self.jogador.chance(self.jogador.chance_critico)
         return chance > 0 and self.rng.random() < chance
 
     def _registrar_morte(self, inimigo):
         inimigo.remover()
-        if inimigo.possuido > 0 and self.jogador.chance_carona > 0 and self.rng.random() < self.jogador.chance_carona:
+        carona = self.jogador.chance(self.jogador.chance_carona)
+        if inimigo.possuido > 0 and carona > 0 and self.rng.random() < carona:
             self.adicionar(Moeda(inimigo.posicao + (12, 0)))     # Carona Solidária
         if self.placar.registrar_eliminacao(inimigo.valor_em_pontos):
             self._combo_67()
@@ -223,6 +235,11 @@ class Jogo:
 
     def ferir_jogador(self, dano):
         if not self.jogador.pode_levar_dano:
+            return False
+        desvio = min(self.DESVIO_MAXIMO, self.jogador.chance(self.jogador.chance_desvio))
+        if desvio > 0 and self.rng.random() < desvio:
+            self.jogador.invencivel = self.FOLGA_DO_DESVIO
+            self.adicionar(TextoFlutuante("DESVIOU!", self.jogador.posicao - (0, 30), Cor.CURA, 18))
             return False
         self.jogador.receber_dano(dano)
         self.placar.zerar_combo()
@@ -240,6 +257,22 @@ class Jogo:
 
     def ganhar_moedas(self, quantidade):
         self.placar.adicionar_moedas(round(quantidade * self.jogador.mult_moedas * self.fase.MULT_MOEDAS))
+
+    def multar(self, quantidade):
+        """Tira moedas pegas nesta partida (multa da Bibliotecária). Não deixa o saldo negativo."""
+        perdidas = min(self.placar.moedas, round(quantidade))
+        if perdidas > 0:
+            self.placar.moedas -= perdidas
+            self.adicionar(TextoFlutuante(f"-{perdidas} moedas", self.jogador.posicao - (0, 54), Cor.DESTAQUE, 18))
+        return perdidas
+
+    def marcar_no_mapa(self, nome):
+        """Liga ou desliga a marcação de um mini-chefe; devolve True se ficou marcado."""
+        if nome in self.marcados:
+            self.marcados.discard(nome)
+            return False
+        self.marcados.add(nome)
+        return True
 
     def moedas_ganhas(self):
         """Moedas que vão para o Centro Acadêmico: as pegas mais a bolsa pelo tempo. Treino não paga."""
