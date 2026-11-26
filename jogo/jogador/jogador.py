@@ -7,7 +7,6 @@ import pygame
 from jogo.config import ESCALA_PIXEL, INVENCIBILIDADE_APOS_DANO
 from jogo.nucleo.animacao import Animador
 from jogo.nucleo.desenho import desenhar_sprite
-from jogo.jogador.aparencia import vestir_animacoes
 from jogo.jogador.rolamento import Rolamento
 from jogo.nucleo.recursos import Recursos
 from jogo.nucleo.ser_vivo import SerVivo
@@ -30,8 +29,6 @@ class Jogador(SerVivo, ABC):
     ALTURA = 64
     RAIO = 22
     MAX_ARMAS = 4                # habilidades ativas; no limite, só melhorias (uma colab libera vaga)
-    MOLETOM_ORIGINAL = "verde"    # como achar o moletom na arte, para trocar a cor
-    PASTA_SPRITE_FEMININA = None        # arte da versão feminina; sem ela, usa a masculina
     DURACAO_DA_CARETA = 0.45
     # Custo do nível n: BASE + LINEAR*(n-1) + QUADRATICO*(n-1)². Os primeiros níveis vêm rápido e os
     # últimos custam caro: só com as notas chega-se perto dos níveis 7, 11 e 14 nos três chefes. Quem quer
@@ -39,8 +36,6 @@ class Jogador(SerVivo, ABC):
     XP_BASE = 18
     XP_LINEAR = 10
     XP_QUADRATICO = 3.4
-    APARENCIA_FIXA = False       # True: a arte já é o visual final e não troca de gênero nem de cor
-    PASTA_TRANSFORMADO_FEMININA = None
     MAX_ITENS = 4                # habilidades passivas
     ALCANCE_COLETA_BASE = 90
     MULT_CRITICO = 2.0           # quanto o acerto crítico multiplica o dano
@@ -60,7 +55,6 @@ class Jogador(SerVivo, ABC):
         self.olhando_esquerda = False
         self.invencivel = 0.0
         self.careta = 0.0             # segundos que ainda mostra o quadro de dano (a careta)
-        self.aparencia = None         # Aparencia escolhida na personalização
         self.imortal = False          # modo treino
         self.melhorias = []           # melhorias permanentes compradas no Centro Acadêmico
         self.banidos = set()              # classes de arma e item banidas das cartas nesta partida
@@ -250,29 +244,20 @@ class Jogador(SerVivo, ABC):
             return None
         return Recursos.na_altura(Recursos.imagem(cls.ROSTO), lado)
 
-    def _arte(self, pasta, pasta_feminina, imagem):
-        """Animações do aluno ou, se a aparência é feminina e a arte existe, da aluna."""
-        if self.aparencia is not None and self.aparencia.feminino and pasta_feminina:
-            feminina = Recursos.animacoes(pasta_feminina)
-            if feminina:
-                return feminina
-        return Recursos.animacoes_ou_imagem(pasta, imagem, self.ALTURA)
+    @classmethod
+    def foto(cls, largura):
+        """A foto 3x4 da carteirinha, na largura pedida; sem essa arte, o rosto do HUD (ou None)."""
+        caminho = cls.ROSTO.replace("rostos/", "fotos/") if cls.ROSTO else None
+        if not caminho or not (Recursos.pasta / caminho).is_file():
+            return cls.rosto(largura)
+        imagem = Recursos.imagem(caminho)
+        return Recursos.na_altura(imagem, round(largura * imagem.get_height() / imagem.get_width()))
 
     def _animacoes(self):
-        if self.APARENCIA_FIXA:
-            if self.transformado:
-                return Recursos.animacoes_ou_imagem(self.PASTA_TRANSFORMADO, self.IMAGEM_TRANSFORMADO, self.ALTURA)
-            return Recursos.animacoes_ou_imagem(self.PASTA_SPRITE, self.IMAGEM, self.ALTURA)
+        """As tiras do boneco (ou do boneco transformado), como estão na arte: a aparência de cada classe é fixa."""
         if self.transformado:
-            base = self._arte(self.PASTA_TRANSFORMADO, self.PASTA_TRANSFORMADO_FEMININA, self.IMAGEM_TRANSFORMADO)
-            return vestir_animacoes(base, self.aparencia, self.MOLETOM_ORIGINAL, cabelo_natural=False)
-        base = self._arte(self.PASTA_SPRITE, self.PASTA_SPRITE_FEMININA, self.IMAGEM)
-        return vestir_animacoes(base, self.aparencia, self.MOLETOM_ORIGINAL)
-
-    def vestir(self, aparencia):
-        """Troca o gênero e as cores do aluno (pele, cabelo, moletom, calça)."""
-        self.aparencia = aparencia
-        self.animador.trocar_conjunto(self._animacoes())
+            return Recursos.animacoes_ou_imagem(self.PASTA_TRANSFORMADO, self.IMAGEM_TRANSFORMADO, self.ALTURA)
+        return Recursos.animacoes_ou_imagem(self.PASTA_SPRITE, self.IMAGEM, self.ALTURA)
 
     @property
     def animado(self):

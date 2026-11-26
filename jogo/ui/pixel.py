@@ -169,6 +169,29 @@ def quadros(pasta, nome="parado-4.png", altura=None):
     return _quadros[chave]
 
 
+_bonecos = {}
+
+
+def boneco_nitido(pasta, animacao="andar", altura=None):
+    """Quadros do boneco na arte grande (assets/retratos/chibis/<pasta>), para desenhar direto na tela: ampliar o
+    sprite da partida pela camada deixaria o traço serrilhado ou fora de foco. `altura` reduz (suavizando).
+    Devolve None se a classe não tem essa arte."""
+    chave = (pasta, animacao, altura)
+    if chave not in _bonecos:
+        tiras = sorted((Recursos.pasta / "retratos" / "chibis" / pasta).glob(f"{animacao}-*.png"))
+        lista = None
+        if tiras:
+            n = int(tiras[0].stem.split("-")[-1])
+            tira = Recursos.imagem(f"retratos/chibis/{pasta}/{tiras[0].name}")
+            largura = tira.get_width() // n
+            lista = [tira.subsurface((i * largura, 0, largura, tira.get_height())) for i in range(n)]
+            if altura and altura != tira.get_height():
+                novo = (max(1, round(largura * altura / tira.get_height())), altura)
+                lista = [pygame.transform.smoothscale(q, novo) for q in lista]
+        _bonecos[chave] = lista
+    return _bonecos[chave]
+
+
 def no_quadrado(img, altura):
     """Redimensiona um quadro já carregado para `altura`, sem suavizar."""
     return pygame.transform.scale(img, (max(1, round(img.get_width() * altura / img.get_height())), altura))

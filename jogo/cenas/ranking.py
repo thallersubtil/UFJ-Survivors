@@ -6,7 +6,8 @@ from jogo.cenas.widgets import TECLAS_CONFIRMAR
 from jogo.jogador.classes import CLASSES
 from jogo.nucleo.recursos import Recursos
 from jogo.ui.materiais import fundo_desfocado
-from jogo.ui.pixel import A, L, CamadaPixel, Paleta as P, ease_back, ease_out, janela, moldura, quadros, texto
+from jogo.ui.pixel import (A, ESCALA, L, CamadaPixel, Paleta as P, boneco_nitido, ease_back, ease_out, janela, moldura,
+                           quadros, texto)
 
 PODIO = ((L // 2, 70, P.OURO), (L // 2 - 110, 50, (200, 200, 220)), (L // 2 + 110, 36, (210, 140, 80)))
 
@@ -58,7 +59,10 @@ class CenaRanking(Cena):
                 continue
             r = registros[pos]
             pasta = self.pasta_do_heroi(r.heroi)
-            if (Recursos.pasta / "sprites" / pasta / "parado-4.png").exists():
+            nitido = boneco_nitido(pasta, "parado")
+            if nitido:                                   # direto na tela, depois da camada (veja desenhar)
+                self._no_podio.append((nitido[int(self.tempo * 6 + pos) % len(nitido)], (x, degrau.y)))
+            elif (Recursos.pasta / "sprites" / pasta / "parado-4.png").exists():
                 quadro = quadros(pasta, altura=60)[int(self.tempo * 6 + pos) % 4]
                 ui.blit(quadro, quadro.get_rect(midbottom=(x, degrau.y)))
             cor_nome = P.OURO if self._e_destaque(r) else P.BRANCO
@@ -98,7 +102,10 @@ class CenaRanking(Cena):
         ui = self.camada.limpar()
         texto(ui, "RANKING", (L // 2, 6), P.OURO, 23, ancora="midtop")
         registros = self.app.ranking.registros
+        self._no_podio = []
         self._podio(ui, registros)
         self._lista(ui, registros)
         texto(ui, "Enter ou clique: voltar", (L // 2, A - 14), P.CINZA, 11, ancora="midtop")
         self.camada.apresentar(tela)
+        for quadro, (x, y) in self._no_podio:
+            tela.blit(quadro, quadro.get_rect(midbottom=(x * ESCALA, y * ESCALA)))

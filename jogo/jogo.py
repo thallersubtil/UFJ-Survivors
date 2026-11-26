@@ -39,13 +39,11 @@ class Jogo:
     MOEDAS_POR_PROVA = 150       # bônus de moedas a cada prova aprovada
     MOEDAS_POR_MINUTO = 6        # bolsa pelo tempo sobrevivido, paga no fim
 
-    def __init__(self, classe_jogador, fase=None, semente=None, mapa=None, fases=None, aparencia=None):
+    def __init__(self, classe_jogador, fase=None, semente=None, mapa=None, fases=None):
         self.rng = random.Random(semente)
         self.mapa = mapa or MapaUFJ.carregar(self.rng) or Cenario(rng=self.rng)
         self.arena = self.mapa.arena
         self.jogador = classe_jogador(self.mapa.inicio)
-        if aparencia is not None:
-            self.jogador.vestir(aparencia)
         if fases is None:
             fases = [fase] if fase is not None else semestre()
         self.fases = list(fases)
@@ -83,7 +81,7 @@ class Jogo:
     @classmethod
     def a_partir_de(cls, classe_jogador, opcoes, semente=None):
         """Monta a partida a partir das OpcoesDePartida (provas, treino, imortal, aparência)."""
-        jogo = cls(classe_jogador, fases=opcoes.criar_fases(), semente=semente, aparencia=opcoes.aparencia)
+        jogo = cls(classe_jogador, fases=opcoes.criar_fases(), semente=semente)
         jogo.treino = opcoes.treino
         jogo.jogador.imortal = opcoes.imortal
         jogo.jogador.desbloqueios = opcoes.desbloqueios

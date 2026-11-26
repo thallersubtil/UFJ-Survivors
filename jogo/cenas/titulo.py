@@ -7,7 +7,8 @@ from jogo.cenas.cena import Cena
 from jogo.cenas.widgets import TECLAS_CONFIRMAR
 from jogo.config import ALTURA, LARGURA, TITULO
 from jogo.nucleo.recursos import Recursos
-from jogo.ui.pixel import (A, L, CamadaPixel, Paleta as P, ease_back, icone, janela, onda, quadros, texto)
+from jogo.ui.pixel import (A, ESCALA, L, CamadaPixel, Paleta as P, boneco_nitido, ease_back, icone, janela, onda,
+                           texto)
 
 
 class CenaTitulo(Cena):
@@ -90,13 +91,15 @@ class CenaTitulo(Cena):
         else:
             texto(ui, TITULO.upper(), (440, y), P.OURO, 23, ancora="center")
 
-    def _corredores(self, ui):
+    def _corredores(self, tela):
+        """Os alunos correndo no rodapé, direto na tela (a arte grande reduzida, sem passar pela camada)."""
         for i, pasta in enumerate(self.CORREDORES):
-            if not (Recursos.pasta / "sprites" / pasta / "andar-4.png").exists():
+            quadros_do_andar = boneco_nitido(pasta, "andar", altura=40 * ESCALA)
+            if not quadros_do_andar:
                 continue
             x = (self.tempo * 70 + i * 120) % (L + 120) - 60
-            quadro = quadros(pasta, "andar-4.png", altura=40)[int(self.tempo * 10 + i) % 4]
-            ui.blit(quadro, quadro.get_rect(midbottom=(int(x), 344)))
+            quadro = quadros_do_andar[int(self.tempo * 10 + i) % len(quadros_do_andar)]
+            tela.blit(quadro, quadro.get_rect(midbottom=(int(x * ESCALA), 344 * ESCALA)))
 
     def _menu(self, ui):
         for i, (nome, _) in enumerate(self.opcoes):
@@ -109,15 +112,18 @@ class CenaTitulo(Cena):
                                                                    (r.x, r.bottom)])
             pygame.draw.line(ui, P.OURO if sel else (190, 205, 240), (r.x, r.y + 1), (r.right + 6, r.y + 1), 2)
             texto(ui, nome, (r.x + 22, r.y + 9), P.OURO if sel else P.BRANCO, 11)
-            if sel and (Recursos.pasta / "sprites/otaku/parado-4.png").exists():
-                mini = quadros("otaku", altura=26)[int(self.tempo * 6) % 4]
-                ui.blit(mini, mini.get_rect(midright=(r.right + 30, r.centery)))
+            if sel:                                               # seta apontando para a opção escolhida
+                x, y = r.right + 16 + int(3 * abs(onda(self.tempo, 1.2))), r.centery
+                pygame.draw.polygon(ui, P.ESC, [(x - 2, y), (x + 11, y - 10), (x + 11, y - 5), (x + 23, y - 5),
+                                                (x + 23, y + 5), (x + 11, y + 5), (x + 11, y + 10)])
+                pygame.draw.polygon(ui, P.OURO, [(x, y), (x + 10, y - 8), (x + 10, y - 3), (x + 21, y - 3),
+                                                 (x + 21, y + 3), (x + 10, y + 3), (x + 10, y + 8)])
 
     def desenhar(self, tela):
         self._fundo(tela)
         ui = self.camada.limpar()
         self._logo(ui)
-        self._corredores(ui)
         self._menu(ui)
         texto(ui, "Trabalho de POO  ·  UFJ 2026", (L - 8, A - 14), P.CINZA, 11, ancora="topright")
         self.camada.apresentar(tela)
+        self._corredores(tela)

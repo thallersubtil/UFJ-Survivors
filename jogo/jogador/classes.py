@@ -28,7 +28,6 @@ class Otaku(Jogador):
     PASTA_SPRITE = "otaku"
     RETRATO = "retratos/otaku.png"
     ROSTO = "rostos/otaku.png"
-    APARENCIA_FIXA = True
     PASTA_TRANSFORMADO = "otaku_ssj"
     IMAGEM_TRANSFORMADO = "sprites/otaku_ssj.png"
 
@@ -51,7 +50,6 @@ class Programador(Jogador):
     PASTA_SPRITE = "programador"
     RETRATO = "retratos/programador.png"
     ROSTO = "rostos/programador.png"
-    APARENCIA_FIXA = True
 
     def criar_arma_inicial(self):
         return CobraPython()
@@ -72,7 +70,6 @@ class MestreDeRPG(Jogador):
     PASTA_SPRITE = "mestre_de_rpg"
     RETRATO = "retratos/mestre_de_rpg.png"
     ROSTO = "rostos/mestre_de_rpg.png"
-    APARENCIA_FIXA = True
 
     def criar_arma_inicial(self):
         return Gemini()
@@ -93,7 +90,6 @@ class Monitor(Jogador):
     PASTA_SPRITE = "monitor"
     RETRATO = "retratos/monitor.png"
     ROSTO = "rostos/monitor.png"
-    APARENCIA_FIXA = True
 
     def criar_arma_inicial(self):
         return QuadroBranco()
@@ -114,7 +110,6 @@ class Gamer(Jogador):
     PASTA_SPRITE = "gamer"
     RETRATO = "retratos/gamer.png"
     ROSTO = "rostos/gamer.png"
-    APARENCIA_FIXA = True
 
     def criar_arma_inicial(self):
         return Controle()
@@ -135,7 +130,6 @@ class Calouro(Jogador):
     PASTA_SPRITE = "calouro"
     RETRATO = "retratos/calouro.png"
     ROSTO = "rostos/calouro.png"
-    APARENCIA_FIXA = True
 
     def criar_arma_inicial(self):
         return Apostila()
@@ -156,7 +150,6 @@ class CaraDaCarona(Jogador):
     PASTA_SPRITE = "cara_da_carona"
     RETRATO = "retratos/cara_da_carona.png"
     ROSTO = "rostos/cara_da_carona.png"
-    APARENCIA_FIXA = True
 
     def criar_arma_inicial(self):
         return FuscaAzul()

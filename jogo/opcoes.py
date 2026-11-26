@@ -11,7 +11,6 @@ class OpcoesDePartida:
     treino: bool = False              # treino não entra no ranking
     direto_no_chefe: bool = False     # começa a prova poucos segundos antes do chefe
     imortal: bool = False             # o herói não leva dano
-    aparencia: Optional["Aparencia"] = None   # noqa: F821  (jogo.jogador.aparencia)
     melhorias: tuple = ()             # Melhorias permanentes compradas (jogo.loja.melhorias)
     desbloqueios: frozenset = frozenset()   # nomes das armas e itens comprados na loja
     lanche: Optional[type] = None     # classe do Lanche da Cantina guardado (só fora do treino)
@@ -20,9 +19,6 @@ class OpcoesDePartida:
     def treino_contra(cls, prova, direto_no_chefe=False, imortal=False):
         """Opções do modo treino: só a prova escolhida."""
         return cls(provas=(prova,), treino=True, direto_no_chefe=direto_no_chefe, imortal=imortal)
-
-    def com_aparencia(self, aparencia):
-        return replace(self, aparencia=aparencia)
 
     def com_progresso(self, progresso):
         """As mesmas opções, com o que o aluno comprou no Centro Acadêmico."""
