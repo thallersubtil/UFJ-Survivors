@@ -165,21 +165,27 @@ class DadoDoMestre(JogoDeAposta):
 
 
 class RoletaDoBandejao(JogoDeAposta):
-    """Roleta com o cardápio do RU: cada prato paga uma coisa. A fila não paga nada."""
+    """Roleta do RU: o aluno pede um prato e a roda decide o que a tia serve. Se sair o prato pedido, ganha;
+    quanto menos casas o prato tem na roda, mais ele paga."""
 
     NOME = "Roleta do Bandejão"
-    DESCRICAO = "Strogonoff paga 3x, bife 2x, frango 1,5x, salada 0,5x. Arroz, feijão, chuchu e Fila: nada."
-    SETORES = ("Arroz", "Feijão", "Salada", "Chuchu", "Frango", "Bife", "Strogonoff", "Fila")
-    PAGAMENTO = {"Salada": 0.5, "Frango": 1.5, "Bife": 2.0, "Strogonoff": 3.0}
+    DESCRICAO = "Peça um prato e gire: se a roda parar nele, você ganha. Prato mais raro na roda paga mais."
+    # a roda, casa por casa: 5 de arroz, 4 de frango, 2 de bife e 1 de strogonoff
+    SETORES = ("Arroz", "Frango", "Arroz", "Bife", "Frango", "Arroz", "Strogonoff", "Frango", "Arroz", "Bife",
+               "Frango", "Arroz")
+    PAGAMENTO = {"Arroz": 2.2, "Frango": 2.8, "Bife": 5.5, "Strogonoff": 11.0}
+    ESCOLHAS = tuple(PAGAMENTO)
 
     def sorteios(self):
-        return self.SETORES
+        """As casas da roda (o número da casa, não o prato: pratos repetidos têm mais chance)."""
+        return tuple(range(len(self.SETORES)))
 
     def avaliar(self, sorteio, escolha):
-        multiplicador = self.PAGAMENTO.get(sorteio, 0)
-        if multiplicador:
-            return Desfecho(sorteio, multiplicador, f"{sorteio}! {_com_virgula(multiplicador)}x", (sorteio,))
-        return Desfecho("Outros e a Fila", 0, f"{sorteio}. Nada desta vez.", (sorteio,))
+        prato = self.SETORES[sorteio]
+        simbolos = (prato, str(sorteio))
+        if prato == escolha:
+            return Desfecho(f"Sai {escolha}", self.PAGAMENTO[prato], f"{prato}! Era o seu pedido.", simbolos)
+        return Desfecho("Sai outro prato", 0, f"Saiu {prato}. Você pediu {escolha}.", simbolos)
 
 
 JOGOS_DE_APOSTA = (MaquinaDeSalgadinho, DadoDoMestre, RoletaDoBandejao)

@@ -12,6 +12,7 @@ from dataclasses import dataclass
 
 import pygame
 
+from jogo.cenas.cassino_crupie import Crupie
 from jogo.cenas.cassino_mesas import mesa_de
 from jogo.cenas.cena import Cena
 from jogo.cenas.widgets import TECLAS_CONFIRMAR
@@ -19,7 +20,7 @@ from jogo.loja.cassino import JOGOS_DE_APOSTA, Cassino, SegredosDoCassino
 from jogo.nucleo.recursos import Recursos
 from jogo.ui.materiais import fundo_desfocado, madeira
 from jogo.ui.pixel import (A, L, CamadaPixel, Paleta as P, clarear, ease_back, ease_out, escurecer_cor, fonte, icone,
-                           janela, moldura, onda, piscar, quadros, quebrar, texto)
+                           janela, moldura, onda, piscar, quebrar, texto)
 
 
 @dataclass
@@ -53,7 +54,7 @@ class CenaCassino(Cena):
     BORDA_DA_MESA = 208                  # onde o tampo da mesa começa (o crupiê fica atrás dele)
     PAINEL = pygame.Rect(380, 60, 244, 200)      # a tabela de prêmios, quando aberta (por cima do salão)
     BOTAO_SEGREDOS = pygame.Rect(L - 16 - 28, 39, 28, 21)
-    CRUPIE_X, CRUPIE_ALTURA = 84, 72
+    CRUPIE_X = 104                       # centro do crupiê (camada); ele fica atrás da mesa, à esquerda
     BOTAO_VOLTAR = pygame.Rect(8, 8, 74, 20)
     CAIXA_SALDO = pygame.Rect(L - 116, 8, 108, 20)
     BOTAO_JOGAR = pygame.Rect(500, 271, 124, 44)
@@ -67,6 +68,7 @@ class CenaCassino(Cena):
         self.rng = rng or random.Random()
         self.jogos = [classe() for classe in JOGOS_DE_APOSTA]
         self.mesas = [mesa_de(jogo) for jogo in self.jogos]
+        self._crupies = {}               # um crupiê por mesa, criado quando ela aparece
         self.indice_jogo = 0
         self.indice_aposta = 0           # igual a len(APOSTAS): all in
         self.indice_escolha = 0
@@ -83,6 +85,7 @@ class CenaCassino(Cena):
         self.tabela_aberta = False       # a tabela de prêmios e chances só aparece quando o aluno consulta
         self._abertura = 0.0             # de 0 (tabela fechada) a 1 (aberta): anima a tabela e afasta a mesa
         self.camada = CamadaPixel()
+        self.camada_do_fundo = CamadaPixel()      # a parede: fica atrás do crupiê, que é desenhado em resolução cheia
         self._cenario = None
 
     # ------------------------------------------------------------ estado
@@ -93,6 +96,19 @@ class CenaCassino(Cena):
     @property
     def mesa(self):
         return self.mesas[self.indice_jogo]
+
+    def crupie_de(self, mesa):
+        if id(mesa) not in self._crupies:
+            self._crupies[id(mesa)] = Crupie(mesa.PASTA_CRUPIE, mesa.FALAS)
+        return self._crupies[id(mesa)]
+
+    @property
+    def crupie(self):
+        return self.crupie_de(self.mesa)
+
+    @property
+    def crupies(self):
+        return [self.crupie_de(mesa) for mesa in self.mesas]
 
     @property
     def apostando_tudo(self):
@@ -188,6 +204,7 @@ class CenaCassino(Cena):
         self.resultado = None
         self.voadoras = []
         self.mensagem = ""
+        self.crupie.entrar(self.tempo)
 
     def _trocar_jogo(self):
         self._selecionar_jogo((self.indice_jogo + 1) % len(self.jogos))
@@ -231,7 +248,9 @@ class CenaCassino(Cena):
         return pygame.Rect(self.SALAO.x + i * 128, 40, 124, 20)
 
     def caixa_do_palpite(self, i):
-        return pygame.Rect(306, 269 + i * 21, 112, 19)
+        if len(self.jogo.ESCOLHAS) <= 2:
+            return pygame.Rect(306, 269 + i * 21, 112, 19)
+        return pygame.Rect(298 + (i % 2) * 100, 269 + (i // 2) * 21, 98, 19)      # quatro palpites: duas colunas
 
     def tratar_evento(self, evento):
         if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
@@ -289,6 +308,7 @@ class CenaCassino(Cena):
         if abs(alvo - self._saldo_mostrado) < 0.6:
             self._saldo_mostrado = float(alvo)
         self.voadoras = [v for v in self.voadoras if v.tipo == "ficha" or not v.terminou(self.tempo)]
+        self.crupie.atualizar(self)
         if not self.girando:
             return
         self.girando = max(0.0, self.girando - dt)
@@ -299,6 +319,7 @@ class CenaCassino(Cena):
             Recursos.tocar("giro", 0.2)
         if not self.girando:
             self._ao_parar()
+            self.crupie.atualizar(self)
 
     def _ao_parar(self):
         self._fim_do_giro = self.tempo
@@ -368,8 +389,7 @@ class CenaCassino(Cena):
         pygame.draw.ellipse(mesa, (40, 124, 80), (w // 2 - 200, 6, 400, 62), 1)
         madeira(mesa, pygame.Rect(0, mesa.get_height() - 9, w, 9), tabuas=9)
         pygame.draw.line(mesa, P.ESC, (0, mesa.get_height() - 10), (w, mesa.get_height() - 10))
-        for cx, n, cor in ((w - 58, 5, P.AZUL2), (w - 42, 3, P.VERM), (w - 30, 6, (40, 140, 80)), (132, 4, P.ROXO),
-                           (148, 2, P.OURO2)):   # pilhas de fichas da casa
+        for cx, n, cor in ((w - 58, 5, P.AZUL2), (w - 42, 3, P.VERM), (w - 30, 6, (40, 140, 80))):   # pilhas de fichas da casa
             for k in range(n):
                 self._ficha_de_lado(mesa, (cx, 30 - k * 3), cor)
         self._tampo = mesa
@@ -382,25 +402,6 @@ class CenaCassino(Cena):
         pygame.draw.rect(sup, cor, (x - 7, y - 1, 14, 3))
         for dx in (-5, -1, 3):
             pygame.draw.rect(sup, P.BRANCO, (x + dx, y - 1, 2, 3))
-
-    def _crupie(self, ui):
-        pasta = self.mesa.PASTA_CRUPIE
-        if not (Recursos.pasta / "sprites" / pasta / "parado-4.png").exists():
-            return
-        t = self.tempo_do_resultado
-        quadro = quadros(pasta, altura=self.CRUPIE_ALTURA)[int(self.tempo * 4) % 4]
-        pulo = 0
-        if t is not None and t < 1.6:
-            if self.resultado.ganhou:                        # o crupiê sente o prejuízo
-                if (Recursos.pasta / "sprites" / pasta / "dano-1.png").exists():
-                    careta = Recursos.imagem(f"sprites/{pasta}/dano-1.png")
-                    careta = careta.subsurface(careta.get_bounding_rect())
-                    altura = self.CRUPIE_ALTURA
-                    quadro = pygame.transform.scale(careta, (round(careta.get_width() * altura / careta.get_height()), altura))
-                pulo = int(onda(t, 9, 2))
-            elif not self.resultado.premio:                  # e comemora quando a casa ganha
-                pulo = -int(abs(math.sin(t * 9)) * 8 * (1 - t / 1.6))
-        ui.blit(quadro, quadro.get_rect(midbottom=(self.CRUPIE_X + self.deslocamento // 4, self.BORDA_DA_MESA + 16 + pulo)))
 
     def _raios(self, ui, centro, t):
         """Raios dourados girando atrás do aparelho quando o aluno ganha."""
@@ -416,16 +417,25 @@ class CenaCassino(Cena):
             pygame.draw.polygon(s, (255, 220, 110, int(70 * forca)), pontos)
         ui.blit(s, self.SALAO.topleft, (0, 0, self.SALAO.w, self.BORDA_DA_MESA - self.SALAO.y))
 
-    def _salao(self, ui):
+    def _parede_do_salao(self, ui):
+        """O que fica atrás do crupiê: a parede e os raios de quando o aluno ganha."""
         if self._cenario is None:
             self._montar_cenario()
         t = self.tempo_do_resultado
-        ganhou = t is not None and self.resultado.ganhou
-        perdeu = t is not None and not self.resultado.premio
         ui.blit(self._parede, self.SALAO.topleft)
-        if ganhou:
+        if t is not None and self.resultado.ganhou:
             self._raios(ui, self.origem_do_premio, t)
-        self._crupie(ui)
+
+    def _desenhar_crupie(self, tela):
+        """O crupiê, direto na tela (ilustração lisa, sem ampliar em blocos), com os pés escondidos pela mesa."""
+        recorte = pygame.Rect(self.SALAO.x * 2, self.SALAO.y * 2, self.SALAO.w * 2, (self.BORDA_DA_MESA - self.SALAO.y) * 2 + 8)
+        self.crupie.desenhar(tela, self.tempo, (self.CRUPIE_X + self.deslocamento // 4) * 2, self.BORDA_DA_MESA * 2 + 40,
+                             recorte)
+
+    def _salao(self, ui):
+        """O que fica na frente do crupiê: a mesa, o aparelho, as fichas e o resultado."""
+        t = self.tempo_do_resultado
+        perdeu = t is not None and not self.resultado.premio
         ui.blit(self._tampo, (self.SALAO.x, self.BORDA_DA_MESA))
         tremor = int(onda(t, 14, 5) * (1 - janela(t, 0, 0.45))) if perdeu else 0
         self.mesa.desenhar_aparelho(ui, self, tremor + self.deslocamento)
@@ -438,10 +448,11 @@ class CenaCassino(Cena):
             ui.blit(veu, self.SALAO.topleft)
         pygame.draw.rect(ui, P.ESC, self.SALAO.inflate(4, 4), 2, border_radius=3)
         pygame.draw.rect(ui, P.OURO2, self.SALAO.inflate(2, 2), 1, border_radius=2)
+        self.crupie.desenhar_fala(ui, self.tempo, (self.CRUPIE_X + self.deslocamento // 4, self.BORDA_DA_MESA + 2))
         self._faixa_do_resultado(ui, t)
 
     def _faixa_do_resultado(self, ui, t):
-        centro = (self.SALAO.centerx + self.deslocamento, self.SALAO.bottom - 20)
+        centro = (self.SALAO.centerx + self.deslocamento, self.SALAO.bottom - 14)
         if self.mensagem:
             faixa = pygame.Rect(0, 0, max(200, fonte(11).size(self.mensagem)[0] + 24), 20)
             faixa.center = centro
@@ -625,8 +636,12 @@ class CenaCassino(Cena):
                 marcada = i == self.indice_escolha % len(self.jogo.ESCOLHAS)
                 moldura(ui, caixa, fundo=P.SELECAO if marcada else P.NAVY, borda=P.OURO if marcada else P.CINZA,
                         raio=3, brilho=False)
-                texto(ui, self.mesa.rotulo_da_escolha(escolha), caixa.center, P.OURO if marcada else P.CINZA, 11,
-                      contorno=None, ancora="center", media=not marcada)
+                cor = self.mesa.cor_da_escolha(escolha)
+                if cor is not None:                                          # a cor do palpite no aparelho
+                    pygame.draw.rect(ui, P.ESC, (caixa.x + 5, caixa.y + 5, 9, 9))
+                    pygame.draw.rect(ui, cor, (caixa.x + 6, caixa.y + 6, 7, 7))
+                texto(ui, self.mesa.rotulo_da_escolha(escolha), (caixa.centerx + (5 if cor else 0), caixa.centery),
+                      P.OURO if marcada else P.CINZA, 11, contorno=None, ancora="center", media=not marcada)
         botao = self.BOTAO_JOGAR
         if self.girando:
             moldura(ui, botao, fundo=P.NAVY2, borda=P.CINZA, raio=5, brilho=False)
@@ -638,6 +653,9 @@ class CenaCassino(Cena):
 
     def desenhar(self, tela):
         fundo_desfocado(tela, escuro=205)
+        self._parede_do_salao(self.camada_do_fundo.limpar())
+        self.camada_do_fundo.apresentar(tela)
+        self._desenhar_crupie(tela)
         ui = self.camada.limpar()
         self._salao(ui)
         self._apostas(ui)
