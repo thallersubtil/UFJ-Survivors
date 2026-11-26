@@ -11,12 +11,14 @@ class EstruturaDeDadosEmC(Materia):
     INTERVALO_FURIOSO = 1.3
     DANO_PROJETIL = 14
     VELOCIDADE_PROJETIL = 340
+    DANO_DO_LASER = 22
     LACAIOS = ("ponteiro", "pilha", "pente_ram")
     ARTES = {"*p": "ponteiro", "NULL": "null", "[]": "colchetes"}
     ARTE_DA_CHAMADA = "segfault"
 
     def ataques(self):
-        return [self.ponteiro_selvagem, self.segmentation_fault, self.empilhar, self.alocar]
+        return [self.ponteiro_selvagem, self.segmentation_fault, self.visao_de_raio_laser, self.empilhar,
+                self.alocar]
 
     def ponteiro_selvagem(self, chefe, jogo):
         """Investidas seguidas, mudando de direção, como um ponteiro sem rumo."""
@@ -26,6 +28,12 @@ class EstruturaDeDadosEmC(Materia):
         """Explode um anel de NULL e manda um leque rápido de ponteiros no herói."""
         self.anel(chefe, jogo, 16 if chefe.furioso else 12, simbolo="NULL", velocidade=230)
         self.leque(chefe, jogo, 5, abertura=10, velocidade=420)
+
+    def visao_de_raio_laser(self, chefe, jogo):
+        """Dois raios vermelhos pelos olhos: a mira acompanha o herói, trava e só então queima. Dois seguidos
+        quando furioso."""
+        chefe.fuzilar_com_os_olhos(self.DANO_DO_LASER, 2 if chefe.furioso else 1)
+        self.gritar(chefe, jogo, "VISÃO DE RAIO LASER!")
 
     def empilhar(self, chefe, jogo):
         """Uma fila de "[]" sempre mirada no herói: cada novo vai para o topo da pilha."""

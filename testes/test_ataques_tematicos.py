@@ -2,6 +2,7 @@
 import pygame
 import pytest
 
+from jogo.inimigos.acoes_do_chefe import RaiosPelosOlhos
 from jogo.inimigos.fabrica import FabricaDeInimigos
 from jogo.inimigos.lacaios_do_campus import LacaioDoCampus
 from jogo.inimigos.materias.arquitetura import ArquiteturaDeComputadores
@@ -293,3 +294,79 @@ def test_marca_acompanha_o_dono_e_some(jogo_limpo):
     assert marca.posicao == dono.posicao - (0, 50) and marca.ativo
     marca.atualizar(0.3, jogo)
     assert not marca.ativo
+
+
+# ---- raios pelos olhos do professor de ED
+
+def chefe_de_ed(jogo):
+    chefe = invocar(jogo, "chefe_arquitetura_ed")
+    chefe.vida = 1
+    chefe.receber_dano(10)                                     # Arquitetura cai, ED assume
+    chefe.troca = 0
+    return chefe
+
+
+def test_ed_tem_raios_pelos_olhos_que_saem_da_altura_dos_olhos(jogo_limpo):
+    jogo = jogo_limpo()
+    chefe = chefe_de_ed(jogo)
+    assert chefe.materia.visao_de_raio_laser in chefe.materia.ataques()
+    chefe.materia.visao_de_raio_laser(chefe, jogo)
+    raios = chefe.acao_atual
+    assert isinstance(raios, RaiosPelosOlhos) and len(raios.feixes()) == 2
+    topo = chefe.posicao.y - chefe.altura_sprite / 2
+    for olho in chefe.olhos():
+        assert topo < olho.y < topo + chefe.altura_sprite * 0.2      # na cabeça
+    chefe.olhando_esquerda = False
+    direita = [o.x for o in chefe.olhos()]
+    chefe.olhando_esquerda = True
+    assert [o.x - chefe.posicao.x for o in chefe.olhos()] == [chefe.posicao.x - x for x in direita]
+
+
+def test_raios_nascem_exatamente_nos_olhos_em_qualquer_quadro(jogo_limpo):
+    """O olho é medido no desenho de cada quadro: fica no rosto, colado na frente dele, e é dali que o feixe sai."""
+    jogo = jogo_limpo()
+    chefe = chefe_de_ed(jogo)
+    chefe.olhando_esquerda = False
+    for animacao in chefe.animador.animacoes.values():
+        for quadro in animacao.quadros:
+            x, y = chefe.olho_no_quadro(quadro)
+            px, py = round(x + quadro.get_width() / 2), round(y + quadro.get_height() / 2)
+            assert quadro.get_at((px, py)).a > 128                           # em cima do rosto, não no ar
+            assert py - quadro.get_bounding_rect().top == chefe.ALTURA_DO_OLHO
+            assert all(quadro.get_at((fx, py)).a <= 128 for fx in range(px + 5, quadro.get_width()))   # na frente
+    chefe.materia.visao_de_raio_laser(chefe, jogo)
+    assert [origem for origem, _ in chefe.acao_atual.feixes()] == chefe.olhos()
+
+
+def test_raios_pelos_olhos_avisam_antes_e_ferem_quem_ficou_na_mira(jogo_limpo):
+    jogo = jogo_limpo()
+    chefe = chefe_de_ed(jogo)
+    raios = RaiosPelosOlhos(chefe, 20)
+    while not raios.disparando:
+        assert jogo.jogador.vida == jogo.jogador.vida_maxima    # mirando e travando ninguém se machuca
+        raios(1 / 60, jogo)
+    assert raios(1 / 60, jogo) is False
+    assert jogo.jogador.vida == jogo.jogador.vida_maxima - 20
+    for _ in range(60):                                         # o mesmo disparo não fere duas vezes
+        if raios(1 / 60, jogo):
+            break
+    assert jogo.jogador.vida == jogo.jogador.vida_maxima - 20
+
+
+def test_quem_sai_da_linha_depois_da_trava_escapa_dos_raios(jogo_limpo):
+    jogo = jogo_limpo()
+    chefe = chefe_de_ed(jogo)
+    raios = RaiosPelosOlhos(chefe, 20)
+    while not raios.travado:
+        raios(1 / 60, jogo)
+    travada = pygame.Vector2(raios.direcao)
+    jogo.jogador.posicao += travada.rotate(90) * 200           # desviou para o lado
+    terminou = False
+    for _ in range(120):
+        terminou = raios(1 / 60, jogo)
+        if terminou:
+            break
+    assert terminou and raios.direcao == travada
+    assert jogo.jogador.vida == jogo.jogador.vida_maxima
+    raios.tempo = raios.MIRA + raios.TRAVA                      # e o desenho dos feixes não quebra
+    raios.desenhar_aviso(tela(), jogo.camera)
