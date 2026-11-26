@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 import pygame
 
-from jogo.inimigos.acoes_do_chefe import Investida
+from jogo.inimigos.acoes_do_chefe import Investida, RaiosPelosOlhos
 from jogo.inimigos.inimigo import Inimigo
 
 
@@ -14,6 +14,9 @@ class Chefe(Inimigo, ABC):
     INTERVALO_ATAQUE = 2.6
     INTERVALO_FURIOSO = 1.6
     DISTANCIA_PREFERIDA = 260
+    ALTURA_DO_OLHO = 14          # pixels abaixo do alto da cabeça, no sprite de perfil
+    RECUO_DO_OLHO = 3            # pixels para trás da frente do rosto
+    _olhos_medidos = {}          # quadro do sprite -> onde fica o olho nele (a partir do centro, olhando à direita)
 
     def __init__(self, posicao, escala=1.0):
         super().__init__(posicao, 1.0)
@@ -48,6 +51,28 @@ class Chefe(Inimigo, ABC):
         """Começa uma investida (ou várias seguidas) em direção ao herói."""
         self.executar(Investida(self, vezes, **ajustes))
 
+    def olho_no_quadro(self, quadro):
+        """Mede no próprio desenho onde está o olho: na altura dos olhos, logo atrás da frente do rosto.
+        Cada quadro da animação tem a cabeça num lugar, então a medida é por quadro (e fica guardada)."""
+        if id(quadro) not in Chefe._olhos_medidos:
+            mascara = pygame.mask.from_surface(quadro, 128)
+            largura, altura = quadro.get_size()
+            y = min(altura - 1, quadro.get_bounding_rect().top + self.ALTURA_DO_OLHO)
+            frente = max((x for x in range(largura) if mascara.get_at((x, y))), default=largura // 2)
+            Chefe._olhos_medidos[id(quadro)] = (frente - self.RECUO_DO_OLHO - largura / 2, y - altura / 2)
+        return Chefe._olhos_medidos[id(quadro)]
+
+    def olhos(self):
+        """Onde ficam os olhos, no mundo: é exatamente daí que saem os raios. De perfil aparece um olho só;
+        o outro fica colado nele."""
+        x, y = self.olho_no_quadro(self.animador.quadro_atual)
+        lado = -1 if self.olhando_esquerda else 1
+        return [self.posicao + ((x + recuo) * lado, y) for recuo in (-1, 1)]
+
+    def fuzilar_com_os_olhos(self, dano, vezes=1):
+        """Começa os raios pelos olhos: mira, trava e dispara."""
+        self.executar(RaiosPelosOlhos(self, dano, vezes))
+
     def mover(self, dt, jogo):
         if self.acao_atual is not None:
             if self.acao_atual(dt, jogo):
@@ -72,6 +97,8 @@ class Chefe(Inimigo, ABC):
         """Chefe não é empurrado: um golpe não tira ele do ataque que está fazendo."""
 
     def desenhar_corpo(self, tela, camera):
-        if self.acao_atual is not None:
+        if self.acao_atual is not None and not self.acao_atual.POR_CIMA:
             self.acao_atual.desenhar_aviso(tela, camera)
         super().desenhar_corpo(tela, camera)
+        if self.acao_atual is not None and self.acao_atual.POR_CIMA:
+            self.acao_atual.desenhar_aviso(tela, camera)
