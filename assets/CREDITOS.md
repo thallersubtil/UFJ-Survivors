@@ -7,9 +7,9 @@
 - `assets/cenario/mapa_ufj.png`, `assets/cenario/predios/`, `assets/cenario/mapa_ufj.json`: gerados por `ferramentas/gerar_mapa.py`. Contornos e nomes dos prédios, vias e calçadas: © colaboradores do OpenStreetMap, licença ODbL (openstreetmap.org/copyright). As cores do chão foram classificadas a partir de imagem de satélite Esri World Imagery, usada só como referência (a imagem não é distribuída).
 - Referências visuais do portal, da Biblioteca Flor do Cerrado e da Faculdade de Medicina: fotos do Wikimedia Commons ("Entrada da UFJ", "Universidade Federal de Jataí" e "Biblioteca Flor-do-Cerrado", CC BY-SA 4.0; "Fmufj", domínio público).
 
-## Professora (chefe da 3ª prova) e professor de computação (chefe da 2ª prova)
+## Professores (chefes das três provas)
 
-`assets/sprites/professora/` e `assets/sprites/professor_computacao/` (parado e andar, 4 quadros cada): gerada em 19/10/2026 com a ferramenta de imagens do ChatGPT, seguindo a receita do `AGENTS.md`, com as folhas do professor como referência de estilo. Personagens genéricos (não retratam pessoas reais). Os quadros foram recortados, alinhados pela base e reduzidos para 124 px de altura.
+`assets/sprites/professor/`, `assets/sprites/professor_computacao/` e `assets/sprites/professora/`, e as ilustrações de apresentação em `assets/chefes/` (`calculo.png`, `arquitetura_ed.png`, `td_poo.png`): caricaturas dos professores Flávio (Cálculo I), Bruno (Arquitetura de Computadores e Estrutura de Dados) e Emília (Transformação Digital e POO), que aparecem no jogo com o primeiro nome. Foram geradas em novembro de 2026 com a ferramenta de imagens do ChatGPT a partir de fotos de referência dos professores, como homenagem bem-humorada do trabalho. As fotos não estão no repositório.
 
 ## Centro Acadêmico (30/10/2026)
 
