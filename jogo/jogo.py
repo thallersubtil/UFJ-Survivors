@@ -69,6 +69,7 @@ class Jogo:
         self.terminou = False
         self.venceu = False
         self.anuncios = []
+        self.invocacoes_abertas = False   # os círculos dos mini-chefes já foram espalhados pelo campus
         self.marcados = set()         # nomes dos mini-chefes que o aluno marcou no mini-mapa (ganham seta na tela)
         self.marcos = set()           # coisas que aconteceram na partida (para as conquistas)
         self.notas = []               # nota de cada prova vencida (para o boletim do fim de jogo)
@@ -102,6 +103,13 @@ class Jogo:
     @property
     def inimigos(self):
         return self.grupos["inimigo"]
+
+    TEMPO_DO_MINI_CHEFE = 180     # a cada tantos segundos de partida o mini-chefe ganha mais uma vez a vida base
+
+    @property
+    def escala_dos_mini_chefes(self):
+        """Quanto mais tarde na partida o aluno invoca, mais forte o mini-chefe vem (vida, dano e lacaios)."""
+        return 1 + self.placar.tempo / self.TEMPO_DO_MINI_CHEFE
 
     def marcadores(self):
         """O que aparece no mini-mapa: círculos de invocação à espera e mini-chefes já invocados e vivos."""
@@ -155,6 +163,10 @@ class Jogo:
     def resolver_obstaculos(self, posicao, raio):
         """Posição corrigida para fora dos prédios do mapa."""
         return self.mapa.empurrar(posicao, raio)
+
+    def passo_do_chao(self, posicao):
+        """Quanto o chão deixa o aluno andar ali (1 = normal; mato e plantação seguram o passo)."""
+        return self.mapa.fator_de_velocidade(posicao)
 
     # Buscas
 

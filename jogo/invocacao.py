@@ -61,7 +61,9 @@ class LocalDeInvocacao(Entidade):
             self.invocar(jogo)
 
     def invocar(self, jogo):
-        chefe = FabricaDeInimigos.criar(self.nome_do_inimigo, self.posicao, jogo.fase.escala_dificuldade)
+        chegada = jogo.fase.posicao_de_nascimento(jogo)       # logo fora da tela: ele entra andando
+        chefe = FabricaDeInimigos.criar(self.nome_do_inimigo, chegada, jogo.escala_dos_mini_chefes)
+        chefe.posto = pygame.Vector2(self.posicao)            # o lugar que ele guarda é o do círculo
         jogo.adicionar(chefe)
         chefe.ao_chegar(jogo)
         jogo.chefe_a_apresentar = chefe          # a partida para e ele é apresentado, como os chefes das provas

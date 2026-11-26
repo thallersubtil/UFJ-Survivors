@@ -109,16 +109,18 @@ def test_disparo_gasta_cafe_e_sem_cafe_atira_mais_devagar():
     assert e.fracao_cafe == pytest.approx(e.municao / 12)
 
 
-def test_item_nivel_ate_3_e_aplicar():
+def test_item_nivel_ate_4_e_aplicar():
     a = Amuleto()
     jogador = SimpleNamespace(sorte=0)
     a.subir_nivel()
     a.subir_nivel()
-    assert a.no_maximo
+    assert not a.no_maximo
+    a.subir_nivel()
+    assert a.no_maximo and a.nivel == 4
     with pytest.raises(ValueError):
         a.subir_nivel()
     a.aplicar(jogador)
-    assert jogador.sorte == 3
+    assert jogador.sorte == 4
 
 
 def test_especial_recarga():

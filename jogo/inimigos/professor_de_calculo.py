@@ -7,5 +7,6 @@ from jogo.inimigos.materias.calculo import CalculoI
 @FabricaDeInimigos.registrar("chefe_calculo")
 class ProfessorDeCalculo(ChefePossuido):
     NOME = "Professor de Cálculo"
+    NOME_PROPRIO = "Flávio"
     NOME_PROFESSOR = "o Professor de Cálculo"
     MATERIAS = (CalculoI,)

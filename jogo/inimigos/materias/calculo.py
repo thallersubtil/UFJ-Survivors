@@ -10,6 +10,8 @@ class CalculoI(Materia):
     INTERVALO_ATAQUE = 2.6
     INTERVALO_FURIOSO = 1.7
     LACAIOS = ("calculadora", "pi", "bug")
+    ARTES = {"lim": "lim", "dx": "dx", "∫": "integral", "π": "pi"}
+    ARTE_DA_CHAMADA = "esquadro"
 
     def ataques(self):
         return [self.limite, self.derivada, self.integral, self.chamar_lacaios]
@@ -25,7 +27,8 @@ class CalculoI(Materia):
     def integral(self, chefe, jogo):
         """Três anéis de "dx", cada um girado um pouco: forma uma espiral."""
         quantidade = 12 if chefe.furioso else 10
-        self.rajada(chefe, 3, 0.3, lambda i: self.anel(chefe, jogo, quantidade, giro=i * 10, velocidade=220))
+        self.rajada(chefe, 3, 0.3, lambda i: self.anel(chefe, jogo, quantidade, giro=i * 10, velocidade=220,
+                                                       simbolo=("dx", "∫", "dx")[i]))
 
     def chamar_lacaios(self, chefe, jogo):
         self.chamada(chefe, jogo, 8 if chefe.furioso else 6, "LISTA DE EXERCÍCIOS!")

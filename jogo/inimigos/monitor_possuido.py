@@ -8,7 +8,7 @@ from jogo.inimigos.inimigo import Inimigo
 from jogo.nucleo.animacao import Animador
 from jogo.nucleo.desenho import desenhar_sprite
 from jogo.nucleo.recursos import Recursos
-from jogo.projeteis.projeteis import ProjetilDaMateria
+from jogo.projeteis.tematicos import ProjetilTematico
 
 
 @FabricaDeInimigos.registrar("monitor_possuido")
@@ -58,8 +58,8 @@ class MonitorPossuido(Inimigo):
         rumo = rumo.normalize()
         for i in range(self.LISTAS_POR_VEZ):
             direcao = rumo.rotate((i - (self.LISTAS_POR_VEZ - 1) / 2) * 18)
-            jogo.adicionar(ProjetilDaMateria(self.posicao, direcao * self.VELOCIDADE_LISTA, self.DANO_LISTA,
-                                             "?", self.COR))
+            jogo.adicionar(ProjetilTematico(self.posicao, direcao * self.VELOCIDADE_LISTA, self.DANO_LISTA,
+                                            "?", self.COR, arte="oficio"))
 
     def assustar(self, duracao):
         """Monitor possuído não cai em trote."""

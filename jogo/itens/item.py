@@ -6,7 +6,7 @@ class Item(ABC):
     NOME = "Item"
     DESCRICAO = ""
     ICONE = ""
-    NIVEL_MAXIMO = 3
+    NIVEL_MAXIMO = 4
     MELHORIAS = ()
     PRECO_DESBLOQUEIO = 0      # > 0: só aparece nas cartas depois de comprado no Centro Acadêmico
     PESO = 1.0                 # chance relativa de aparecer nas cartas

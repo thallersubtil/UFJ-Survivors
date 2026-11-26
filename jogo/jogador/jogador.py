@@ -303,7 +303,8 @@ class Jogador(SerVivo, ABC):
             self.posicao += self.rolamento.direcao * self.velocidade * self.rolamento.fator_velocidade * dt
         elif self.movendo:
             direcao.normalize_ip()
-            self.posicao += direcao * self.velocidade * dt
+            # mato alto e plantação seguram o passo (o rolamento passa por cima: é o jeito de sair rápido)
+            self.posicao += direcao * self.velocidade * jogo.passo_do_chao(self.posicao) * dt
             self.direcao_mira = pygame.Vector2(direcao)
             self.direcao_movimento = pygame.Vector2(direcao)
             if abs(direcao.x) > 0.01:

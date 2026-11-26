@@ -338,7 +338,7 @@ def test_perigo_avisa_antes_e_a_partida_para_para_apresentar_o_chefe(tmp_path):
             break
     apresentacao = app.cena_atual
     assert isinstance(apresentacao, CenaChefe) and jogo.chefe is not None and jogo.perigo == 0
-    assert apresentacao.frase == "Um Professor de Cálculo selvagem apareceu!"
+    assert apresentacao.frase == "O Professor de Cálculo Flávio apareceu!"
     tempo_da_partida = jogo.placar.tempo
     for _ in range(40):
         app.passo(1 / 60, [])
@@ -355,3 +355,13 @@ def test_a_professora_e_apresentada_no_feminino():
     from jogo.inimigos.professora_de_td_e_poo import ProfessoraDeTDEPOO
     from jogo.nucleo.recursos import Recursos
     assert ProfessoraDeTDEPOO.ARTIGO == "Uma" and (Recursos.pasta / ProfessoraDeTDEPOO.ILUSTRACAO).is_file()
+
+
+def test_apresentacao_dos_chefes_usa_o_nome_de_cada_professor():
+    from jogo.cenas.chefe import CenaChefe
+    from jogo.inimigos.fabrica import FabricaDeInimigos
+    esperado = {"chefe_calculo": "O Professor de Cálculo Flávio apareceu!",
+                "chefe_arquitetura_ed": "O Professor de Arquitetura e ED Bruno apareceu!",
+                "chefe_td_poo": "A Professora de TD e POO Emília apareceu!"}
+    for nome, frase in esperado.items():
+        assert CenaChefe(None, FabricaDeInimigos.criar(nome, (0, 0))).frase == frase

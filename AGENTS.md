@@ -64,6 +64,9 @@ jogo/inimigos/materias/  Materia (abstrata) e as cinco matérias: os ataques de 
 jogo/armas/            Arma, ArmaDeDisparo (usa café), ArmaSemMunicao (não usa café), uma arma por arquivo, colabs.py
 jogo/itens/            Item (abstrata) e os 14 itens (4 só depois de comprados na loja; a Cola só aparece ao subir de nível)
 jogo/projeteis/  jogo/ajudantes/  jogo/coletaveis/  jogo/efeitos.py   o que as armas e inimigos colocam na arena
+                       (projeteis/tematicos.py: os ataques desenhados dos chefes e mini-chefes, com a arte em
+                       assets/ataques/ montada por ferramentas/montar_ataques.py: ProjetilTematico, Bumerangue,
+                       GolpeNoChao, Poca e Marca)
 jogo/progressao.py     cartas de nível e prêmio do baú
 jogo/tesouro.py        Raridade (comum, épico, lendário) e Tesouro: o que sai de um baú, com crítico de sorte
 jogo/invocacao.py      LocalDeInvocacao: o círculo do mapa que invoca um mini-chefe opcional

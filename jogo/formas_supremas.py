@@ -286,7 +286,7 @@ class AulaMagna(QuadroBrancoNoChao):
         for inimigo in jogo.inimigos_proximos(self.posicao, self.raio * 1.25):
             rumo = self.posicao - inimigo.posicao
             if rumo.length_squared() > 100:
-                inimigo.posicao += rumo.normalize() * self.PUXAO * dt
+                inimigo.puxar(rumo.normalize() * self.PUXAO * dt)
 
     def desenhar(self, tela, camera):
         resto = self.duracao - self.tempo

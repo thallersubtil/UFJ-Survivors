@@ -12,6 +12,8 @@ class EstruturaDeDadosEmC(Materia):
     DANO_PROJETIL = 14
     VELOCIDADE_PROJETIL = 340
     LACAIOS = ("ponteiro", "pilha", "pente_ram")
+    ARTES = {"*p": "ponteiro", "NULL": "null", "[]": "colchetes"}
+    ARTE_DA_CHAMADA = "segfault"
 
     def ataques(self):
         return [self.ponteiro_selvagem, self.segmentation_fault, self.empilhar, self.alocar]

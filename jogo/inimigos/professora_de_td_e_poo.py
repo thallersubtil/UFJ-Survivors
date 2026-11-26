@@ -15,6 +15,8 @@ class ProfessoraDeTDEPOO(ChefePossuido):
     NOME_PROFESSOR = "a Professora"
     PASTA_SPRITE = "professora"
     ARTIGO = "Uma"
+    ARTIGO_DEFINIDO = "A"
+    NOME_PROPRIO = "Emília"
     ILUSTRACAO = "chefes/td_poo.png"
     COR_DA_APRESENTACAO = (250, 190, 70)
     IMAGEM = "sprites/professor.png"

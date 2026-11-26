@@ -11,7 +11,7 @@ from jogo.config import Cor
 from jogo.efeitos import TextoFlutuante
 from jogo.inimigos.acoes_do_chefe import Rajada
 from jogo.inimigos.fabrica import FabricaDeInimigos
-from jogo.projeteis.projeteis import ProjetilDaMateria
+from jogo.projeteis.tematicos import Marca, ProjetilTematico
 
 
 class Materia(ABC):
@@ -24,6 +24,8 @@ class Materia(ABC):
     DANO_PROJETIL = 12
     VELOCIDADE_PROJETIL = 300
     LACAIOS = ("bug",)           # quem aparece na chamada
+    ARTES = {}                   # símbolo -> desenho do projétil em assets/ataques/ (sem desenho, sai o símbolo)
+    ARTE_DA_CHAMADA = ""         # o que pisca em cima de cada lacaio que chega
 
     @abstractmethod
     def ataques(self):
@@ -36,9 +38,13 @@ class Materia(ABC):
 
     def lancar(self, chefe, jogo, direcao, simbolo=None, velocidade=None, dano=None, origem=None):
         velocidade = velocidade or self.VELOCIDADE_PROJETIL
-        jogo.adicionar(ProjetilDaMateria(origem if origem is not None else chefe.posicao,
-                                         pygame.Vector2(direcao) * velocidade,
-                                         dano or self.DANO_PROJETIL, simbolo or self.SIMBOLO, self.COR))
+        jogo.adicionar(self.criar_projetil(origem if origem is not None else chefe.posicao,
+                                           pygame.Vector2(direcao) * velocidade, dano or self.DANO_PROJETIL,
+                                           simbolo or self.SIMBOLO))
+
+    def criar_projetil(self, posicao, velocidade, dano, simbolo):
+        """O projétil desta matéria para um símbolo: o desenho de `ARTES`, ou a bolinha com o símbolo."""
+        return ProjetilTematico(posicao, velocidade, dano, simbolo, self.COR, arte=self.ARTES.get(simbolo))
 
     def leque(self, chefe, jogo, quantidade, abertura=12, **opcoes):
         """Projéteis em leque, centrados na direção do herói."""
@@ -61,6 +67,7 @@ class Materia(ABC):
             posicao = chefe.posicao + pygame.Vector2(140, 0).rotate(360 * i / quantidade)
             nome = jogo.rng.choice(self.LACAIOS)
             jogo.adicionar(FabricaDeInimigos.criar(nome, posicao, jogo.fase.escala_dificuldade))
+            jogo.adicionar(Marca(posicao - (0, 40), self.ARTE_DA_CHAMADA, 44, duracao=0.8, subida=40))
         self.gritar(chefe, jogo, texto)
 
     def gritar(self, chefe, jogo, texto):

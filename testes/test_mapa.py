@@ -142,3 +142,69 @@ def test_chao_suave_desenha_por_blocos_em_cache(tmp_path, monkeypatch):
     mapa.desenhar_chao(tela, jogo.camera)
     assert len(mapa._blocos) == blocos > 0
     Recursos.limpar()
+
+
+# ---------------------------------------------------------------- biomas e lavoura
+def _mapa_ufj():
+    import pytest
+    from jogo.mapa import MapaUFJ
+    mapa = MapaUFJ.carregar()
+    if mapa is None:
+        pytest.skip("sem o mapa da UFJ")
+    return mapa
+
+
+def test_lavoura_fica_em_talhoes_separados_sem_predio_nem_arvore():
+    mapa = _mapa_ufj()
+    talhoes = mapa.LAVOURAS
+    assert len(talhoes) >= 8
+    for i, talhao in enumerate(talhoes):
+        assert mapa.arena.contains(talhao)
+        assert all(not talhao.colliderect(outro) for outro in talhoes[i + 1:])        # há corredor entre eles
+        assert all(not talhao.colliderect(predio.contorno) for predio in mapa.predios)
+    assert all(not mapa.na_lavoura(d.posicao.x, d.posicao.y) for d in mapa.decoracoes)  # nenhuma árvore na plantação
+
+
+def test_cada_bioma_tem_a_propria_decoracao():
+    mapa = _mapa_ufj()
+    nomes = [nome for nome, _, _ in mapa.BIOMAS]
+    assert nomes == ["grama", "mata", "lavoura", "terra", "area_51"]
+    enfeites = {nome: set(lista) for nome, _, lista in mapa.BIOMAS}
+    assert "espantalho" in enfeites["lavoura"] and "aboboras" not in enfeites["lavoura"]
+    assert {mapa.cultura_de(t) for t in mapa.LAVOURAS} == {"soja", "milho", "trigo"}
+    assert "espantalho" in enfeites["lavoura"] and "espantalho" not in enfeites["grama"] | enfeites["mata"]
+    assert "marca_de_pouso" in enfeites["area_51"] and not enfeites["lavoura"] & {"arbusto", "cogumelos"}
+    dentro = mapa.LAVOURAS[0].center
+    assert mapa._e_lavoura(*dentro) and not mapa._e_grama(*dentro) and not mapa._e_mata(*dentro)
+    perto_do_ru = mapa.local_de("RU")
+    assert not mapa._e_lavoura(*perto_do_ru)                                           # nada de plantação no RU
+    for nome, _, lista in mapa.BIOMAS:
+        for enfeite in lista:
+            assert mapa._existe(f"cenario/enfeites/{enfeite}.png"), enfeite
+
+
+def test_plantacao_tem_fileiras_em_pe_e_segura_o_passo_do_aluno(jogo_limpo):
+    from jogo.mapa import FileiraDePlantacao
+    mapa = _mapa_ufj()
+    assert mapa.fileiras and all(isinstance(f, FileiraDePlantacao) for f in mapa.fileiras)
+    assert all(mapa.na_lavoura(f.posicao.x, f.posicao.y) for f in mapa.fileiras)
+    assert {f.cultura for f in mapa.fileiras} == {"soja", "milho", "trigo"}
+    milho = next(f for f in mapa.fileiras if f.cultura == "milho")
+    soja = next(f for f in mapa.fileiras if f.cultura == "soja")
+    assert milho.imagem.get_height() > soja.imagem.get_height() * 2          # o milho é bem mais alto
+
+    assert mapa.fator_de_velocidade(mapa.inicio) == 1.0
+    talhao = next(t for t in mapa.LAVOURAS if mapa.cultura_de(t) == "milho")
+    assert mapa.fator_de_velocidade(talhao.center) == mapa.PASSO_NA_CULTURA["milho"] < 1
+
+    def andado(inicio):
+        jogo = jogo_limpo()
+        jogo.jogador.imortal = True
+        jogo.jogador.posicao = pygame.Vector2(inicio)
+        jogo.entrada.direcao = pygame.Vector2(1, 0)
+        for _ in range(15):
+            jogo.atualizar(1 / 30)
+        return jogo.jogador.posicao.x - inicio[0]
+
+    livre = pygame.Vector2(mapa.inicio)
+    assert andado(talhao.midleft + pygame.Vector2(40, 0)) < andado(livre) * 0.7

@@ -12,6 +12,8 @@ class TransformacaoDigital(Materia):
     DANO_PROJETIL = 10
     VELOCIDADE_PROJETIL = 220
     LACAIOS = ("bug", "mouse", "caixinha")
+    ARTES = {"@": "email", "www": "nuvem", "wifi": "wifi"}
+    ARTE_DA_CHAMADA = "reuniao"
 
     def ataques(self):
         return [self.email_em_massa, self.nuvem, self.reuniao]

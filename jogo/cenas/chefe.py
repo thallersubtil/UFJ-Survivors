@@ -23,6 +23,9 @@ class CenaChefe(Cena):
 
     @property
     def frase(self):
+        proprio = getattr(self.chefe, "NOME_PROPRIO", "")
+        if proprio:                                  # chefe com nome: "O Professor de Cálculo Flávio apareceu!"
+            return f"{self.chefe.ARTIGO_DEFINIDO} {self.chefe.NOME} {proprio} apareceu!"
         return f"{self.chefe.ARTIGO} {self.chefe.NOME} selvagem apareceu!"
 
     def _sair(self):

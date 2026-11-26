@@ -25,8 +25,8 @@ def _quadros(prefixo):
 
 
 COMUM = Raridade("comum", "BAÚ COMUM", 1, (8, 16), 1.0, (214, 168, 74), 1.0, _quadros("chest"))
-EPICO = Raridade("epico", "BAÚ ÉPICO!", 3, (45, 75), 0.12, (190, 110, 255), 1.7, _quadros("bau_epico"))
-LENDARIO = Raridade("lendario", "BAÚ LENDÁRIO!!!", 5, (160, 260), 0.02, (255, 222, 90), 2.8, _quadros("bau_lendario"))
+EPICO = Raridade("epico", "BAÚ ÉPICO!", 2, (45, 75), 0.12, (190, 110, 255), 1.7, _quadros("bau_epico"))
+LENDARIO = Raridade("lendario", "BAÚ LENDÁRIO!!!", 3, (160, 260), 0.02, (255, 222, 90), 2.8, _quadros("bau_lendario"))
 RARIDADES = (COMUM, EPICO, LENDARIO)
 
 

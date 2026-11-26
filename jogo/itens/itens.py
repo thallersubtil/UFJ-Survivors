@@ -9,7 +9,7 @@ class CadernoDeResumos(Item):
     NOME = "Caderno de Resumos"
     DESCRICAO = "+10% de dano por nível."
     ICONE = "icones/caderno.png"
-    MELHORIAS = ("+10% de dano.", "+10% de dano.")
+    MELHORIAS = ("+10% de dano.", "+10% de dano.", "+10% de dano.")
 
     def aplicar(self, jogador):
         jogador.mult_dano += 0.10 * self.nivel
@@ -19,7 +19,7 @@ class Energetico(Item):
     NOME = "Energético"
     DESCRICAO = "+10% de velocidade por nível."
     ICONE = "icones/energetico.png"
-    MELHORIAS = ("+10% de velocidade.", "+10% de velocidade.")
+    MELHORIAS = ("+10% de velocidade.", "+10% de velocidade.", "+10% de velocidade.")
 
     def aplicar(self, jogador):
         jogador.mult_velocidade += 0.10 * self.nivel
@@ -29,8 +29,8 @@ class MarmitaDoRU(Item):
     NOME = "Marmita do RU"
     DESCRICAO = "Recupera vida aos pouquinhos."
     ICONE = "icones/marmita.png"
-    MELHORIAS = ("Recupera vida mais rápido.", "Recupera 1 de vida por segundo.")
-    REGENERACAO = (1 / 3, 1 / 2, 1.0)
+    MELHORIAS = ("Recupera vida mais rápido.", "Recupera 1 de vida por segundo.", "Recupera 1,5 de vida por segundo.")
+    REGENERACAO = (1 / 3, 1 / 2, 1.0, 1.5)
 
     def aplicar(self, jogador):
         jogador.regeneracao += self.REGENERACAO[self.nivel - 1]
@@ -40,7 +40,7 @@ class MochilaPesada(Item):
     NOME = "Mochila Pesada"
     DESCRICAO = "+20 de vida máxima por nível."
     ICONE = "icones/mochila.png"
-    MELHORIAS = ("+20 de vida máxima.", "+20 de vida máxima.")
+    MELHORIAS = ("+20 de vida máxima.", "+20 de vida máxima.", "+20 de vida máxima.")
 
     def aplicar(self, jogador):
         jogador.vida_maxima_extra += 20 * self.nivel
@@ -50,7 +50,7 @@ class FoneDeOuvido(Item):
     NOME = "Fone de Ouvido"
     DESCRICAO = "Puxa as notas de mais longe (+30% por nível)."
     ICONE = "icones/fone.png"
-    MELHORIAS = ("+30% de alcance de coleta.", "+30% de alcance de coleta.")
+    MELHORIAS = ("+30% de alcance de coleta.", "+30% de alcance de coleta.", "+30% de alcance de coleta.")
 
     def aplicar(self, jogador):
         jogador.alcance_coleta *= 1 + 0.30 * self.nivel
@@ -60,7 +60,7 @@ class RelogioDePulso(Item):
     NOME = "Relógio de Pulso"
     DESCRICAO = "Armas e especial recarregam 8% mais rápido por nível."
     ICONE = "legado/itens/item_watch_l.png"
-    MELHORIAS = ("-8% de recarga.", "-8% de recarga.")
+    MELHORIAS = ("-8% de recarga.", "-8% de recarga.", "-8% de recarga.")
 
     def aplicar(self, jogador):
         jogador.mult_recarga *= 1 - 0.08 * self.nivel
@@ -70,7 +70,7 @@ class GarrafaTermica(Item):
     NOME = "Garrafa Térmica"
     DESCRICAO = "+25% de café máximo e de recarga de café por nível."
     ICONE = "icones/garrafa.png"
-    MELHORIAS = ("+25% de café.", "+25% de café.")
+    MELHORIAS = ("+25% de café.", "+25% de café.", "+25% de café.")
 
     def aplicar(self, jogador):
         jogador.mult_cafe *= 1 + 0.25 * self.nivel
@@ -80,7 +80,7 @@ class TenisDeCorrida(Item):
     NOME = "Tênis de Corrida"
     DESCRICAO = "O rolamento recarrega 15% mais rápido por nível."
     ICONE = "icones/tenis.png"
-    MELHORIAS = ("-15% de recarga do rolamento.", "-15% de recarga do rolamento.")
+    MELHORIAS = ("-15% de recarga do rolamento.", "-15% de recarga do rolamento.", "-15% de recarga do rolamento.")
     PRECO_DESBLOQUEIO = 250
 
     def aplicar(self, jogador):
@@ -91,7 +91,7 @@ class OculosDeGrau(Item):
     NOME = "Óculos de Grau"
     DESCRICAO = "Enxerga o ponto fraco: +5% de chance de crítico por nível."
     ICONE = "icones/oculos.png"
-    MELHORIAS = ("+5% de crítico.", "+5% de crítico.")
+    MELHORIAS = ("+5% de crítico.", "+5% de crítico.", "+5% de crítico.")
     PRECO_DESBLOQUEIO = 300
 
     def aplicar(self, jogador):
@@ -107,16 +107,16 @@ class Cola(Item):
     NOME = "Cola"
     DESCRICAO = "1,5x de experiência, -15% de vida máxima. Cuidado para não ser pego!"
     ICONE = "sprites/nota.png"
-    NIVEL_MAXIMO = 2
-    MELHORIAS = ("2x de experiência, -20% de vida máxima.",)
+    NIVEL_MAXIMO = 3
+    MELHORIAS = ("2x de experiência, -20% de vida máxima.", "2,5x de experiência, -25% de vida máxima.")
     SO_AO_SUBIR_DE_NIVEL = True
     PESO = 0.5                          # aparece menos que os outros
-    EXPERIENCIA = (1.5, 2.0)
-    CUSTO_VIDA = (0.15, 0.20)
-    CHANCE_FLAGRA = (0.02, 0.03)        # por nível que o herói sobe
+    EXPERIENCIA = (1.5, 2.0, 2.5)
+    CUSTO_VIDA = (0.15, 0.20, 0.25)
+    CHANCE_FLAGRA = (0.02, 0.03, 0.04)        # por nível que o herói sobe
     EXPERIENCIA_PUNIDO = 0.5
     NIVEIS_DE_PUNICAO = 2
-    REDUCAO_POR_OCULOS = 0.25           # cada nível do Óculos de Grau esconde melhor a cola
+    REDUCAO_POR_OCULOS = 0.20           # cada nível do Óculos de Grau esconde melhor a cola
 
     def __init__(self):
         super().__init__()
@@ -160,10 +160,11 @@ class ConviteDaAtletica(Item):
     NOME = "Convite da Atlética"
     DESCRICAO = "A cada 12 s, um grito de guerra fere e empurra os inimigos em volta."
     ICONE = "icones/atletica.png"
-    MELHORIAS = ("Grita a cada 10 s, mais forte e mais longe.", "Grita a cada 8 s, mais forte e mais longe.")
-    INTERVALO = (12.0, 10.0, 8.0)
-    RAIO = (160, 190, 220)
-    DANO = (10, 14, 18)
+    MELHORIAS = ("Grita a cada 10 s, mais forte e mais longe.", "Grita a cada 8 s, mais forte e mais longe.",
+                 "Grita a cada 6 s, mais forte e mais longe.")
+    INTERVALO = (12.0, 10.0, 8.0, 6.0)
+    RAIO = (160, 190, 220, 250)
+    DANO = (10, 14, 18, 24)
     FORCA = 520
 
     def __init__(self):
@@ -208,19 +209,20 @@ class Pendrive(Item):
     NOME = "Pendrive"
     DESCRICAO = "Guarda um especial a mais (2 cargas)."
     ICONE = "icones/pendrive.png"
-    MELHORIAS = ("O especial recarrega 15% mais rápido.", "Mais uma carga (3 no total).")
+    MELHORIAS = ("O especial recarrega 15% mais rápido.", "Mais uma carga (3 no total).",
+                 "O especial recarrega 30% mais rápido.")
 
     def aplicar(self, jogador):
         jogador.cargas_especial += 1 if self.nivel < 3 else 2
         if self.nivel >= 2:
-            jogador.mult_especial *= 0.85
+            jogador.mult_especial *= 0.70 if self.nivel >= 4 else 0.85
 
 
 class MoedaDaSorte(Item):
     NOME = "Moeda da Sorte"
     DESCRICAO = "+15% de sorte por nível: mais crítico, desvio, moedas e baús melhores."
     ICONE = "legado/itens/item_luckycoin.png"
-    MELHORIAS = ("+15% de sorte.", "+15% de sorte.")
+    MELHORIAS = ("+15% de sorte.", "+15% de sorte.", "+15% de sorte.")
     PRECO_DESBLOQUEIO = 350
 
     def aplicar(self, jogador):
@@ -231,7 +233,7 @@ class JogoDeCintura(Item):
     NOME = "Jogo de Cintura"
     DESCRICAO = "5% de chance por nível de desviar de um golpe (a sorte aumenta)."
     ICONE = "legado/itens/item_smokebomb.png"
-    MELHORIAS = ("+5% de desvio.", "+5% de desvio.")
+    MELHORIAS = ("+5% de desvio.", "+5% de desvio.", "+5% de desvio.")
     PRECO_DESBLOQUEIO = 300
 
     def aplicar(self, jogador):
