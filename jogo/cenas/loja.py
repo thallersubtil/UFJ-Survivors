@@ -11,6 +11,7 @@ import pygame
 
 from jogo.cenas.cena import Cena
 from jogo.cenas.widgets import TECLAS_CONFIRMAR
+from jogo.loja.cassino import SegredosDoCassino
 from jogo.loja.lanches import LANCHES
 from jogo.loja.melhorias import MELHORIAS
 from jogo.nucleo.recursos import Recursos
@@ -44,6 +45,7 @@ class CenaLoja(Cena):
     RECORTE_ESTANTE = pygame.Rect(0, 0, 392, 626)
     ZOOM, ORIGEM = 1.15, (40, 0)
     PAINEL = pygame.Rect(300, 70, 230, 250)
+    OUTROS_DESBLOQUEIOS = (SegredosDoCassino,)       # o que se compra na mesma aba e não é arma nem item
 
     def __init__(self, app):
         super().__init__(app)
@@ -58,8 +60,9 @@ class CenaLoja(Cena):
     # ------------------------------------------------------------ dados
     @staticmethod
     def desbloqueaveis():
-        """Armas e itens que custam moedas para aparecer nas cartas."""
-        return [c for c in Progressao.ARMAS + Progressao.ITENS if c.PRECO_DESBLOQUEIO > 0]
+        """Armas e itens que custam moedas para aparecer nas cartas, e os outros desbloqueios (segredos do cassino)."""
+        return [c for c in Progressao.ARMAS + Progressao.ITENS if c.PRECO_DESBLOQUEIO > 0] + \
+            list(CenaLoja.OUTROS_DESBLOQUEIOS)
 
     def linhas(self):
         progresso = self.app.progresso
@@ -75,7 +78,7 @@ class CenaLoja(Cena):
                     for c in LANCHES]
         linhas = []
         for classe in self.desbloqueaveis():
-            tipo = "ARMA" if classe in Progressao.ARMAS else "ITEM"
+            tipo = "ARMA" if classe in Progressao.ARMAS else "ITEM" if classe in Progressao.ITENS else classe.TIPO
             preco = None if progresso.desbloqueado(classe) else classe.PRECO_DESBLOQUEIO
             linhas.append(LinhaDaLoja(classe.NOME, classe.DESCRICAO, classe.ICONE, tipo, preco,
                                       lambda c=classe: progresso.desbloquear(c)))
