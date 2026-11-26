@@ -5,6 +5,7 @@ from jogo.cenas.cena import Cena
 from jogo.cenas.fim import CenaFimDeJogo
 from jogo.cenas.hud import Hud
 from jogo.cenas.nivel import CenaNivel
+from jogo.cenas.chefe import CenaChefe
 from jogo.cenas.pausa import CenaPausa
 from jogo.cenas.widgets import desenhar_texto
 from jogo.config import Cor
@@ -64,7 +65,10 @@ class CenaPartida(Cena):
         self.hud.atualizar(dt, self.jogo)
         if self.jogo.terminou:
             return
-        if self.jogo.niveis_pendentes > 0:
+        if self.jogo.chefe_a_apresentar is not None:         # o chefe chegou: a partida para e ele é apresentado
+            chefe, self.jogo.chefe_a_apresentar = self.jogo.chefe_a_apresentar, None
+            self.app.empilhar(CenaChefe(self.app, chefe))
+        elif self.jogo.niveis_pendentes > 0:
             self.app.empilhar(CenaNivel(self.app, self.jogo))
         elif self.jogo.baus_pendentes > 0:
             self.app.empilhar(CenaBau(self.app, self.jogo))

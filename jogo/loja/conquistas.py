@@ -61,11 +61,11 @@ class MilBugsDepois(Conquista):
 class Veterano(Conquista):
     CHAVE = "nivel_40"
     NOME = "Veterano"
-    DESCRICAO = "Chegue ao nível 40 numa partida."
+    DESCRICAO = "Chegue ao nível 25 numa partida."
     PREMIO = 100
 
     def alcancada(self, jogo, progresso):
-        return jogo.jogador.nivel >= 40
+        return jogo.jogador.nivel >= 25
 
 
 class ConquistaDeMarco(Conquista):

@@ -4,7 +4,7 @@ import math
 import pygame
 
 from jogo.config import COMBO_ESPECIAL
-from jogo.ui.pixel import (A, L, CamadaPixel, Paleta as P, barra, ease_back, fonte, icone, janela, moldura,
+from jogo.ui.pixel import (A, ESCALA, L, CamadaPixel, Paleta as P, barra, ease_back, fonte, icone, janela, moldura,
                            no_quadrado, texto)
 
 
@@ -12,6 +12,8 @@ class Hud:
     VELOCIDADE_ATRASO = 0.6      # fração da vida por segundo que o branco do dano perde
     ESPERA_ATRASO = 0.25         # o branco fica parado um instante antes de cair
     DURACAO_DESTAQUE = 0.8       # pulso da etiqueta de nível ao subir
+
+    RETRATO = pygame.Rect(9, 13, 40, 40)      # quadro do rosto do herói, na camada
 
     def __init__(self):
         self.camada = CamadaPixel()
@@ -49,6 +51,41 @@ class Hud:
         self._chefe(ui, jogo)
         self._anuncios(ui, jogo)
         self.camada.apresentar(tela)
+        self._rosto_nitido(tela, jogo.jogador)
+        if jogo.perigo > 0:
+            self._perigo(tela)
+
+    def _perigo(self, tela):
+        """Aviso de chefe chegando: faixas zebradas correndo, borda vermelha pulsando e PERIGO! piscando."""
+        largura, altura = tela.get_size()
+        pulso = 0.5 + 0.5 * math.sin(self.tempo * 12)
+        veu = pygame.Surface((largura, altura), pygame.SRCALPHA)
+        veu.fill((200, 20, 30, int(26 + 34 * pulso)))
+        pygame.draw.rect(veu, (255, 40, 50, int(150 + 90 * pulso)), veu.get_rect(), 14)
+        tela.blit(veu, (0, 0))
+        amarelo, preto, alto = (250, 204, 40), (22, 18, 26), 58
+        for y, sentido in ((int(altura * 0.25), 1), (int(altura * 0.68), -1)):
+            faixa = pygame.Surface((largura, alto))
+            faixa.fill(amarelo)
+            passo = int(self.tempo * 260 * sentido) % 80
+            for x in range(-160 + passo, largura + 160, 80):               # listras na diagonal
+                pygame.draw.polygon(faixa, preto, [(x, 0), (x + 40, 0), (x + 40 - alto, alto), (x - alto, alto)])
+            pygame.draw.rect(faixa, preto, (0, 12, largura, alto - 24))
+            passo_texto = int(self.tempo * 320 * -sentido) % 300
+            for x in range(-300 + passo_texto, largura + 300, 300):
+                texto(faixa, "PERIGO!", (x, alto // 2), amarelo, 23, contorno=None, ancora="midleft")
+            pygame.draw.line(faixa, preto, (0, 0), (largura, 0), 3)
+            pygame.draw.line(faixa, preto, (0, alto - 1), (largura, alto - 1), 3)
+            tela.blit(faixa, (0, y))
+        if int(self.tempo * 5) % 2 == 0:
+            texto(tela, "PERIGO!", (largura // 2, int(altura * 0.47)), (255, 60, 60), 92, ancora="center")
+            texto(tela, "o chefe está chegando", (largura // 2, int(altura * 0.47) + 62), P.BRANCO, 23, ancora="center")
+
+    def _rosto_nitido(self, tela, jogador):
+        """O rosto vai direto na tela, em resolução cheia: pela camada (metade da resolução) sairia borrado."""
+        rosto = jogador.rosto(self.RETRATO.w * ESCALA)
+        if rosto is not None:
+            tela.blit(rosto, (self.RETRATO.x * ESCALA, self.RETRATO.y * ESCALA))
 
     def _experiencia(self, ui, jogo):
         j = jogo.jogador
@@ -67,8 +104,9 @@ class Hud:
     def _heroi(self, ui, jogo):
         j = jogo.jogador
         moldura(ui, (6, 10, 46, 46), fundo=(52, 74, 150), raio=4)
-        retrato = self._retrato(j)
-        ui.subsurface((9, 13, 40, 40)).blit(retrato, retrato.get_rect(midtop=(20, 2)))
+        if j.rosto(self.RETRATO.w * ESCALA) is None:        # sem a arte do rosto: o próprio boneco, de perto
+            retrato = self._retrato(j)
+            ui.subsurface(self.RETRATO).blit(retrato, retrato.get_rect(midtop=(20, 2)))
         pulso = self.destaque_nivel / self.DURACAO_DESTAQUE
         tag = pygame.Rect(0, 0, int(30 * (1 + 0.3 * pulso)), int(12 * (1 + 0.3 * pulso)))
         tag.center = (29, 58)

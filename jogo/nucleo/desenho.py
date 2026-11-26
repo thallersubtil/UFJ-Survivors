@@ -18,11 +18,14 @@ def desenhar_sombra(tela, centro_tela, largura):
 
 
 def desenhar_sprite(tela, camera, imagem, posicao, *, espelhar=False, piscar=False,
-                    escala=(1.0, 1.0), angulo=0.0, deslocamento_y=0.0, sombra=True, alfa=255):
+                    escala=(1.0, 1.0), angulo=0.0, deslocamento_y=0.0, sombra=True, alfa=255, aura=None):
     """Desenha a imagem centrada na posição, com os pés na base do sprite.
 
-    `deslocamento_y` levanta o sprite (pulo/balanço) sem mover a sombra.
+    `deslocamento_y` levanta o sprite (pulo/balanço) sem mover a sombra. `aura` é a cor do
+    contorno da forma suprema (arma no nível máximo): o sprite sai maior e brilhando.
     """
+    if aura is not None:
+        imagem = Recursos.suprema(imagem, aura)
     centro = camera.para_tela(posicao)
     base_y = centro.y + imagem.get_height() / 2
     if sombra:

@@ -40,7 +40,7 @@ class CenaRanking(Cena):
         for classe in CLASSES:
             if classe.NOME == nome and classe.PASTA_SPRITE:
                 return classe.PASTA_SPRITE
-        return "aluno2"
+        return "otaku"
 
     def _e_destaque(self, registro):
         return self.destaque is not None and registro == self.destaque

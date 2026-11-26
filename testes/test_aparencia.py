@@ -3,9 +3,7 @@ import pytest
 
 from jogo.aplicacao import Aplicacao
 from jogo.cenas.partida import CenaPartida
-from jogo.cenas.personalizacao import CenaPersonalizacao
-from jogo.cenas.selecao import CenaSelecao
-from jogo.jogador.classes import Programador, Otaku
+from jogo.jogador.classes import CLASSES, Programador, Otaku
 from jogo.jogador.aparencia import Aparencia, classificar, vestir_animacoes
 from jogo.nucleo.recursos import Recursos
 from jogo.ranking import Ranking
@@ -91,68 +89,13 @@ def test_aparencia_original_nao_copia_nada():
 
 def test_jogador_vestido_usa_as_cores_e_guarda_em_cache():
     aparencia = Aparencia("Morena", "Loiro", "Azul", "Cáqui")
-    a = Programador((0, 0))
+    a = AlunoPersonalizavel((0, 0))
     a.vestir(aparencia)
-    b = Programador((0, 0))
+    b = AlunoPersonalizavel((0, 0))
     b.vestir(Aparencia("Morena", "Loiro", "Azul", "Cáqui"))
-    original = Programador((0, 0))
+    original = AlunoPersonalizavel((0, 0))
     assert a.animador.animacoes["parado"].quadros[0] is b.animador.animacoes["parado"].quadros[0]
     assert a.animador.animacoes["parado"].quadros[0] is not original.animador.animacoes["parado"].quadros[0]
-
-
-def test_personalizacao_vem_antes_da_classe_e_os_cartoes_usam_o_aluno_personalizado(app):
-    from jogo.cenas.titulo import CenaTitulo
-    app.trocar(CenaTitulo(app))
-    app.passo(1 / 60, [])
-    app.passo(1 / 60, [tecla(pygame.K_RETURN)])               # JOGAR
-    cena = app.cena_atual
-    assert isinstance(cena, CenaPersonalizacao)
-    app.passo(1 / 60, [tecla(pygame.K_DOWN), tecla(pygame.K_DOWN), tecla(pygame.K_RIGHT)])   # cabelo
-    assert cena.aparencia.cabelo != "Original"
-    app.passo(1 / 60, [tecla(pygame.K_RETURN)])               # tira a foto da carteirinha
-    for _ in range(80):
-        app.passo(1 / 60, [])
-    selecao = app.cena_atual
-    assert isinstance(selecao, CenaSelecao)
-    assert selecao.opcoes.aparencia == cena.aparencia
-    assert all(exemplo.aparencia == cena.aparencia for exemplo in selecao.exemplos)
-    app.passo(1 / 60, [tecla(pygame.K_RIGHT), tecla(pygame.K_RETURN)])
-    partida = app.cena_atual
-    assert isinstance(partida, CenaPartida) and isinstance(partida.jogo.jogador, Programador)
-    assert partida.jogo.jogador.aparencia == cena.aparencia
-    assert app.aparencia == cena.aparencia      # lembra a última escolha
-
-
-def test_esc_na_selecao_volta_para_a_personalizacao(app):
-    cena = CenaPersonalizacao(app)
-    app.trocar(cena)
-    app.passo(1 / 60, [tecla(pygame.K_RETURN)])
-    for _ in range(80):
-        app.passo(1 / 60, [])
-    app.passo(1 / 60, [tecla(pygame.K_ESCAPE)])
-    assert isinstance(app.cena_atual, CenaPersonalizacao)
-
-
-def test_personalizacao_aleatoria_e_voltar(app):
-    from jogo.cenas.titulo import CenaTitulo
-    cena = CenaPersonalizacao(app)
-    app.trocar(cena)
-    app.passo(1 / 60, [])
-    app.passo(1 / 60, [tecla(pygame.K_r)])
-    app.passo(1 / 60, [tecla(pygame.K_ESCAPE)])
-    assert isinstance(app.cena_atual, CenaTitulo)
-
-
-def test_tecla_p_volta_as_cores_para_o_padrao_e_mantem_o_genero(app):
-    cena = CenaPersonalizacao(app)
-    app.trocar(cena)
-    for parte, nome in (("genero", "Feminino"), ("pele", "Escura"), ("cabelo", "Azul"), ("moletom", "Roxo"),
-                        ("calca", "Preta")):
-        setattr(cena.aparencia, parte, nome)
-    app.passo(1 / 60, [tecla(pygame.K_p)])
-    assert cena.aparencia.original
-    assert cena.aparencia.genero == "Feminino"
-    assert cena.previa.aparencia == cena.aparencia
 
 
 def test_genero_valida_e_entra_na_igualdade():
@@ -167,7 +110,22 @@ def test_genero_valida_e_entra_na_igualdade():
     assert "genero: Feminino" in str(b)
 
 
-@pytest.mark.parametrize("classe", [Programador, Otaku])
+class AlunoPersonalizavel(Programador):
+    """Herói sem aparência fixa: usa a arte antiga, que troca de gênero e de cor."""
+    APARENCIA_FIXA = False
+    IMAGEM = "sprites/aluno1.png"
+    PASTA_SPRITE = "aluno1"
+    PASTA_SPRITE_FEMININA = "aluna1"
+
+
+class AlunoPersonalizavelDeMoletomLaranja(AlunoPersonalizavel):
+    IMAGEM = "sprites/aluno2.png"
+    PASTA_SPRITE = "aluno2"
+    PASTA_SPRITE_FEMININA = "aluna2"
+    MOLETOM_ORIGINAL = "laranja"
+
+
+@pytest.mark.parametrize("classe", [AlunoPersonalizavel, AlunoPersonalizavelDeMoletomLaranja])
 def test_aluna_usa_a_arte_feminina(classe):
     aluno = classe((0, 0))
     aluna = classe((0, 0))
@@ -180,11 +138,21 @@ def test_aluna_usa_a_arte_feminina(classe):
 
 
 def test_sem_arte_feminina_usa_a_masculina():
-    class SemArte(Programador):
+    class SemArte(AlunoPersonalizavel):
         PASTA_SPRITE_FEMININA = "pasta_que_nao_existe"
     aluna = SemArte((0, 0))
     aluna.vestir(Aparencia(genero="Feminino"))
     assert aluna.animador.animacoes["parado"].quadros[0] is Recursos.animacoes("aluno1")["parado"].quadros[0]
+
+
+@pytest.mark.parametrize("classe", CLASSES)
+def test_classe_tem_aparencia_fixa_e_ignora_a_personalizacao(classe):
+    heroi = classe((0, 0))
+    antes = heroi.animador.animacoes["parado"].quadros[0]
+    heroi.vestir(Aparencia(genero="Feminino", moletom="Azul"))
+    assert classe.APARENCIA_FIXA and set(heroi.animador.animacoes) >= {"parado", "andar"}
+    assert heroi.animador.animacoes["parado"].quadros[0] is antes
+    assert len(Recursos.animacoes(classe.PASTA_SPRITE)["andar"].quadros) == 8
 
 
 def _partes(pasta, moletom, animacao="parado"):

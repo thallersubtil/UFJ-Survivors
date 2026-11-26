@@ -52,7 +52,7 @@ class Aplicacao:
         self.relogio = pygame.time.Clock()
         self.ranking = Ranking(ARQUIVO_RANKING)
         self.progresso = Progresso(ARQUIVO_PROGRESSO)
-        self.aparencia = None        # última aparência escolhida, para a próxima partida
+        self.classe_escolhida = 0    # índice da última classe matriculada, para a próxima partida
         self.modo_mira = "mouse"     # "mouse": mira no cursor; "automatica": no inimigo mais próximo
         self.cenas = []
         self.rodando = True

@@ -33,8 +33,7 @@ def test_cobra_dispara_mais_cobras_nos_niveis_altos():
     arma = CobraPython()
     assert arma.disparar(jogo, dono)
     assert len(jogo.adicionados) == 1
-    for _ in range(2):
-        arma.subir_nivel()
+    arma.subir_nivel()
     jogo.adicionados.clear()
     arma.disparar(jogo, dono)
     assert len(jogo.adicionados) == 2

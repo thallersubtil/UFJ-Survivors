@@ -64,6 +64,8 @@ class Jogo:
         self.sorteios_restantes = SORTEIOS_POR_PARTIDA
         self.banimentos_restantes = BANIMENTOS_POR_PARTIDA
         self.chefe = None
+        self.chefe_a_apresentar = None   # chefe que acabou de chegar e ainda não foi apresentado (a cena consome)
+        self.perigo = 0.0                # segundos de aviso de PERIGO antes do chefe (o HUD desenha)
         self.terminou = False
         self.venceu = False
         self.anuncios = []
@@ -119,6 +121,7 @@ class Jogo:
         if self.terminou:
             return
         self.placar.tempo += dt
+        self.perigo = max(0.0, self.perigo - dt)
         self.fase.atualizar(dt, self)
         self._incorporar_novas()
         self.grade.reconstruir(self.inimigos)
@@ -260,8 +263,15 @@ class Jogo:
 
     def iniciar_chefe(self, chefe):
         self.chefe = chefe
+        self.chefe_a_apresentar = chefe
+        self.perigo = 0.0
         self.adicionar(chefe)
         self.anunciar(f"{chefe.nome} chegou!", 3)
+
+    def avisar_perigo(self, duracao):
+        """Liga o aviso de PERIGO por `duracao` segundos: o chefe está chegando."""
+        self.perigo = duracao
+        Recursos.tocar("buzina", 0.5)
 
     @property
     def ultima_fase(self):

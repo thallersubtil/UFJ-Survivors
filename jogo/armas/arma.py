@@ -7,7 +7,7 @@ class Arma(ABC):
     NOME = "Arma"
     DESCRICAO = ""
     ICONE = ""
-    NIVEL_MAXIMO = 7
+    NIVEL_MAXIMO = 4           # poucos níveis, cada um pesa; o último é a forma suprema da arma
     ATRIBUTOS = {}
     MELHORIAS = ()
     PRECO_DESBLOQUEIO = 0      # > 0: só aparece nas cartas depois de comprado no Centro Acadêmico
@@ -15,6 +15,7 @@ class Arma(ABC):
     PESO = 1.0                 # chance relativa de aparecer nas cartas
     MAX_CARIMBOS = 3           # vezes que a Bigorna pode afiar esta arma
     BONUS_CARIMBO = 0.15       # +15% de dano por carimbo
+    COR_SUPREMA = (255, 214, 90)   # contorno do que a arma solta quando está no nível máximo
 
     def __init__(self):
         self._nivel = 1
@@ -40,6 +41,17 @@ class Arma(ABC):
     @property
     def no_maximo(self):
         return self._nivel >= self.NIVEL_MAXIMO
+
+    @property
+    def aura(self):
+        """Cor do contorno da forma suprema (nível máximo), ou None antes disso."""
+        return self.COR_SUPREMA if self.no_maximo else None
+
+    def lancar(self, jogo, entidade):
+        """Põe no jogo o que a arma cria (projétil, ajudante, efeito), já com o visual do nível dela."""
+        entidade.aura = self.aura
+        jogo.adicionar(entidade)
+        return entidade
 
     def subir_nivel(self):
         self.nivel = self._nivel + 1

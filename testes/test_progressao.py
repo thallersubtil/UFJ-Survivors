@@ -6,7 +6,7 @@ from jogo.armas.caramelo import Caramelo
 from jogo.armas.chatgpt import MascoteChatGPT
 from jogo.armas.claude import MascoteClaude
 from jogo.armas.cobra_python import CobraPython
-from jogo.armas.colabs import CarameloNoFusca, Colab, CobrasGemeas, DebateDasIAs
+from jogo.armas.colabs import CarameloNoFusca, Colab, SerpenteEstelar, MetralhadoraDePrompts
 from jogo.armas.fusca import FuscaAzul
 from jogo.armas.gemini import Gemini
 from jogo.itens.itens import ITENS, FoneDeOuvido, GarrafaTermica, MarmitaDoRU, MochilaPesada, RelogioDePulso
@@ -51,8 +51,8 @@ def test_colab_so_aparece_com_as_duas_armas_no_maximo():
 
 def test_receitas_das_tres_colabs():
     assert set(CarameloNoFusca.INGREDIENTES) == {Caramelo, FuscaAzul}
-    assert set(CobrasGemeas.INGREDIENTES) == {CobraPython, Gemini}
-    assert set(DebateDasIAs.INGREDIENTES) == {MascoteChatGPT, MascoteClaude}
+    assert set(SerpenteEstelar.INGREDIENTES) == {CobraPython, Gemini}
+    assert set(MetralhadoraDePrompts.INGREDIENTES) == {MascoteChatGPT, MascoteClaude}
 
 
 def test_aplicar_colab_troca_as_duas_armas_pela_colab(jogo_limpo):
@@ -67,18 +67,18 @@ def test_aplicar_colab_troca_as_duas_armas_pela_colab(jogo_limpo):
         jogo.atualizar(1 / 60)
 
 
-@pytest.mark.parametrize("receita", [CarameloNoFusca, CobrasGemeas, DebateDasIAs])
+@pytest.mark.parametrize("receita", [CarameloNoFusca, SerpenteEstelar, MetralhadoraDePrompts])
 def test_cada_colab_funciona_na_partida(jogo_limpo, receita):
     jogo = jogo_limpo()
     jogo.jogador.armas = [receita()]
     from jogo.inimigos.bug import Bug
     for i in range(10):
-        bug = Bug(jogo.jogador.posicao + (150 + i * 20, 40), escala=30)
+        bug = Bug(jogo.jogador.posicao + (150 + i * 20, 0), escala=30)
         bug.velocidade = 0
         jogo.adicionar(bug)
     for _ in range(240):
         jogo.atualizar(1 / 60)
-    assert any(b.vida < b.vida_maxima for b in jogo.inimigos)
+    assert len(jogo.inimigos) < 10 or any(b.vida < b.vida_maxima for b in jogo.inimigos)   # feriu ou matou
 
 
 def test_opcoes_de_nivel_sao_tres_e_validas():
@@ -86,14 +86,6 @@ def test_opcoes_de_nivel_sao_tres_e_validas():
     opcoes = Progressao.gerar_opcoes(j, random.Random(1))
     assert len(opcoes) == 3
     assert len({o.titulo for o in opcoes}) == 3
-
-
-def test_colab_disponivel_sempre_aparece_primeiro():
-    j = Programador((0, 0))
-    no_maximo(j.armas[0])
-    j.adicionar_arma(no_maximo(Gemini()))
-    opcoes = Progressao.gerar_opcoes(j, random.Random(5))
-    assert opcoes[0].tipo == "colab"
 
 
 def test_aplicar_opcoes_de_melhoria_e_de_arma_nova(jogo_limpo):
@@ -111,7 +103,7 @@ def test_aplicar_opcoes_de_melhoria_e_de_arma_nova(jogo_limpo):
 def test_sem_nada_para_oferecer_aparecem_cartas_de_atributo_com_lanche(jogo_limpo):
     jogo = jogo_limpo()
     j = jogo.jogador
-    j.armas = [CarameloNoFusca(), CobrasGemeas(), DebateDasIAs(), CarameloNoFusca()]
+    j.armas = [CarameloNoFusca(), SerpenteEstelar(), MetralhadoraDePrompts(), CarameloNoFusca()]
     j.itens = []
     for classe in ITENS[:4]:
         item = classe()
@@ -176,3 +168,88 @@ def test_colab_funde_as_armas_e_libera_vaga_para_uma_nova(jogo_limpo):
     assert len(j.armas) == 3
     novas = {o.titulo for o in Progressao.candidatas(j) if o.rotulo == "NOVA"}
     assert novas == {"Caramelo", "Fusca Azul", "Apostila", "Quadro Branco", "Controle"}
+
+
+def test_armas_tem_quatro_niveis_e_o_ultimo_e_bem_mais_forte():
+    for classe in Progressao.ARMAS:
+        assert classe.NIVEL_MAXIMO == 4
+        dano = classe.ATRIBUTOS["dano"]
+        assert dano[3] >= 1.6 * dano[2], classe.NOME          # o salto do nível máximo é o maior de todos
+        assert dano[3] - dano[2] > dano[2] - dano[1], classe.NOME
+        assert classe.MELHORIAS[-1].split(":")[0].isupper()     # a carta do nível máximo anuncia a forma nova
+
+
+def test_no_nivel_maximo_o_que_a_arma_solta_sai_com_o_visual_supremo():
+    class JogoFalso:
+        def __init__(self):
+            self.adicionados = []
+
+        def adicionar(self, e):
+            self.adicionados.append(e)
+
+    from jogo.projeteis.projeteis import CobraProjetil
+    arma, jogo = CobraPython(), JogoFalso()
+    comum = arma.lancar(jogo, CobraProjetil((0, 0), (100, 0), 1))
+    assert arma.aura is None and comum.aura is None
+    no_maximo(arma)
+    suprema = arma.lancar(jogo, CobraProjetil((0, 0), (100, 0), 1))
+    assert suprema.aura == CobraPython.COR_SUPREMA and jogo.adicionados == [comum, suprema]
+    quadro = suprema.animador.quadro_atual
+    from jogo.nucleo.recursos import Recursos
+    assert Recursos.suprema(quadro, suprema.aura).get_width() > quadro.get_width()      # maior e com contorno
+
+
+@pytest.mark.parametrize("receita", [CarameloNoFusca, SerpenteEstelar, MetralhadoraDePrompts])
+def test_colab_ja_nasce_pronta_sem_bigorna_e_bate_mais_que_os_ingredientes(receita):
+    colab = receita()
+    assert colab.no_maximo and not colab.pode_afiar and colab.aura == receita.COR_SUPREMA
+    with pytest.raises(ValueError):
+        colab.subir_nivel()
+    j = Programador((0, 0))
+    j.armas = [colab]
+    assert not [o for o in Progressao.candidatas(j) if o.titulo == colab.NOME]       # não volta às cartas
+    assert colab.NOME not in [i.NOME for i in receita.INGREDIENTES]                   # é uma arma nova
+    for ingrediente in receita.INGREDIENTES:
+        if ingrediente is not MascoteClaude:        # o golpe único do Claude vira 20 prompts por segundo
+            assert receita.ATRIBUTOS["dano"][0] > ingrediente.ATRIBUTOS["dano"][-1]
+
+
+def test_colab_e_secreta_mas_garantida_quando_as_duas_armas_chegam_ao_maximo():
+    j = Programador((0, 0))
+    no_maximo(j.armas[0])
+    assert not any(o.tipo == "colab" for o in Progressao.candidatas(j))       # nada avisa a receita antes
+    j.adicionar_arma(no_maximo(Gemini()))
+    for semente in range(20):
+        opcoes = Progressao.gerar_opcoes(j, random.Random(semente))
+        assert opcoes[0].tipo == "colab" and opcoes[0].rotulo == "COLAB SECRETA!"
+
+
+def test_carrossel_de_fuscas_gira_em_circulo_perfeito(jogo_limpo):
+    jogo = jogo_limpo()
+    colab = CarameloNoFusca()
+    jogo.jogador.armas = [colab]
+    for _ in range(90):
+        jogo.atualizar(1 / 60)
+    distancias = [f.posicao.distance_to(jogo.jogador.posicao) for f in colab.fuscas]
+    assert len(distancias) == 6 and all(d == pytest.approx(colab.valor("raio"), abs=1) for d in distancias)
+    assert colab.valor("raio") > Caramelo.ATRIBUTOS["raio"][-1]                        # mais longe que a matilha
+
+
+def test_metralhadora_de_prompts_atira_sem_parar_na_direcao_da_mira(jogo_limpo):
+    from jogo.formas_supremas import PromptDisparado
+    jogo = jogo_limpo()
+    jogo.jogador.armas = [MetralhadoraDePrompts()]
+    for _ in range(60):
+        jogo.atualizar(1 / 60)
+    prompts = [e for e in jogo.entidades if isinstance(e, PromptDisparado)]
+    assert len(prompts) >= 15
+    assert all(p.velocidade.normalize().dot(jogo.jogador.direcao_mira) > 0.96 for p in prompts)
+
+
+def test_bigorna_nao_afia_colab(jogo_limpo):
+    from jogo.coletaveis.coletaveis import Bigorna
+    jogo = jogo_limpo()
+    colab = MetralhadoraDePrompts()
+    jogo.jogador.armas = [colab]
+    Bigorna(jogo.jogador.posicao).ao_coletar(jogo)
+    assert colab.carimbos == 0

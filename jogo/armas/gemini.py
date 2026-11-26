@@ -4,24 +4,23 @@ from jogo.armas.arma import ArmaDeDisparo
 from jogo.nucleo.recursos import Recursos
 from jogo.projeteis.projeteis import EstrelaGemini
 
+from jogo.formas_supremas import EstrelaSupernova
+
 
 class Gemini(ArmaDeDisparo):
     NOME = "Gemini"
     ICONE = "sprites/estrela_gemini.png"
     DESCRICAO = "Atira uma estrela que se divide em duas ao acertar. Gêmeos, entendeu?"
     ATRIBUTOS = {
-        "dano": (12, 14, 16, 18, 20, 23, 27),
-        "quantidade": (1, 1, 1, 2, 2, 2, 3),
-        "geracoes": (1, 1, 2, 2, 2, 3, 3),
-        "recarga": (1.3, 1.2, 1.2, 1.1, 1.0, 1.0, 0.9),
+        "dano": (12, 16, 21, 36),
+        "quantidade": (1, 1, 2, 4),
+        "geracoes": (1, 2, 2, 3),
+        "recarga": (1.3, 1.2, 1.0, 0.75),
     }
     MELHORIAS = (
-        "Mais dano e recarga menor.",
-        "As estrelas se dividem mais uma vez.",
-        "Mais 1 estrela.",
-        "Mais dano e recarga menor.",
-        "As estrelas se dividem mais uma vez.",
-        "Mais 1 estrela e mais dano.",
+        "As estrelas se dividem mais uma vez; mais dano.",
+        "Mais 1 estrela, mais dano e recarga menor.",
+        "SUPERNOVA: depois da última divisão, cada estrela explode numa supernova que fere tudo em volta.",
     )
     VELOCIDADE = 380
     ALCANCE = 600
@@ -33,7 +32,7 @@ class Gemini(ArmaDeDisparo):
         quantidade = self.valor("quantidade")
         for i in range(quantidade):
             direcao = rumo.rotate((i - (quantidade - 1) / 2) * 20)
-            jogo.adicionar(EstrelaGemini(dono.posicao, direcao * self.VELOCIDADE,
+            self.lancar(jogo, (EstrelaSupernova if self.no_maximo else EstrelaGemini)(dono.posicao, direcao * self.VELOCIDADE,
                                          self.valor("dano") * dono.multiplicador_dano, geracoes=self.valor("geracoes")))
         Recursos.tocar("disparo", 0.12)
         return True

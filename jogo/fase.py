@@ -185,6 +185,7 @@ class Prova(Fase):
     ROTULO = ""                  # nome curto, para o menu de treino
     NIVEL_TREINO = 1             # nível típico do aluno quando o chefe chega (treino direto no chefe)
     FORMACOES = ()               # um lacaio por minuto, alternando círculo e parede
+    AVISO_DO_CHEFE = 3.0         # segundos de "PERIGO!" na tela antes do chefe chegar
     MINI_CHEFES = ()             # (segundos, nome do lacaio que vira gigante)
     GREVE = None                 # segundos em que começa a greve (None: sem greve)
     MONITOR = None               # segundos em que chega o Monitor Possuído (None: não vem)
@@ -193,6 +194,8 @@ class Prova(Fase):
         eventos = [EventoDaFase(tempo, lambda jogo, n=nome: self.chamar_mini_chefe(jogo, n), f"{nome} gigante")
                    for tempo, nome in self.MINI_CHEFES]
         eventos.append(EventoDaFase(self.DURACAO, lambda jogo: self.chamar_chefe(jogo, self.CHEFE), "Chefe"))
+        eventos.append(EventoDaFase(self.DURACAO - self.AVISO_DO_CHEFE,
+                                    lambda jogo: jogo.avisar_perigo(self.AVISO_DO_CHEFE), "Aviso do chefe"))
         if self.GREVE is not None:
             eventos.append(EventoDaFase(self.GREVE, self.iniciar_greve, "Greve"))
         if self.MONITOR is not None:
@@ -207,7 +210,7 @@ class Prova(Fase):
 
     def adiantar_para_o_chefe(self):
         """Modo treino: começa a prova poucos segundos antes do chefe chegar."""
-        self.adiantar_para(self.DURACAO - 3)
+        self.adiantar_para(self.DURACAO - self.AVISO_DO_CHEFE)
 
 
 class ProvaDeCalculo(Prova):

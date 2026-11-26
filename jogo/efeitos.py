@@ -33,6 +33,40 @@ class Efeito(Entidade, ABC):
         return min(1.0, self.tempo / self.duracao) if self.duracao > 0 else 1.0
 
 
+class EfeitoAnimado(Efeito):
+    """Efeito que toca uma vez a tira assets/sprites/<PASTA_SPRITE>/explodir-<n>.png, do começo ao fim.
+
+    Sem a arte, a subclasse desenha a versão simples (formas geométricas) em `desenhar_simples`.
+    """
+
+    PASTA_SPRITE = None
+    ANIMACAO = "explodir"
+
+    def quadro(self, altura):
+        """Quadro da vez já na altura pedida, ou None se a arte não existe."""
+        animacao = Recursos.animacoes(self.PASTA_SPRITE).get(self.ANIMACAO) if self.PASTA_SPRITE else None
+        if animacao is None:
+            return None
+        quadros = animacao.quadros
+        return Recursos.na_altura(quadros[min(len(quadros) - 1, int(self.fracao * len(quadros)))], max(8, int(altura)))
+
+    def desenhar_simples(self, tela, camera):
+        """Desenho usado quando a arte não está disponível."""
+
+    def altura_do_quadro(self):
+        return self.raio * 2
+
+    def desenhar(self, tela, camera):
+        imagem = self.quadro(self.altura_do_quadro())
+        if imagem is None:
+            self.desenhar_simples(tela, camera)
+            return
+        if self.aura is not None:
+            imagem = Recursos.suprema(imagem, self.aura)
+        c = camera.para_tela(self.posicao)
+        tela.blit(imagem, imagem.get_rect(center=(round(c.x), round(c.y))))
+
+
 class TextoFlutuante(Efeito):
     def __init__(self, texto, posicao, cor=Cor.DANO, tamanho=16, duracao=0.7, subida=36):
         super().__init__(posicao, duracao)
@@ -147,13 +181,39 @@ class RaioZoltraak(Efeito):
             pygame.draw.circle(tela, cor, inicio, espessura // 2 + 4)
 
 
-class GolpeClaude(Efeito):
-    """Estrela laranja que explode onde o Claude bateu."""
+class GolpeClaude(EfeitoAnimado):
+    """Golpe do Claude: um risco laranja sai do mascote e estoura em estrela onde bateu."""
 
-    def __init__(self, posicao, raio):
-        super().__init__(posicao, 0.35, raio)
+    PASTA_SPRITE = "golpe_claude"
+    DURACAO = 0.5
+    TEMPO_DO_RISCO = 0.35          # fração da duração em que o risco do mascote ao alvo aparece
+    ALTURA_MINIMA = 130
+
+    def __init__(self, posicao, raio, origem=None):
+        super().__init__(posicao, self.DURACAO, raio)
+        self.origem = pygame.Vector2(origem) if origem is not None else None
+
+    def altura_do_quadro(self):
+        return max(self.ALTURA_MINIMA, self.raio * 2.6)
+
+    def _desenhar_risco(self, tela, camera):
+        if self.origem is None or self.fracao >= self.TEMPO_DO_RISCO:
+            return
+        avanco = self.fracao / self.TEMPO_DO_RISCO
+        inicio, fim = camera.para_tela(self.origem), camera.para_tela(self.posicao)
+        cauda = inicio + (fim - inicio) * max(0.0, avanco * 1.6 - 0.6)
+        ponta = inicio + (fim - inicio) * min(1.0, avanco * 1.6)
+        if self.aura is not None:              # raciocínio profundo: risco mais grosso, com brilho
+            pygame.draw.line(tela, self.aura, cauda, ponta, 15)
+        pygame.draw.line(tela, (150, 60, 30), cauda, ponta, 9)
+        pygame.draw.line(tela, (240, 130, 60), cauda, ponta, 6)
+        pygame.draw.line(tela, (255, 236, 210), cauda, ponta, 2)
 
     def desenhar(self, tela, camera):
+        self._desenhar_risco(tela, camera)
+        super().desenhar(tela, camera)
+
+    def desenhar_simples(self, tela, camera):
         c = camera.para_tela(self.posicao)
         r = self.raio * (0.5 + 0.7 * self.fracao)
         alfa = int(255 * (1 - self.fracao))
@@ -169,33 +229,13 @@ class GolpeClaude(Efeito):
         tela.blit(sup, sup.get_rect(center=(round(c.x), round(c.y))))
 
 
-class RaioDebate(Efeito):
-    """Raio entre os dois mascotes do Debate das IAs. Dura enquanto a colab existir."""
-
-    camada = 2
-
-    def __init__(self, mascote_a, mascote_b):
-        super().__init__(mascote_a.posicao, float("inf"))
-        self.a = mascote_a
-        self.b = mascote_b
-
-    def ao_atualizar(self, dt, jogo):
-        self.posicao = (self.a.posicao + self.b.posicao) / 2
-
-    def desenhar(self, tela, camera):
-        inicio = camera.para_tela(self.a.posicao)
-        fim = camera.para_tela(self.b.posicao)
-        tremor = 2 + 2 * math.sin(self.tempo * 50)
-        pygame.draw.line(tela, (240, 130, 60), inicio, fim, int(8 + tremor))
-        pygame.draw.line(tela, (120, 240, 200), inicio, fim, 4)
-        pygame.draw.line(tela, (255, 255, 255), inicio, fim, 2)
-
-
-class EstouroDePequi(Efeito):
+class EstouroDePequi(EfeitoAnimado):
     """Explosão de espinhos do Pequi: fere uma vez cada inimigo na área (menos o que já levou o pequi)."""
 
+    PASTA_SPRITE = "estouro_pequi"
+
     def __init__(self, posicao, raio, dano, excluir=None):
-        super().__init__(posicao, 0.3, raio)
+        super().__init__(posicao, 0.4, raio)
         self.dano = dano
         self.excluir = excluir
         self._feriu = False
@@ -208,7 +248,10 @@ class EstouroDePequi(Efeito):
             if inimigo is not self.excluir:
                 jogo.causar_dano(inimigo, self.dano, inimigo.posicao - self.posicao)
 
-    def desenhar(self, tela, camera):
+    def altura_do_quadro(self):
+        return self.raio * 2.4
+
+    def desenhar_simples(self, tela, camera):
         c = camera.para_tela(self.posicao)
         r = self.raio * (0.5 + 0.5 * self.fracao)
         alfa = int(230 * (1 - self.fracao))

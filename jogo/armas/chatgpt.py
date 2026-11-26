@@ -11,19 +11,18 @@ class MascoteChatGPT(ArmaDeDisparo):
     ICONE = "sprites/chatgpt.png"
     DESCRICAO = "Atira no inimigo mais próximo. Às vezes alucina e atira para qualquer lado, com dano dobrado."
     ATRIBUTOS = {
-        "dano": (9, 11, 13, 15, 17, 20, 24),
-        "quantidade": (1, 1, 2, 2, 2, 3, 3),
-        "recarga": (0.9, 0.85, 0.85, 0.75, 0.7, 0.65, 0.55),
+        "dano": (9, 13, 18, 32),
+        "quantidade": (1, 2, 3, 4),
+        "recarga": (0.9, 0.85, 0.7, 0.45),
     }
     MELHORIAS = (
-        "Mais dano.",
-        "Mais 1 disparo.",
-        "Mais dano e recarga menor.",
-        "Mais dano.",
-        "Mais 1 disparo.",
-        "Mais dano e recarga menor.",
+        "Mais 1 disparo e mais dano.",
+        "Mais 1 disparo, mais dano e recarga menor.",
+        "ALUCINAÇÃO COLETIVA: a cada 3 rajadas ele surta e solta 18 tiros rosa de dano dobrado para todos os lados.",
     )
     CHANCE_ALUCINAR = 0.15
+    RAJADAS_POR_ALUCINACAO = 3
+    TIROS_DA_ALUCINACAO = 18
     ALCANCE = 520
     VELOCIDADE = 560
     DESLOCAMENTO = (-38, -46)
@@ -31,11 +30,13 @@ class MascoteChatGPT(ArmaDeDisparo):
     def __init__(self):
         super().__init__()
         self.mascote = None
+        self._rajadas = 0
 
     def atualizar(self, dt, jogo, dono):
         if self.mascote is None:
             self.mascote = MascoteFlutuante(dono, self.ICONE, 34, self.DESLOCAMENTO, pasta="chatgpt")
-            jogo.adicionar(self.mascote)
+            self.lancar(jogo, self.mascote)
+        self.mascote.aura = self.aura
         super().atualizar(dt, jogo, dono)
 
     def disparar(self, jogo, dono):
@@ -53,7 +54,14 @@ class MascoteChatGPT(ArmaDeDisparo):
             else:
                 direcao = rumo.rotate((i - (quantidade - 1) / 2) * 8)
             dano = self.valor("dano") * dono.multiplicador_dano * (2 if alucinou else 1)
-            jogo.adicionar(TiroChatGPT(origem, direcao * self.VELOCIDADE, dano, alucinado=alucinou))
+            self.lancar(jogo, TiroChatGPT(origem, direcao * self.VELOCIDADE, dano, alucinado=alucinou))
+        if self.no_maximo:                      # alucinação coletiva: a cada poucas rajadas, tiros para todo lado
+            self._rajadas += 1
+            if self._rajadas % self.RAJADAS_POR_ALUCINACAO == 0:
+                for i in range(self.TIROS_DA_ALUCINACAO):
+                    direcao = pygame.Vector2(1, 0).rotate(i * 360 / self.TIROS_DA_ALUCINACAO)
+                    self.lancar(jogo, TiroChatGPT(origem, direcao * self.VELOCIDADE,
+                                                  self.valor("dano") * dono.multiplicador_dano * 2, alucinado=True))
         Recursos.tocar("disparo", 0.12)
         return True
 

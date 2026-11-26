@@ -4,7 +4,7 @@ import pytest
 from jogo.aplicacao import Aplicacao
 from jogo.cenas.fim import CenaFimDeJogo
 from jogo.cenas.partida import CenaPartida
-from jogo.cenas.selecao import CenaSelecao
+from jogo.cenas.matricula import CenaMatricula
 from jogo.cenas.titulo import CenaTitulo
 from jogo.cenas.treino import CenaTreino
 from jogo.fase import PROVAS, ProvaDeArquiteturaEED, ProvaDeTDEPOO
@@ -48,17 +48,14 @@ def test_titulo_tem_botao_de_treino(app):
     assert isinstance(app.cena_atual, CenaTreino)
 
 
-def test_treino_escolhe_o_professor_e_vai_para_a_personalizacao(app):
-    from jogo.cenas.personalizacao import CenaPersonalizacao
+def test_treino_escolhe_o_professor_e_vai_para_a_matricula(app):
     app.trocar(CenaTreino(app))
     app.passo(1 / 60, [tecla(pygame.K_DOWN), tecla(pygame.K_RETURN)])
-    assert isinstance(app.cena_atual, CenaPersonalizacao)
+    assert isinstance(app.cena_atual, CenaMatricula)
     assert app.cena_atual.opcoes.provas == (ProvaDeArquiteturaEED,)
     assert app.cena_atual.opcoes.treino
-    app.passo(1 / 60, [tecla(pygame.K_RETURN)])               # tira a foto da carteirinha
-    for _ in range(80):
-        app.passo(1 / 60, [])
-    assert isinstance(app.cena_atual, CenaSelecao) and app.cena_atual.opcoes.treino
+    app.passo(1 / 60, [tecla(pygame.K_ESCAPE)])               # Esc no treino volta para a agenda do treino
+    assert isinstance(app.cena_atual, CenaTreino)
 
 
 def test_treino_alterna_direto_no_chefe_e_imortal(app):

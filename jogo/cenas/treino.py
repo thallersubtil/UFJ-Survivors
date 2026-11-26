@@ -32,9 +32,9 @@ class CenaTreino(Cena):
 
     # ------------------------------------------------------------ regras
     def _comecar(self, prova):
-        from jogo.cenas.personalizacao import CenaPersonalizacao
+        from jogo.cenas.matricula import CenaMatricula
         opcoes = OpcoesDePartida.treino_contra(prova, self.direto_no_chefe, self.imortal).com_progresso(self.app.progresso)
-        self.app.trocar(CenaPersonalizacao(self.app, opcoes))
+        self.app.trocar(CenaMatricula(self.app, opcoes))
 
     def escolher(self, i):
         i %= len(PROVAS)

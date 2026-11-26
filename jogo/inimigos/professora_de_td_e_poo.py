@@ -14,5 +14,8 @@ class ProfessoraDeTDEPOO(ChefePossuido):
     NOME = "Professora de TD e POO"
     NOME_PROFESSOR = "a Professora"
     PASTA_SPRITE = "professora"
+    ARTIGO = "Uma"
+    ILUSTRACAO = "chefes/td_poo.png"
+    COR_DA_APRESENTACAO = (250, 190, 70)
     IMAGEM = "sprites/professor.png"
     MATERIAS = (TransformacaoDigital, ProgramacaoOrientadaAObjetos)
