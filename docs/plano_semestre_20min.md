@@ -46,8 +46,8 @@ Especificação escrita pela sessão revisora (Windows, com o HoloCure decompila
 
 ## M2. Mini-chefes como fonte de níveis e fase 2
 
-- Experiência dos mini-chefes: cerca de 2 a 3 níveis no momento em que morrem, escalando por `escala_dos_mini_chefes`. O baú continua.
-- Experiência dos comuns: curva (XP_BASE/XP_LINEAR/XP_QUADRATICO) e valor das notas para quem não caça chegar ~ao nível 7 / 10 / 13 nos três chefes.
+- Experiência dos mini-chefes como proporção, sem calibrar números finos: ao morrer, cada mini-chefe solta a experiência equivalente a 2 a 3 níveis do nível atual do aluno, calculada a partir de `experiencia_necessaria` na hora da morte (acompanha qualquer curva que o M5 escolher). O baú continua. Teste: matar um mini-chefe sobe o aluno de 2 a 3 níveis, em níveis diferentes.
+- A curva dos inimigos comuns saiu do M2 e foi para o M5 (decisão do Thaller, 27/11: "curva fica pro M5"), porque o M3 e o M4 mudam o dano e a resistência do aluno.
 - Fase 2 dos mini-chefes aos 50% de vida, na base `MiniChefe` (método modelo): grito ou balão próprio, flash e aura; ataques 30% mais frequentes; um ataque novo por subclasse num gancho (ex.: `ataque_da_fase_2(jogo)`). Sem if por tipo.
 - Cálculo ganha a segunda matéria (ex.: `CalculoII`, com integrais e séries). Vidas das matérias revistas no M5.
 - Animação "atacar" (2 a 4 quadros) para chefes e mini-chefes no Animador, tocada antes do golpe; sem arte, cai no "parado". A arte fica com a sessão dos chefes.
@@ -88,6 +88,7 @@ Especificação escrita pela sessão revisora (Windows, com o HoloCure decompila
 ## M5. Balanceamento e loja (sessão "Chefes em horário fixo")
 
 - Linha de base (main 488102d, semente 3, robô antigo): o robô morre cedo demais para servir de medida.
+- Curva de experiência dos comuns (veio do M2): XP_BASE/XP_LINEAR/XP_QUADRATICO e valor das notas para quem não caça chegar ~ao nível 7 / 10 / 13 nos três chefes. Nada de mexer nisso, nas vidas ou na loja antes do M4 aprovado.
 - Robô: desviar com o rolamento, chegar perto o bastante, escolher cartas por prioridade simples, caçar mini-chefes (sem chefe vivo, ir ao círculo mais perto, invocar e lutar).
 - Simulador: `--loja nada|metade|cheia`, `--sementes N`, `--todas-as-classes`, `--sem-caca`. Uma linha por partida (nível na chegada de cada chefe, hora em que cada chefe caiu, mini-chefes derrotados, resultado, moedas) e uma tabela-resumo por classe.
 - Metas (sem `--imortal`; 7 classes x 5 sementes):
