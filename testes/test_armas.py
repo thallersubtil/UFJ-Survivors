@@ -112,6 +112,55 @@ def test_arma_fusca_solta_fuscas_de_tempos_em_tempos(jogo_limpo):
     assert sum(isinstance(e, FuscaVeiculo) for e in jogo.entidades) == arma.valor("quantidade")
 
 
+def test_fusca_cruza_na_altura_do_maior_bolo_e_atropela(jogo_limpo):
+    jogo = jogo_limpo()
+    jogo.jogador.imortal = True
+    jogo.camera.seguir(jogo.jogador.posicao)
+    bolo = [parado(Bug(jogo.jogador.posicao + (60 + 25 * i, -250), escala=10)) for i in range(6)]
+    sozinho = parado(Bug(jogo.jogador.posicao + (0, 200), escala=10))
+    for bug in bolo + [sozinho]:
+        jogo.adicionar(bug)
+    jogo._incorporar_novas()
+    jogo.grade.reconstruir(jogo.inimigos)
+    arma = FuscaAzul()
+    arma.atualizar(10.0, jogo, jogo.jogador)
+    jogo._incorporar_novas()
+    fuscas = [e for e in jogo.entidades if isinstance(e, FuscaVeiculo)]
+    assert fuscas and all(abs(f.posicao.y - bolo[0].posicao.y) <= FuscaAzul.FOLGA_DO_BOLO for f in fuscas)
+    for _ in range(240):
+        jogo.atualizar(1 / 60)
+    assert any(bug.possuido > 0 for bug in bolo)
+
+
+def test_fusca_prefere_o_chefe_ou_mini_chefe_na_tela_ao_bolo(jogo_limpo):
+    from jogo.inimigos.fabrica import FabricaDeInimigos
+    jogo = jogo_limpo()
+    jogo.jogador.imortal = True
+    jogo.camera.seguir(jogo.jogador.posicao)
+    bolo = [parado(Bug(jogo.jogador.posicao + (60 + 25 * i, -250), escala=10)) for i in range(6)]
+    mini = FabricaDeInimigos.criar("vigilante", jogo.jogador.posicao + (-150, 220))
+    for e in bolo + [mini]:
+        jogo.adicionar(e)
+    jogo._incorporar_novas()
+    jogo.grade.reconstruir(jogo.inimigos)
+    FuscaAzul().atualizar(10.0, jogo, jogo.jogador)
+    jogo._incorporar_novas()
+    fuscas = [e for e in jogo.entidades if isinstance(e, FuscaVeiculo)]
+    assert fuscas and all(abs(f.posicao.y - mini.posicao.y) <= FuscaAzul.FOLGA_DO_BOLO for f in fuscas)
+
+
+def test_fusca_sem_ninguem_na_tela_cruza_dentro_da_tela(jogo_limpo):
+    jogo = jogo_limpo()
+    jogo.camera.seguir(jogo.jogador.posicao)
+    tela = jogo.camera.retangulo
+    arma = FuscaAzul()
+    arma.atualizar(10.0, jogo, jogo.jogador)
+    jogo._incorporar_novas()
+    fuscas = [e for e in jogo.entidades if isinstance(e, FuscaVeiculo)]
+    assert len(fuscas) == arma.valor("quantidade")
+    assert all(tela.top + 60 <= f.posicao.y <= tela.bottom - 40 for f in fuscas)
+
+
 def test_possuido_soca_outro_inimigo(jogo_limpo):
     jogo = jogo_limpo()
     possuido = Bug(jogo.jogador.posicao + (300, 0))
@@ -159,3 +208,10 @@ def test_wifi_fere_quem_esta_no_sinal_e_some_ao_remover(jogo_limpo, monkeypatch)
     sinal = arma.sinal
     jogo.jogador.remover_arma(arma, jogo)
     assert not sinal.ativo
+
+
+def test_fusca_azul_fortalecido_e_suprema_com_pelo_menos_1_6_do_dano_do_nivel_3():
+    """Decisão do Thaller ("Vamos bufar o ataque exclusivo do cara da carona"): recarga e dano maiores."""
+    assert FuscaAzul.ATRIBUTOS["recarga"] == (5.0, 4.5, 4.0, 2.5)
+    dano = FuscaAzul.ATRIBUTOS["dano"]
+    assert dano[:3] == (14, 18, 24) and dano[3] >= 1.6 * dano[2]

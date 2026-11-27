@@ -220,7 +220,7 @@ class MiniOvni(LacaioDoCampus):
         self._espera -= dt
         if self._espera <= 0 and distancia > 0:
             self._espera = self.INTERVALO
-            jogo.adicionar(ProjetilTematico(self.posicao, falta / distancia * 250, self.DANO, "*", self.COR, raio=9,
+            jogo.adicionar(ProjetilTematico(self.posicao, falta / distancia * 250, self.DANO * self.FRACAO_DO_DANO, "*", self.COR, raio=9,
                                             arte="laser"))
 
     def balanco(self):

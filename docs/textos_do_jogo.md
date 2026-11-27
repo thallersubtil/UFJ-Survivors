@@ -106,7 +106,7 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Nível 4: GPS: os alfinetes caem em sequência, traçando uma rota de você até o maior bolo de inimigos.
 
 ### Fusca Azul
-- Nível 1: Um fusca azul atravessa a tela. Quem é atropelado sai socando os outros inimigos.
+- Nível 1: Um fusca azul atravessa a tela pelo meio da muvuca (ou em cima do chefe). Quem é atropelado sai socando os outros inimigos.
 - Nível 2: Mais 1 fusca, possessão mais longa e recarga menor.
 - Nível 3: Mais dano, possessão mais longa e recarga menor.
 - Nível 4: FUSCA MONSTRO: dois fuscas de rodas gigantes cruzam a tela esmagando várias vezes quem fica embaixo; possessão de 7 s.

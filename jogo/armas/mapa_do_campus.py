@@ -34,7 +34,7 @@ class MapaDoCampus(ArmaDeDisparo):
                 ponto = dono.posicao.lerp(destino, (i + 1) / quantidade)
                 self.lancar(jogo, AlfineteDoMapa(ponto, raio, dano, atraso=i * self.INTERVALO_DO_GPS))
         else:
-            for alvo in jogo.rng.sample(perto, min(quantidade, len(perto))):
-                self.lancar(jogo, AlfineteDoMapa(alvo.posicao, raio, dano))
+            for alvo in jogo.rng.sample(perto, min(quantidade, len(perto))):     # cai onde o alvo vai estar
+                self.lancar(jogo, AlfineteDoMapa(alvo.onde_estara(jogo, AlfineteDoMapa.ATRASO), raio, dano))
         Recursos.tocar("disparo", 0.1)
         return True

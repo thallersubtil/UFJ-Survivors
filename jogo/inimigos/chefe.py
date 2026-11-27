@@ -11,6 +11,7 @@ class Chefe(Inimigo, ABC):
     TENACIDADE = 1.0             # nada puxa, atrasa ou prende um chefe no meio do ataque
     CHEFE = True
     ALIVIO_NO_CAMPO = 0.6        # com chefe em campo nascem menos lacaios
+    FRACAO_DO_DANO = 1.0         # o dano dos professores é o da matéria, sem desconto
     CHANCE_IMA = 0.0
     INTERVALO_ATAQUE = 2.6
     INTERVALO_FURIOSO = 1.6

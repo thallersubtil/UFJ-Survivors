@@ -116,6 +116,14 @@ Especificação escrita pela sessão revisora (Windows, com o HoloCure decompila
   - Armas mirando chefe primeiro: ainda não (no HoloCure miram o mais perto); só volta se a limpeza e o alívio não chegarem perto da meta.
   - Nenhum círculo a menos de `Fase.LONGE_DO_INICIO` (900) de onde o aluno nasce.
   - A mesma semente repete a partida em qualquer processo (teste com `PYTHONHASHSEED` diferentes).
+- Alavancas 1 e 2 fechadas (rodadas F a L, sessão dos chefes, 27/11): o que faltava era força contra o relógio, não nível (esperar o nível 9 só levava a 1ª luta para perto do Cálculo). Números escolhidos (rodada L1, loja vazia, caçando: vence a 1ª luta em 60% de quem luta, 74% das lutas, 1º chefe em 11%):
+  - `Fase.PASSO_DIFICULDADE` 180 -> 400 e `Fase.ALVO_POR_SEGUNDO` 0,5 -> 0,3;
+  - `FRACAO_DO_DANO` por família: lacaios 0,6, mini-chefes 0,7, professores 1; `MiniChefe.FRACAO_DA_VIDA` 0,5 (o piso);
+  - `MiniChefe.ALIVIO_NO_CAMPO` 0,3.
+  - Meta da 1ª luta para o robô: 65% de quem luta (revisão: ele não foge, não escolhe a hora e mira mal); o Thaller joga 2 ou 3 partidas antes do merge para conferir o nível 5 a 7 de verdade.
+  - Mapa do Campus mira onde o inimigo vai estar (`Inimigo.onde_estara`): errava um terço dos alfinetes por desenho.
+  - Ficou de fora: armas preferindo chefe (desvio do HoloCure; +3 pontos na 1ª luta), formações menores no começo (não ajudou), o robô de corpo a corpo chegando mais perto (piorou).
+  - Referência da loja cheia com esses números (rodada L3): vence o 1º mini-chefe em 87% de quem luta, o 1º chefe em 54%, os três em 36%, honras 16%.
 - Curva de experiência dos comuns (veio do M2): XP_BASE/XP_LINEAR/XP_QUADRATICO e valor das notas para quem não caça chegar ~ao nível 7 / 10 / 13 nos três chefes. Nada de mexer nisso, nas vidas ou na loja antes do M4 aprovado.
 - Robô: desviar com o rolamento, chegar perto o bastante, escolher cartas por prioridade simples, caçar mini-chefes (sem chefe vivo, ir ao círculo mais perto, invocar e lutar).
 - Simulador: `--loja nada|metade|cheia`, `--sementes N`, `--todas-as-classes`, `--sem-caca`. Uma linha por partida (nível na chegada de cada chefe, hora em que cada chefe caiu, mini-chefes derrotados, resultado, moedas) e uma tabela-resumo por classe.

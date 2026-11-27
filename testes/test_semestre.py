@@ -337,6 +337,28 @@ def test_chefe_de_pe_aos_20_e_reprovado_sem_honras():
     assert not jogo.venceu and not jogo.honras and jogo.bonus_de_honras == 0
 
 
+def test_so_e_aprovado_quem_passa_nas_tres_materias_mesmo_sobrevivendo_ate_o_fim():
+    """Regra do Thaller: "O aluno só é aprovado se passar nas 3 matérias". Dois chefes derrotados e vivo aos
+    20:00 não basta: reprovado na matéria do chefe que ficou de pé, sem honras, bônus nem vitória no ranking."""
+    from jogo.cenas.fim import CenaFimDeJogo
+    jogo = partida()
+    for prova in CALENDARIO:
+        pular_para(jogo, prova.hora)
+    segundo = jogo.chefe_da_prova(CALENDARIO[1])
+    for chefe in list(jogo.chefes):
+        if chefe is not segundo:
+            derrubar(jogo, chefe)
+    assert jogo.chefes_derrotados == 2 and segundo.ativo
+    pular_para(jogo, 20 * 60)
+    assert not jogo.venceu and not jogo.honras and jogo.bonus_de_honras == 0
+    morrer(jogo)
+    registro = jogo.resultado("Ana")
+    assert not registro.venceu and not registro.honras and registro.chefes == 2
+    situacoes = [linha.situacao for linha in Boletim(jogo).linhas]
+    assert situacoes == ["APROVADO", "REPROVADO", "APROVADO"]
+    assert CenaFimDeJogo.motivo(jogo).startswith("Reprovado em")
+
+
 def test_o_bonus_so_entra_nas_moedas_com_honras():
     jogo = partida()
     vencer_os_tres_chefes(jogo)

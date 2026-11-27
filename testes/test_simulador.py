@@ -176,9 +176,12 @@ def test_lutas_contra_mini_chefe_ficam_registradas_com_nivel_vida_e_desfecho():
     com = simulador.Resultado("Otaku", 1, "nada", True, resultado="REPROVADO", tempo=510, lutas=[vencida, perdida])
     sem = simulador.Resultado("Otaku", 2, "nada", True, resultado="REPROVADO", tempo=100)
     assert "1º mini-chefe no nível 6" in simulador.linha_da_partida(com)
-    cabecalho, _, *_, total = simulador.tabela_por_classe([com, sem]).splitlines()
-    assert "nível 1º mini" in cabecalho and "vence 1º mini" in cabecalho
-    assert total.split()[-2:] == ["6.0", "50%"]           # nível médio da 1ª luta e quantos venceram a 1ª
+    perdeu = simulador.Resultado("Otaku", 3, "nada", True, resultado="REPROVADO", tempo=300, lutas=[perdida])
+    cabecalho, _, *_, total = simulador.tabela_por_classe([com, sem, perdeu]).splitlines()
+    for coluna in ("nível 1º mini", "vence 1º mini", "perde 1º mini", "sem luta"):
+        assert coluna in cabecalho
+    # nível médio da 1ª luta; e cada partida cai em um dos três: venceu a 1ª, perdeu a 1ª, morreu sem lutar
+    assert total.split()[-4:] == ["7.5", "33%", "33%", "33%"]
 
 
 def test_a_partida_registra_a_luta_quando_o_mini_chefe_aparece_e_quando_ele_cai():

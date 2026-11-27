@@ -126,10 +126,11 @@ def test_mini_chefe_fica_mais_forte_pela_ordem_da_cacada_e_nao_pelo_relogio(jogo
         return local.invocar(jogo)
 
     cedo, tarde = invocado(2 * 60, 0), invocado(12 * 60, 0)
-    assert cedo.vida_maxima == tarde.vida_maxima == cedo.VIDA            # o 1º vem na vida base a qualquer hora
-    assert cedo.fator_de_dano == tarde.fator_de_dano == 1
+    base = cedo.VIDA * cedo.FRACAO_DA_VIDA
+    assert cedo.vida_maxima == tarde.vida_maxima == base                 # o 1º vem na vida base a qualquer hora
+    assert cedo.fator_de_dano == tarde.fator_de_dano == cedo.FRACAO_DO_DANO
     terceiro = invocado(2 * 60, 2)
-    assert terceiro.vida_maxima == pytest.approx(cedo.VIDA * (1 + 2 * Jogo.FORCA_POR_MINI_CHEFE))
+    assert terceiro.vida_maxima == pytest.approx(base * (1 + 2 * Jogo.FORCA_POR_MINI_CHEFE))
     assert terceiro.fator_de_dano > cedo.fator_de_dano
 
 
@@ -411,3 +412,18 @@ def test_mini_mapa_mostra_so_o_lugar_e_o_clique_marca(tmp_path):
     assert jogo.marcados == set() and app.cena_atual is cena
     app.passo(1 / 60, [tecla_m])
     assert app.cena_atual is partida
+
+
+def test_fracoes_de_dano_e_vida_por_familia_de_inimigo():
+    """Calibração do M5 num número por família: lacaio, mini-chefe e professor (sem desconto)."""
+    from jogo.inimigos.bug import Bug
+    from jogo.inimigos.chefe import Chefe
+    from jogo.inimigos.mini_chefes import MiniChefe, Vigilante
+    bug = Bug((0, 0))
+    assert bug.dano_de_contato == pytest.approx(Bug.DANO * Bug.FRACAO_DO_DANO) and 0 < Bug.FRACAO_DO_DANO < 1
+    vigilante = Vigilante((0, 0))
+    assert vigilante.vida_maxima == pytest.approx(Vigilante.VIDA * MiniChefe.FRACAO_DA_VIDA)
+    assert vigilante.dano_de_contato == pytest.approx(Vigilante.DANO * MiniChefe.FRACAO_DO_DANO)
+    assert Chefe.FRACAO_DO_DANO == 1
+    professor = FabricaDeInimigos.criar("chefe_calculo", (0, 0))
+    assert professor.FRACAO_DO_DANO == 1

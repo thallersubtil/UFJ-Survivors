@@ -316,7 +316,7 @@ def test_golpe_de_bastao_mira_avanca_e_acerta_com_forca(jogo_limpo):
     for _ in range(int((leao.golpe.duracao - leao.golpe.carga) * 30) + 3):
         leao.perseguir(1 / 30, jogo)
     assert leao.posicao.x > inicio.x + 60                      # avançou na direção do aluno
-    assert jogo.jogador.vida == pytest.approx(jogo.jogador.vida_maxima - LeaoDoProerd.DANO_DO_BASTAO)
+    assert jogo.jogador.vida == pytest.approx(jogo.jogador.vida_maxima - LeaoDoProerd.DANO_DO_BASTAO * LeaoDoProerd.FRACAO_DO_DANO)
     assert not leao.golpe.ativo
 
 

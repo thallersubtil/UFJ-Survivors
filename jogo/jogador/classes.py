@@ -127,7 +127,7 @@ class Gamer(Jogador):
 class Calouro(Jogador):
     NOME = "Calouro"
     DESCRICAO = "Começa fraco, mas aprende rápido."
-    VIDA = 50
+    VIDA = 60
     VELOCIDADE = 215
     IMAGEM = "sprites/calouro.png"
     PASTA_SPRITE = "calouro"

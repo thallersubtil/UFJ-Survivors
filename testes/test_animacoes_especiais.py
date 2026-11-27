@@ -162,7 +162,7 @@ def test_tia_gira_com_a_concha_atras_do_aluno_e_bate_de_tempos_em_tempos(jogo_li
     for _ in range(int(TiaDaCantina.INTERVALO_DO_GIRO * 30) * 2 + 5):            # três conchadas, não quatro
         tia.perseguir(1 / 30, jogo)
         jogo.jogador.invencivel = 0
-    assert jogo.jogador.vida_maxima - jogo.jogador.vida == pytest.approx(3 * TiaDaCantina.DANO_DO_GIRO)
+    assert jogo.jogador.vida_maxima - jogo.jogador.vida == pytest.approx(3 * TiaDaCantina.DANO_DO_GIRO * TiaDaCantina.FRACAO_DO_DANO)
     assert any(p.arte == "concha" for p in novas(jogo, ProjetilTematico))
     for _ in range(int(TiaDaCantina.DURACAO_DO_GIRO * 30)):
         tia.perseguir(1 / 30, jogo)
@@ -292,7 +292,7 @@ def test_gancho_fisga_puxa_o_aluno_e_vem_a_voadora(jogo_limpo):
     jogo.jogador.invencivel = 0
     vida = jogo.jogador.vida
     vigilante.cumprir_agenda(Vigilante.TEMPO_DA_VOADORA, jogo)
-    assert vida - jogo.jogador.vida == pytest.approx(Vigilante.DANO_DA_VOADORA)
+    assert vida - jogo.jogador.vida == pytest.approx(Vigilante.DANO_DA_VOADORA * Vigilante.FRACAO_DO_DANO)
 
 
 def test_quem_sai_da_linha_do_gancho_escapa(jogo_limpo):
@@ -482,7 +482,7 @@ def test_loira_com_a_broca_atravessa_o_aluno_uma_vez_so(jogo_limpo):
     while loira.arrancada.ativa:
         loira.perseguir(1 / 30, jogo)
         jogo.jogador.invencivel = 0
-    assert jogo.jogador.vida_maxima - jogo.jogador.vida == pytest.approx(LoiraDaOdontologia.DANO_DA_BROCA)
+    assert jogo.jogador.vida_maxima - jogo.jogador.vida == pytest.approx(LoiraDaOdontologia.DANO_DA_BROCA * LoiraDaOdontologia.FRACAO_DO_DANO)
 
 
 
@@ -588,7 +588,7 @@ def test_vodu_da_gotica_acerta_onde_o_aluno_estiver_mas_quem_rola_escapa(jogo_li
     assert any(m.arte == "caveira" and m.dono is jogo.jogador for m in novas(jogo, Marca))   # o aviso em cima dele
     vida = jogo.jogador.vida
     gotica.cumprir_agenda(GoticaTrevosa.AGULHADA, jogo)
-    assert vida - jogo.jogador.vida == pytest.approx(GoticaTrevosa.DANO_DO_VODU)
+    assert vida - jogo.jogador.vida == pytest.approx(GoticaTrevosa.DANO_DO_VODU * GoticaTrevosa.FRACAO_DO_DANO)
     jogo.jogador.invencivel = 0
     gotica.ataques = 5
     gotica.atacar(jogo)

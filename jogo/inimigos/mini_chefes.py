@@ -316,7 +316,9 @@ class MiniChefe(Inimigo):
     GANHO_VELOCIDADE = 0.04      # o tempo de partida mexe pouco na velocidade dele
     TENACIDADE = 1.0             # nada puxa, atrasa ou prende um mini-chefe no meio do ataque
     CHEFE = True
-    ALIVIO_NO_CAMPO = 0.5        # na luta com ele também nascem menos lacaios: o aluno perdia para o campo, não para ele
+    ALIVIO_NO_CAMPO = 0.3        # na luta com ele também nascem menos lacaios: o aluno perdia para o campo, não para ele
+    FRACAO_DA_VIDA = 0.5         # calibração do M5: a VIDA de cada um vale esta fração (o primeiro, vencível no nível 6)
+    FRACAO_DO_DANO = 0.7         # e o dano (encostão e golpes) esta
 
     SEGUNDA_FASE_ABAIXO_DE = 0.0             # fração da vida em que entra na segunda fase (0: não tem)
     FALA_DA_SEGUNDA_FASE = ""
@@ -327,6 +329,8 @@ class MiniChefe(Inimigo):
 
     def __init__(self, posicao, escala=1.0):
         super().__init__(posicao, escala)
+        self.vida_maxima *= self.FRACAO_DA_VIDA
+        self.vida = self.vida_maxima
         self.posto = pygame.Vector2(posicao)
         self.solta_bau = True
         self.reposiciona = False
@@ -502,7 +506,7 @@ class MiniChefe(Inimigo):
 
     @property
     def fator_de_dano(self):
-        return 1 + max(0.0, self.escala - 1) * self.GANHO_DANO
+        return self.FRACAO_DO_DANO * (1 + max(0.0, self.escala - 1) * self.GANHO_DANO)
 
     def _desenhar_aura(self, tela, camera):
         """Segunda fase: uma aura pulsando na cor dele por trás do corpo, como a da matéria nos professores."""

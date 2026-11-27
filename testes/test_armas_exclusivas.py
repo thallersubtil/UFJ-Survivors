@@ -216,6 +216,29 @@ def test_alfinete_avisa_no_chao_e_so_fere_quando_cai(jogo_limpo):
     assert a.vida < 10_000 and b.vida < 10_000
 
 
+def test_alfinete_cai_onde_o_inimigo_vai_estar_e_acerta_quem_anda_em_linha_reta(jogo_limpo):
+    jogo, (bug,) = jogo_com_bugs(jogo_limpo, (400, 0))
+    bug.velocidade = 125                                # anda até o aluno: em 0,6 s são 75 px, mais que o raio
+    assert MapaDoCampus().disparar(jogo, jogo.jogador)
+    (alfinete,) = novas(jogo, AlfineteDoMapa)
+    previsto = bug.onde_estara(jogo, AlfineteDoMapa.ATRASO)
+    assert alfinete.posicao.distance_to(previsto) < 1 and previsto.x < bug.posicao.x
+    for _ in range(round(AlfineteDoMapa.ATRASO * 30) + 2):
+        bug.mover(1 / 30, jogo)
+        alfinete.atualizar(1 / 30, jogo)
+    assert bug.vida < 10_000
+
+
+def test_quem_esta_parado_ou_travado_fica_onde_esta_na_previsao(jogo_limpo):
+    jogo, (parado,) = jogo_com_bugs(jogo_limpo, (300, 0))
+    assert parado.onde_estara(jogo, 0.6) == parado.posicao            # velocidade zero
+    parado.velocidade = 125
+    parado.travar(2)
+    assert parado.onde_estara(jogo, 0.6) == parado.posicao
+    perto = Bug(jogo.jogador.posicao + (20, 0))
+    assert perto.onde_estara(jogo, 0.6).distance_to(jogo.jogador.posicao) <= 20   # não passa do aluno
+
+
 def test_mapa_sem_ninguem_por_perto_nao_solta(jogo_limpo):
     jogo, _ = jogo_com_bugs(jogo_limpo, (900, 0))
     assert not MapaDoCampus().disparar(jogo, jogo.jogador)

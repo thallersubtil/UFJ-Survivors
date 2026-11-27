@@ -35,6 +35,7 @@ class Inimigo(SerVivo, ABC):
     ALVO_DA_MIRA = True        # se a mira e as armas que procuram alvo escolhem este (objeto quebrável: não)
     CHEFE = False              # chefe ou mini-chefe: aguenta o que derruba os comuns (Atestado Médico)
     ALIVIO_NO_CAMPO = 1.0      # enquanto ele está vivo, o campo enche só até esta fração do alvo (a luta ocupa o aluno)
+    FRACAO_DO_DANO = 0.6       # o DANO de cada lacaio vale esta fração (calibração do M5: um número só para todos)
     CHANCE_MOEDA = 0.05
     CHANCE_CAFE = 0.03         # copo de café: doses para a Virada de Noite, ou um empurrão no especial
     MOEDAS_GIGANTE = 15
@@ -181,7 +182,8 @@ class Inimigo(SerVivo, ABC):
     def dano_de_contato(self):
         """O encostão dói mais conforme a prova avança (a mesma escala que dá vida e velocidade ao inimigo)."""
         fraco = self.fator_fraqueza if self.fraqueza > 0 else 1.0
-        return self.DANO * (1 + max(0.0, self.escala - 1) * self.GANHO_DANO) * self.furia * fraco
+        return (self.DANO * self.FRACAO_DO_DANO * (1 + max(0.0, self.escala - 1) * self.GANHO_DANO) * self.furia
+                * fraco)
 
     def enfurecer(self, furia):
         """O fim do semestre passou: o dano de contato multiplica por `furia` e a velocidade também, até
@@ -227,6 +229,18 @@ class Inimigo(SerVivo, ABC):
         """Calourada: por um tempo, o encostão dele dói só `fator` do normal."""
         self.fraqueza = max(self.fraqueza, duracao)
         self.fator_fraqueza = fator
+
+    def onde_estara(self, jogo, segundos):
+        """Onde ele deve estar daqui a `segundos`, para quem mira com atraso (o alfinete do Mapa do Campus): o
+        comum vem reto para o aluno, sem passar dele; parado ou travado fica onde está. Quem anda de outro jeito
+        pode sobrescrever."""
+        if self.travado > 0 or self.velocidade <= 0:
+            return pygame.Vector2(self.posicao)
+        falta = jogo.jogador.posicao - self.posicao
+        if falta.length_squared() < 1:
+            return pygame.Vector2(self.posicao)
+        passo = min(falta.length(), self.velocidade * segundos)
+        return self.posicao + falta.normalize() * passo
 
     def travar(self, duracao):
         """Tela Azul: por um tempo, fica parado no lugar (quem tem tenacidade total nem sente)."""

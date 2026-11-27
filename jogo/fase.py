@@ -27,9 +27,9 @@ class Fase(ABC):
     INTERVALO_MINIMO = 0.1        # o intervalo encurta com o tempo, mas nunca passa disto
     TEMPO_PARA_DOBRAR = 240       # segundos de partida para os grupos nascerem duas vezes mais rápido
     ALVO_INICIAL = 10             # inimigos em campo no primeiro segundo
-    ALVO_POR_SEGUNDO = 0.5        # quantos a mais a cada segundo de partida...
+    ALVO_POR_SEGUNDO = 0.3        # quantos a mais a cada segundo de partida...
     ALVO_ACELERACAO = 1.5         # ...e mais isto vezes (minutos de partida)²: o começo é calmo, o fim enche a tela
-    PASSO_DIFICULDADE = 180       # segundos para a dificuldade subir 1 ponto
+    PASSO_DIFICULDADE = 400       # segundos para a dificuldade subir 1 ponto
 
     def __init__(self):
         self.tempo = 0.0

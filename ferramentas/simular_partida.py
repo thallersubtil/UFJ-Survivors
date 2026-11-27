@@ -515,14 +515,16 @@ def _nivel_da_primeira_luta(resultados):
 
 def tabela_por_classe(resultados):
     """Tabela-resumo: por classe e no total, quanto vence cada chefe, fim do semestre (os três chefes), honras
-    (os três e vivo aos 20:00), tempo, níveis e moedas."""
+    (os três e vivo aos 20:00), tempo, níveis e moedas; e a 1ª luta contra mini-chefe (o nível, e se venceu,
+    perdeu ou morreu antes de lutar: as três colunas somam 100%)."""
     grupos = {}
     for r in resultados:
         grupos.setdefault(r.classe, []).append(r)
     grupos["TOTAL"] = list(resultados)
     cabecalho = (f"{'classe':<15} {'partidas':>8} {'1º chefe':>8} {'2º chefe':>8} {'fim sem.':>8} {'honras':>7} "
                  f"{'tempo med.':>10} {'nível 1º':>8} {'nível 2º':>8} {'nível 3º':>8} {'mini-chefes':>11} "
-                 f"{'moedas med.':>11} {'nível 1º mini':>13} {'vence 1º mini':>13}")
+                 f"{'moedas med.':>11} {'nível 1º mini':>13} {'vence 1º mini':>13} {'perde 1º mini':>13} "
+                 f"{'sem luta':>8}")
     linhas = [cabecalho, "-" * len(cabecalho)]
     for nome, lista in grupos.items():
         n = len(lista)
@@ -535,7 +537,9 @@ def tabela_por_classe(resultados):
             f"{_media_do_nivel(lista, 0):>8} {_media_do_nivel(lista, 1):>8} {_media_do_nivel(lista, 2):>8} "
             f"{statistics.mean(r.mini_chefes for r in lista):>11.1f} "
             f"{statistics.median(r.moedas for r in lista):>11.0f} {_nivel_da_primeira_luta(lista):>13} "
-            f"{_porcento(sum(bool(r.lutas) and r.lutas[0].venceu for r in lista), n):>13}")
+            f"{_porcento(sum(bool(r.lutas) and r.lutas[0].venceu for r in lista), n):>13} "
+            f"{_porcento(sum(bool(r.lutas) and not r.lutas[0].venceu for r in lista), n):>13} "
+            f"{_porcento(sum(not r.lutas for r in lista), n):>8}")
     return "\n".join(linhas)
 
 

@@ -40,7 +40,7 @@ def test_habilidades_de_atributo_melhoram_com_a_carta():
     gamer = Gamer((0, 0))
     gamer.adicionar_habilidade(gamer.habilidades_da_classe[0])
     assert gamer.mult_rolamento < 1
-    assert Calouro.VIDA < Programador.VIDA + 10  # começa fraco
+    assert Calouro.VIDA <= Programador.VIDA + 10  # começa entre os frágeis (o Programador é o mais frágil)
 
 
 def test_revisao_para_prova_puxa_notas_e_cura(jogo_limpo):
