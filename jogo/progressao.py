@@ -3,16 +3,20 @@ from dataclasses import dataclass
 from typing import Callable
 
 from jogo.armas.apostila import Apostila
+from jogo.armas.caneta_bic import CanetaBic
 from jogo.armas.caramelo import Caramelo
 from jogo.armas.chatgpt import MascoteChatGPT
 from jogo.armas.claude import MascoteClaude
 from jogo.armas.cobra_python import CobraPython
 from jogo.armas.colabs import Colab
 from jogo.armas.controle import Controle
+from jogo.armas.corrente_whatsapp import CorrenteDeWhatsApp
+from jogo.armas.dado import DadoDeVinteLados
 from jogo.armas.fusca import FuscaAzul
 from jogo.armas.gemini import Gemini
 from jogo.armas.pequi import PequiExplosivo
 from jogo.armas.quadro_branco import QuadroBranco
+from jogo.armas.regua import ReguaDeUmMetro
 from jogo.armas.wifi import WifiEduroam
 from jogo.itens.itens import ITENS
 
@@ -35,7 +39,7 @@ class Opcao:
 
 class Progressao:
     ARMAS = (CobraPython, Caramelo, MascoteChatGPT, MascoteClaude, Gemini, FuscaAzul, PequiExplosivo, WifiEduroam,
-             Apostila, QuadroBranco, Controle)
+             Apostila, QuadroBranco, Controle, DadoDeVinteLados, ReguaDeUmMetro, CanetaBic, CorrenteDeWhatsApp)
     ITENS = ITENS
 
     PESO_DESBLOQUEADO = 0.7         # o que foi comprado na loja começa um pouco mais raro

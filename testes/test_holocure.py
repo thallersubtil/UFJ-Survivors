@@ -51,7 +51,7 @@ def test_cartas_respeitam_o_peso():
     for _ in range(3000):
         for opcao in Progressao.gerar_opcoes(heroi, rng):
             contagem[opcao.titulo] = contagem.get(opcao.titulo, 0) + 1
-    assert contagem.get(Cola.NOME, 0) < contagem["Caderno de Resumos"] * 0.8
+    assert contagem.get(Cola.NOME, 0) < contagem["Energético"] * 0.8
 
 
 def test_banir_tira_a_carta_pelo_resto_da_partida():

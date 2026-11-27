@@ -7,12 +7,14 @@ tiver a sorte de levar as duas armas certas ao máximo descobre a carta. Nem tod
 import math
 from abc import ABC
 
-from jogo.ajudantes.ajudantes import FuscaCircular
+from jogo.ajudantes.ajudantes import FuscaCircular, MascoteFlutuante
+from jogo.ajudantes.golpes import ElosDaCorrente, corrente
 from jogo.armas.arma import Arma, ArmaContinua
 from jogo.armas.caramelo import Caramelo
 from jogo.armas.chatgpt import MascoteChatGPT
 from jogo.armas.claude import MascoteClaude
 from jogo.armas.cobra_python import CobraPython
+from jogo.armas.corrente_whatsapp import CorrenteDeWhatsApp
 from jogo.armas.fusca import FuscaAzul
 from jogo.armas.gemini import Gemini
 from jogo.formas_supremas import MetralhadoraFlutuante, PromptDisparado, SerpenteEstelarProjetil
@@ -143,4 +145,51 @@ class MetralhadoraDePrompts(ArmaContinua, Colab):
             self.metralhadora = None
 
 
-Colab.RECEITAS = [CarameloNoFusca, SerpenteEstelar, MetralhadoraDePrompts]
+class FakeNews(ArmaContinua, Colab):
+    """O ChatGPT inventa a notícia e a Corrente de WhatsApp espalha: quem acredita passa a lutar do seu lado."""
+
+    NOME = "Fake News"
+    ICONE = "sprites/chatgpt.png"
+    DESCRICAO = ("O ChatGPT inventa e a corrente espalha: a cada 0,8 s uma notícia falsa pula por 12 inimigos, "
+                 "e 30% de quem ela acerta acredita e luta do seu lado por 4 s.")
+    INGREDIENTES = (CorrenteDeWhatsApp, MascoteChatGPT)
+    ATRIBUTOS = {"dano": (48,), "saltos": (12,), "intervalo": (0.8,), "chance": (0.30,), "possessao": (4.0,)}
+    ALCANCE = 460
+    ALCANCE_DO_SALTO = 240
+    DESLOCAMENTO = (-38, -46)
+
+    def __init__(self):
+        super().__init__()
+        self.mascote = None
+        self._espera = 0.0
+
+    def atualizar(self, dt, jogo, dono):
+        if self.mascote is None:
+            self.mascote = self.lancar(jogo, MascoteFlutuante(dono, "sprites/chatgpt.png", 34, self.DESLOCAMENTO,
+                                                              pasta="chatgpt"))
+        self._espera -= dt
+        if self._espera > 0:
+            return
+        origem = self.mascote.posicao
+        pontos = corrente(jogo, origem, self.ALCANCE, self.valor("saltos"), self.ALCANCE_DO_SALTO,
+                          lambda inimigo: self._espalhar(inimigo, jogo, dono))
+        if pontos:
+            self.lancar(jogo, ElosDaCorrente(pontos, duracao=0.4))
+            self._espera = self.valor("intervalo") * dono.multiplicador_recarga
+            Recursos.tocar("disparo", 0.12)
+        else:
+            self._espera = 0.1
+
+    def _espalhar(self, inimigo, jogo, dono):
+        morreu = jogo.causar_dano(inimigo, self.valor("dano") * dono.multiplicador_dano,
+                                  inimigo.posicao - self.mascote.posicao)
+        if not morreu and not inimigo.CHEFE and jogo.rng.random() < self.valor("chance"):
+            inimigo.possuir(self.valor("possessao"))
+
+    def ao_remover(self, jogo):
+        if self.mascote is not None:
+            self.mascote.remover()
+            self.mascote = None
+
+
+Colab.RECEITAS = [CarameloNoFusca, SerpenteEstelar, MetralhadoraDePrompts, FakeNews]

@@ -20,6 +20,7 @@ class Arma(ABC):
     def __init__(self):
         self._nivel = 1
         self.carimbos = 0
+        self.reforco = 1.0         # multiplica o dano (Marmita do RU, na arma inicial)
 
     @classmethod
     def liberada(cls, desbloqueios):
@@ -63,7 +64,7 @@ class Arma(ABC):
     def valor(self, atributo):
         valor = self.ATRIBUTOS[atributo][self._nivel - 1]
         if atributo == "dano":
-            valor *= 1 + self.BONUS_CARIMBO * self.carimbos
+            valor *= (1 + self.BONUS_CARIMBO * self.carimbos) * self.reforco
         return valor
 
     @property

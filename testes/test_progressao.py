@@ -9,7 +9,7 @@ from jogo.armas.cobra_python import CobraPython
 from jogo.armas.colabs import CarameloNoFusca, Colab, SerpenteEstelar, MetralhadoraDePrompts
 from jogo.armas.fusca import FuscaAzul
 from jogo.armas.gemini import Gemini
-from jogo.itens.itens import ITENS, FoneDeOuvido, GarrafaTermica, MarmitaDoRU, MochilaPesada, RelogioDePulso
+from jogo.itens.itens import ITENS, GarrafaTermica, MarmitaDoRU, TenisDeCorrida
 from jogo.jogador.classes import MestreDeRPG, Programador, Otaku
 from jogo.progressao import Progressao
 
@@ -21,23 +21,20 @@ def no_maximo(arma):
 
 
 def test_tabelas_dos_itens():
-    assert len(ITENS) == 15
+    assert len(ITENS) == 18          # saíram Caderno de Resumos e Relógio de Pulso; entraram cinco
     for classe in ITENS:
         assert len(classe.MELHORIAS) == classe.NIVEL_MAXIMO - 1
         assert classe.NOME and classe.DESCRICAO and classe.ICONE
 
 
 def test_efeitos_dos_itens():
+    """Os itens refeitos e novos do semestre têm os testes próprios em test_itens_do_semestre.py."""
     j = MestreDeRPG((0, 0))
-    for classe in (FoneDeOuvido, RelogioDePulso, GarrafaTermica, MarmitaDoRU):
+    for classe in (TenisDeCorrida, GarrafaTermica, MarmitaDoRU):
         j.adicionar_item(classe())
-    assert j.alcance_coleta == pytest.approx(90 * 1.3)
-    assert j.mult_recarga == pytest.approx(0.92)
+    assert j.mult_rolamento == pytest.approx(0.85)
     assert j.mult_cura == pytest.approx(1.2)
-    assert j.regeneracao == pytest.approx(1 / 3)
-    outro = MestreDeRPG((0, 0))
-    outro.adicionar_item(MochilaPesada())
-    assert outro.vida_maxima == outro.VIDA + 20
+    assert j.vida_maxima == j.VIDA + MarmitaDoRU.VIDA_POR_NIVEL
 
 
 def test_colab_so_aparece_com_as_duas_armas_no_maximo():
@@ -173,7 +170,8 @@ def test_colab_funde_as_armas_e_libera_vaga_para_uma_nova(jogo_limpo):
     colab.aplicar(j, jogo)
     assert len(j.armas) == 3
     novas = {o.titulo for o in Progressao.candidatas(j) if o.rotulo == "NOVA"}
-    assert novas == {"Caramelo", "Fusca Azul", "Apostila", "Quadro Branco", "Controle"}
+    assert novas == {"Caramelo", "Fusca Azul", "Apostila", "Quadro Branco", "Controle", "Dado de 20 Lados",
+                     "Régua de 1 Metro", "Caneta Bic", "Corrente de WhatsApp"}
 
 
 def test_armas_tem_quatro_niveis_e_o_ultimo_e_bem_mais_forte():

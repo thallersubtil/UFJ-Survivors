@@ -93,9 +93,9 @@ docs/                  entregas, diagrama, registro de uso de IA, guia do códig
 
 **Matéria ou chefe novo**: uma classe que herda de `Materia` em `jogo/inimigos/materias/` com `ataques()` combinando os ataques prontos (`leque`, `anel`, `rajada`, `chamada`, `chefe.investir`); o chefe é uma classe que herda de `ChefePossuido`, registrada na fábrica, com `MATERIAS = (...)` na ordem das fases. Exemplo no `README.md`.
 
-**Arma nova**: herde de `ArmaDeDisparo` (implemente `disparar()`, que retorna `False` se não havia alvo) ou de `ArmaContinua` (implemente `atualizar()`). Defina `NOME`, `DESCRICAO`, `ICONE`, `ATRIBUTOS` (uma tupla de 7 valores por atributo, um por nível) e `MELHORIAS` (6 textos). Acrescente a classe em `Progressao.ARMAS` para ela aparecer nas cartas.
+**Arma nova**: herde de `ArmaDeDisparo` (implemente `disparar()`, que retorna `False` se não havia alvo) ou de `ArmaContinua` (implemente `atualizar()`). Defina `NOME`, `DESCRICAO`, `ICONE`, `ATRIBUTOS` (uma tupla de 4 valores por atributo, um por nível; o dano do 4º, a forma suprema, é pelo menos 1,6 vez o do 3º) e `MELHORIAS` (3 textos). O que a arma põe na arena entra com `self.lancar(jogo, entidade)`, que já pinta o contorno da forma suprema. Golpes corpo a corpo (arco da Régua, estocada da Caneta) e a corrente que pula de inimigo em inimigo estão em `jogo/ajudantes/golpes.py` para reaproveitar. Acrescente a classe em `Progressao.ARMAS` para ela aparecer nas cartas.
 
-**Item novo**: herde de `Item`, implemente `aplicar(jogador)` somando ao modificador do jogador conforme `self.nivel`, e acrescente em `ITENS` (`jogo/itens/itens.py`).
+**Item novo**: herde de `Item`, implemente `aplicar(jogador)` somando ao modificador do jogador conforme `self.nivel`, e acrescente em `ITENS` (`jogo/itens/itens.py`). Item que reage ao jogo (ao levar golpe, ao acertar, a cada quadro) sobrescreve os ganchos de `ReageAoJogo` (`ao_ser_atingido` devolve o dano que fica, `atualizar`, `ao_acertar`...); item de uso único sai com `jogador.consumir_item(self)`.
 
 **Arma ou item que se compra na loja**: igual aos de cima, com `PRECO_DESBLOQUEIO = <moedas>`. Ele aparece sozinho na aba Desbloqueios do Centro Acadêmico e só entra nas cartas depois de comprado (`liberada()` em `Arma`/`Item`, filtro em `Progressao.candidatas`).
 

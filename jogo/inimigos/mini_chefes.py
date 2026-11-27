@@ -315,6 +315,7 @@ class MiniChefe(Inimigo):
     COR = (255, 170, 60)
     GANHO_VELOCIDADE = 0.04      # o tempo de partida mexe pouco na velocidade dele
     TENACIDADE = 1.0             # nada puxa, atrasa ou prende um mini-chefe no meio do ataque
+    CHEFE = True
 
     SEGUNDA_FASE_ABAIXO_DE = 0.0             # fração da vida em que entra na segunda fase (0: não tem)
     FALA_DA_SEGUNDA_FASE = ""

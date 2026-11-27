@@ -5,7 +5,7 @@ import pytest
 
 from jogo.armas.caramelo import Caramelo
 from jogo.armas.cobra_python import CobraPython
-from jogo.armas.gemini import Gemini
+from jogo.armas.dado import DadoDeVinteLados
 from jogo.inimigos.bug import Bug
 from jogo.jogador.classes import CLASSES, MestreDeRPG, Otaku, Programador
 from jogo.jogador.especiais import SuperSaiyajin, ViradaDeNoite, Zoltraak
@@ -22,7 +22,7 @@ def test_habilidade_e_abstrata():
 @pytest.mark.parametrize("classe, arma, habilidades, especial", [
     (Otaku, Caramelo, (InstintoOtaku, ArmaduraDeRoteiro, PoderDaAmizade), SuperSaiyajin),
     (Programador, CobraPython, (LacoDeRepeticao, Cafeinado, Compilar), ViradaDeNoite),
-    (MestreDeRPG, Gemini, (RolagemDeIniciativa, FichaDePersonagem, TesteDeResistencia), Zoltraak),
+    (MestreDeRPG, DadoDeVinteLados, (RolagemDeIniciativa, FichaDePersonagem, TesteDeResistencia), Zoltraak),
 ])
 def test_cada_classe_tem_ativa_habilidades_e_especial_proprios(classe, arma, habilidades, especial):
     j = classe((0, 0))

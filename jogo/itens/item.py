@@ -41,6 +41,11 @@ class Item(ReageAoJogo, ABC):
     def subir_nivel(self):
         self.nivel = self._nivel + 1
 
+    @property
+    def disfarce_de_cola(self):
+        """Quanto este item esconde a Cola do professor (0 a 1). Só os Óculos de Grau escondem."""
+        return 0.0
+
     def descricao_proxima(self):
         return "" if self.no_maximo else self.MELHORIAS[self._nivel - 1]
 

@@ -25,7 +25,7 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 ### Mestre de RPG
 - Descrição: Equilibrado. O especial volta logo.
 - Vida: 60 | Velocidade: 205
-- Arma inicial: Gemini
+- Arma inicial: Dado de 20 Lados
 - Habilidade: Rolagem de Iniciativa — O especial recarrega 15% mais rápido. | 30% mais rápido. | 45% mais rápido.
 - Habilidade: Ficha de Personagem — A cada 15 s, +30% num atributo sorteado por 15 s (FOR, DES, CON, INT, SAB ou CAR). | +40% no atributo sorteado. | +50% no atributo sorteado.
 - Habilidade: Teste de Resistência — Ao levar um golpe, rola um d20: com 18 ou mais, o golpe não entra. | Salva com 16 ou mais. | Salva com 14 ou mais.
@@ -68,7 +68,6 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Especial: Lotação — Quatro fuscas lotados cruzam a tela atropelando e possuindo inimigos.
 
 ## Armas
-
 ### Cobra Python
 - Nível 1: Dispara cobrinhas que avançam serpenteando na direção da mira.
 - Nível 2: Mais 1 cobra, mais dano e atravessa mais 1 inimigo.
@@ -137,57 +136,71 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Nível 3: Mais 1 controle (modo cooperativo), mais 1 ricochete e mais dano.
 - Nível 4: COMBO INFINITO: cada ricochete aumenta o dano em 20% (são 9) e o último acerto explode.
 
-## Colabs secretas
+### Dado de 20 Lados
+- Nível 1: Joga um d20 no inimigo mais perto: o dano é o número que sai. 20 é crítico triplo; 1 erra.
+- Nível 2: Mais dano por ponto e recarga menor.
+- Nível 3: Mais 1 dado, mais dano e recarga menor.
+- Nível 4: VANTAGEM: três dados, e cada um rola duas vezes e fica com o melhor número.
 
+### Régua de 1 Metro
+- Nível 1: Uma régua de madeira que varre um arco na frente do aluno, na direção da mira.
+- Nível 2: Mais dano e mais alcance.
+- Nível 3: Arco mais largo, mais dano e recarga menor.
+- Nível 4: IDA E VOLTA: a régua bate na frente e, no mesmo golpe, atrás de você.
+
+### Caneta Bic
+- Nível 1: Estocadas rápidas de caneta na direção da mira. Curta, mas não para.
+- Nível 2: Mais 1 estocada e mais dano.
+- Nível 3: Mais 1 estocada, mais alcance e recarga menor.
+- Nível 4: TINTA VAZOU: a última estocada de cada série deixa no chão uma poça de tinta que fere quem pisa.
+
+### Corrente de WhatsApp
+- Nível 1: "Encaminhe para 10 amigos": acerta o inimigo mais perto e pula para os vizinhos, sem repetir.
+- Nível 2: Mais 1 encaminhamento e mais dano.
+- Nível 3: Mais 1 encaminhamento, mais dano e recarga menor.
+- Nível 4: VIRALIZOU: oito encaminhamentos, e cada um bate 10% mais forte que o anterior.
+
+## Colabs secretas
 ### Carrossel de Fuscas
 - Receita: Caramelo + Fusca Azul
 - Descrição: Seis Caramelos ao volante giram em volta de você num círculo perfeito, bem longe: nada chega perto sem ser atropelado e possuído.
-
-### Metralhadora de Prompts
-- Receita: Mascote do ChatGPT + Mascote do Claude
-- Descrição: As duas IAs se fundem numa metralhadora que despeja prompts sem parar na direção da mira: 20 por segundo, sem pausa para recarregar.
 
 ### Serpente Estelar
 - Receita: Cobra Python + Gemini
 - Descrição: Uma serpente feita de céu estrelado cruza a tela inteira na direção da mira, atravessa tudo e cada mordida estoura em estrelas.
 
+### Metralhadora de Prompts
+- Receita: Mascote do ChatGPT + Mascote do Claude
+- Descrição: As duas IAs se fundem numa metralhadora que despeja prompts sem parar na direção da mira: 20 por segundo, sem pausa para recarregar.
+
+### Fake News
+- Receita: Corrente de WhatsApp + Mascote do ChatGPT
+- Descrição: O ChatGPT inventa e a corrente espalha: a cada 0,8 s uma notícia falsa pula por 12 inimigos, e 30% de quem ela acerta acredita e luta do seu lado por 4 s.
+
 ## Itens
-
-### Caderno de Resumos
-- Nível 1: +10% de dano por nível.
-- Nível 2: +10% de dano.
-- Nível 3: +10% de dano.
-- Nível 4: +10% de dano.
-
 ### Energético
-- Nível 1: +10% de velocidade por nível.
-- Nível 2: +10% de velocidade.
-- Nível 3: +10% de velocidade.
-- Nível 4: +10% de velocidade.
+- Nível 1: +10% de velocidade e armas 2,5% mais rápidas por nível, mas -5% de vida máxima por nível.
+- Nível 2: +10% de velocidade, -2,5% de recarga, -5% de vida máxima.
+- Nível 3: +10% de velocidade, -2,5% de recarga, -5% de vida máxima.
+- Nível 4: +10% de velocidade, -2,5% de recarga, -5% de vida máxima.
 
 ### Marmita do RU
-- Nível 1: Recupera vida aos pouquinhos.
-- Nível 2: Recupera vida mais rápido.
-- Nível 3: Recupera 1 de vida por segundo.
-- Nível 4: Recupera 1,5 de vida por segundo.
+- Nível 1: +15 de vida máxima por nível; cada 6 de vida máxima dá +1% de dano da arma inicial e do especial.
+- Nível 2: +15 de vida máxima.
+- Nível 3: +15 de vida máxima.
+- Nível 4: +15 de vida máxima.
 
 ### Mochila Pesada
-- Nível 1: +20 de vida máxima por nível.
-- Nível 2: +20 de vida máxima.
-- Nível 3: +20 de vida máxima.
-- Nível 4: +20 de vida máxima.
+- Nível 1: -6% de dano recebido por nível e -10% de velocidade; às vezes devolve o golpe em dobro.
+- Nível 2: -6% de dano recebido; mais chance de devolver.
+- Nível 3: -6% de dano recebido; mais chance de devolver.
+- Nível 4: -6% de dano recebido; mais chance de devolver.
 
 ### Fone de Ouvido
-- Nível 1: Puxa as notas de mais longe (+30% por nível).
-- Nível 2: +30% de alcance de coleta.
-- Nível 3: +30% de alcance de coleta.
-- Nível 4: +30% de alcance de coleta.
-
-### Relógio de Pulso
-- Nível 1: Armas e especial recarregam 8% mais rápido por nível.
-- Nível 2: -8% de recarga.
-- Nível 3: -8% de recarga.
-- Nível 4: -8% de recarga.
+- Nível 1: 6% de chance de nem sentir o golpe: o som estoura e empurra os inimigos em volta.
+- Nível 2: 9% de chance.
+- Nível 3: 12% de chance.
+- Nível 4: 15% de chance.
 
 ### Garrafa Térmica
 - Nível 1: Sopa quente o dia todo: tudo que recupera vida recupera 20% a mais por nível.
@@ -245,6 +258,33 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Nível 2: A poção vem a cada 24 s.
 - Nível 3: A poção vem a cada 18 s.
 - Nível 4: A poção vem a cada 12 s.
+
+### Atestado Médico
+- Nível 1: Uma vez por partida: em vez de cair, volta com 50% da vida e derruba os inimigos em volta.
+
+### Noite sem Dormir
+- Nível 1: +7,5% de dano e armas 2,5% mais rápidas por nível, mas leva 30% a mais de dano.
+- Nível 2: +7,5% de dano e -2,5% de recarga.
+- Nível 3: +7,5% de dano e -2,5% de recarga.
+- Nível 4: +7,5% de dano e -2,5% de recarga.
+
+### Pré-treino Duvidoso
+- Nível 1: +10% de dano por nível, mas a vida escorre 5% por segundo até sobrar 1.
+- Nível 2: +10% de dano.
+- Nível 3: +10% de dano.
+- Nível 4: +10% de dano.
+
+### Parcelar no Cartão
+- Nível 1: Cada golpe entra só 30% na hora; o resto vem parcelado em 3 s.
+- Nível 2: Parcelado em 4 s.
+- Nível 3: Parcelado em 5 s.
+- Nível 4: Parcelado em 6 s.
+
+### Mensalidade da Atlética
+- Nível 1: Custa 3 moedas por segundo; enquanto tiver moedas: +7,5% de dano por nível e -10% de dano recebido.
+- Nível 2: +7,5% de dano enquanto paga.
+- Nível 3: +7,5% de dano enquanto paga.
+- Nível 4: +7,5% de dano enquanto paga.
 
 ## Cartas de quem já levou tudo ao nível máximo (quando não sobra arma nem item)
 

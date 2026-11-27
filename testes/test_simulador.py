@@ -130,7 +130,7 @@ def test_distancia_de_combate_vem_da_arma_principal():
     from jogo.jogador.classes import Otaku, MestreDeRPG
     otaku, mestre = simulador.Robo(jogo_de_teste(Otaku)), simulador.Robo(jogo_de_teste(MestreDeRPG))
     assert otaku.distancia_de_combate < 80                # o Caramelo morde em volta do aluno
-    assert mestre.distancia_de_combate == simulador.Robo.DISTANCIA_DE_TIRO      # o Gemini atira de longe
+    assert mestre.distancia_de_combate == simulador.Robo.DISTANCIA_DE_TIRO      # o Dado é jogado de longe
 
 
 def test_projetil_com_rapidez_em_numero_nao_quebra_o_robo():

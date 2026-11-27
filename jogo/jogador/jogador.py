@@ -44,6 +44,7 @@ class Jogador(SerVivo, ABC):
 
     def __init__(self, posicao):
         super().__init__(posicao, self.RAIO, self.VIDA)
+        self.TIPO_DA_ARMA_INICIAL = type(self.criar_arma_inicial())   # a arma que a Marmita do RU reforça
         self.armas = []
         self.itens = []
         self.bonus = []
@@ -70,6 +71,7 @@ class Jogador(SerVivo, ABC):
         self.especial = self.criar_especial()
         self.especial.cargas_maximas = self.cargas_especial
         self.adicionar_arma(self.criar_arma_inicial())
+        self.recalcular_atributos()
 
     @abstractmethod
     def criar_arma_inicial(self):
@@ -105,6 +107,7 @@ class Jogador(SerVivo, ABC):
         self.chance_carona = 0.0       # Cara da Carona: moeda extra de quem morre possuído
         self.mult_moedas = 1.0
         self.capacidade_cafe = 100     # doses da garrafa da Virada de Noite (Cafeinado aumenta)
+        self.reforco_por_vida = 0.0    # Marmita do RU: dano a mais da arma inicial e do especial por ponto de vida
 
     def recalcular_atributos(self):
         """Zera os modificadores e deixa cada habilidade, item e melhoria aplicar o seu (polimorfismo)."""
@@ -115,8 +118,12 @@ class Jogador(SerVivo, ABC):
         for melhoria in self.melhorias:
             melhoria.aplicar(self)
         self.vida_maxima = (self.VIDA + self.vida_maxima_extra) * self.mult_vida_maxima
+        reforco = 1 + self.reforco_por_vida * self.vida_maxima
+        for arma in getattr(self, "armas", ()):
+            arma.reforco = reforco if type(arma) is self.TIPO_DA_ARMA_INICIAL else 1.0
         if getattr(self, "especial", None) is not None:
             self.especial.cargas_maximas = self.cargas_especial
+            self.especial.reforco = reforco
         if self.vida_maxima > maxima_antes:
             super().curar(self.vida_maxima - maxima_antes)   # a vida ganha entra inteira, sem bônus de cura
 
@@ -214,6 +221,12 @@ class Jogador(SerVivo, ABC):
     def ao_pegar_cafe(self, jogo):
         """Pegou um copo de café: quem decide o que ele faz é o especial."""
         self.especial.ao_pegar_cafe(self, jogo)
+
+    def consumir_item(self, item):
+        """Tira um item que se gasta (o Atestado Médico): a vaga fica livre."""
+        if item in self.itens:
+            self.itens.remove(item)
+            self.recalcular_atributos()
 
     def adicionar_item(self, item):
         if len(self.itens) >= self.MAX_ITENS:

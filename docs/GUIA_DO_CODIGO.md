@@ -65,17 +65,23 @@ Entidade (abstrata: atualizar, desenhar)            jogo/nucleo/entidade.py
 ### Tudo que o jogador carrega (não está na arena)
 
 ```
-Arma (abstrata: atualizar; nivel 1 a 7 com @property)    jogo/armas/arma.py
+Arma (abstrata: atualizar; nivel 1 a 4 com @property, o 4º é a forma suprema)    jogo/armas/arma.py
 ├─ ArmaDeDisparo (dispara e espera a recarga: espera com @property)
-│  └─ CobraPython, MascoteChatGPT, Gemini
+│  └─ CobraPython, MascoteChatGPT, Gemini, PequiExplosivo, Controle, DadoDeVinteLados,
+│     ReguaDeUmMetro, CanetaBic, CorrenteDeWhatsApp      (golpes em jogo/ajudantes/golpes.py)
 ├─ ArmaContinua (age o tempo todo, no próprio ritmo)
-│  └─ Caramelo, MascoteClaude, FuscaAzul
-└─ Colab (duas armas no nível máximo viram a versão suprema)               jogo/armas/colabs.py
-   └─ CarameloNoFusca, CobrasGemeas, DebateDasIAs  (herança múltipla: Colab + família da arma)
+│  └─ Caramelo, MascoteClaude, FuscaAzul, WifiEduroam, Apostila, QuadroBranco
+└─ Colab (duas armas no nível máximo viram uma arma nova)                 jogo/armas/colabs.py
+   └─ CarameloNoFusca, SerpenteEstelar, MetralhadoraDePrompts, FakeNews
+      (herança múltipla: Colab + ArmaContinua)
 
-Item (abstrata: aplicar)   7 itens passivos em jogo/itens/itens.py
-                           (Caderno de Resumos, Energético, Marmita do RU, Mochila Pesada,
-                            Fone de Ouvido, Relógio de Pulso, Garrafa Térmica)
+ReageAoJogo (ganchos: atualizar, ao_acertar, ao_critico, ao_eliminar, ao_ser_atingido...)
+├─ Item (abstrata: aplicar)   18 itens passivos em jogo/itens/itens.py
+│     Energético, Marmita do RU, Mochila Pesada, Fone de Ouvido, Garrafa Térmica, Tênis de Corrida,
+│     Óculos de Grau, Cola, Convite da Atlética, Pendrive, Moeda da Sorte, Jogo de Cintura,
+│     Kit de Primeiros Socorros, Atestado Médico, Noite sem Dormir, Pré-treino Duvidoso,
+│     Parcelar no Cartão, Mensalidade da Atlética
+└─ Habilidade (abstrata, 3 níveis)   3 por classe, nas cartas de nível    jogo/jogador/habilidades.py
 Especial (abstrata: ativar)   Zoltraak, SuperSaiyajin       jogo/jogador/especiais.py
 BonusTemporario               efeitos com tempo (combo 67, Super Saiyajin)
 ```

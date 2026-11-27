@@ -12,6 +12,7 @@ class Especial(ABC):
         self.restante = 0.0          # tempo até a próxima carga
         self.cargas = 1
         self._cargas_maximas = 1     # o Pendrive guarda mais cargas
+        self.reforco = 1.0           # multiplica o dano do especial (Marmita do RU)
 
     @property
     def cargas_maximas(self):

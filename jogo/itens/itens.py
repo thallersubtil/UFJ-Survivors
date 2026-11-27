@@ -5,65 +5,83 @@ from jogo.config import Cor
 from jogo.itens.item import Item
 
 
-class CadernoDeResumos(Item):
-    NOME = "Caderno de Resumos"
-    DESCRICAO = "+10% de dano por nível."
-    ICONE = "icones/caderno.png"
-    MELHORIAS = ("+10% de dano.", "+10% de dano.", "+10% de dano.")
-
-    def aplicar(self, jogador):
-        jogador.mult_dano += 0.10 * self.nivel
-
-
 class Energetico(Item):
     NOME = "Energético"
-    DESCRICAO = "+10% de velocidade por nível."
+    DESCRICAO = "+10% de velocidade e armas 2,5% mais rápidas por nível, mas -5% de vida máxima por nível."
     ICONE = "icones/energetico.png"
-    MELHORIAS = ("+10% de velocidade.", "+10% de velocidade.", "+10% de velocidade.")
+    MELHORIAS = ("+10% de velocidade, -2,5% de recarga, -5% de vida máxima.",) * 3
 
     def aplicar(self, jogador):
         jogador.mult_velocidade += 0.10 * self.nivel
+        jogador.mult_recarga *= 1 - 0.025 * self.nivel
+        jogador.mult_vida_maxima *= 1 - 0.05 * self.nivel
 
 
 class MarmitaDoRU(Item):
+    """Comida de verdade: mais vida, e quem tem mais vida bate mais forte com a arma inicial e o especial."""
     NOME = "Marmita do RU"
-    DESCRICAO = "Recupera vida aos pouquinhos."
+    DESCRICAO = "+15 de vida máxima por nível; cada 6 de vida máxima dá +1% de dano da arma inicial e do especial."
     ICONE = "icones/marmita.png"
-    MELHORIAS = ("Recupera vida mais rápido.", "Recupera 1 de vida por segundo.", "Recupera 1,5 de vida por segundo.")
-    REGENERACAO = (1 / 3, 1 / 2, 1.0, 1.5)
+    MELHORIAS = ("+15 de vida máxima.",) * 3
+    VIDA_POR_NIVEL = 15
+    VIDA_POR_PONTO = 6               # cada tanto de vida máxima vale +1% de dano da arma inicial e do especial
 
     def aplicar(self, jogador):
-        jogador.regeneracao += self.REGENERACAO[self.nivel - 1]
+        jogador.vida_maxima_extra += self.VIDA_POR_NIVEL * self.nivel
+        jogador.reforco_por_vida += 0.01 / self.VIDA_POR_PONTO
+
+
+def mais_perto(jogo, jogador, raio):
+    """O inimigo mais perto do aluno dentro de `raio`, ou None."""
+    return jogo.inimigo_mais_proximo(jogador.posicao, raio)
 
 
 class MochilaPesada(Item):
     NOME = "Mochila Pesada"
-    DESCRICAO = "+20 de vida máxima por nível."
+    DESCRICAO = "-6% de dano recebido por nível e -10% de velocidade; às vezes devolve o golpe em dobro."
     ICONE = "icones/mochila.png"
-    MELHORIAS = ("+20 de vida máxima.", "+20 de vida máxima.", "+20 de vida máxima.")
+    MELHORIAS = ("-6% de dano recebido; mais chance de devolver.",) * 3
+    REDUCAO_POR_NIVEL = 0.0625       # no nível 4: -25%
+    DEVOLVER_POR_NIVEL = 0.125       # no nível 4: 50% de chance
+    DEVOLVE = 2.0                    # devolve 200% do golpe
+    LENTIDAO = 0.10
+    ALCANCE_DO_TROCO = 160
 
     def aplicar(self, jogador):
-        jogador.vida_maxima_extra += 20 * self.nivel
+        jogador.mult_velocidade -= self.LENTIDAO
+
+    def ao_ser_atingido(self, dano, jogador, jogo):
+        if dano <= 0:
+            return dano
+        if jogo.rng.random() < jogador.chance(self.DEVOLVER_POR_NIVEL * self.nivel):
+            alvo = mais_perto(jogo, jogador, self.ALCANCE_DO_TROCO)
+            if alvo is not None:
+                jogo.causar_dano(alvo, dano * self.DEVOLVE, alvo.posicao - jogador.posicao, forte=True)
+        return dano * (1 - self.REDUCAO_POR_NIVEL * self.nivel)
 
 
 class FoneDeOuvido(Item):
     NOME = "Fone de Ouvido"
-    DESCRICAO = "Puxa as notas de mais longe (+30% por nível)."
+    DESCRICAO = "6% de chance de nem sentir o golpe: o som estoura e empurra os inimigos em volta."
     ICONE = "icones/fone.png"
-    MELHORIAS = ("+30% de alcance de coleta.", "+30% de alcance de coleta.", "+30% de alcance de coleta.")
+    MELHORIAS = ("9% de chance.", "12% de chance.", "15% de chance.")
+    CHANCE = (0.06, 0.09, 0.12, 0.15)
+    RAIO = 200
+    FORCA = 520
 
     def aplicar(self, jogador):
-        jogador.alcance_coleta *= 1 + 0.30 * self.nivel
+        """Nada fixo: o efeito está em `ao_ser_atingido`."""
 
-
-class RelogioDePulso(Item):
-    NOME = "Relógio de Pulso"
-    DESCRICAO = "Armas e especial recarregam 8% mais rápido por nível."
-    ICONE = "legado/itens/item_watch_l.png"
-    MELHORIAS = ("-8% de recarga.", "-8% de recarga.", "-8% de recarga.")
-
-    def aplicar(self, jogador):
-        jogador.mult_recarga *= 1 - 0.08 * self.nivel
+    def ao_ser_atingido(self, dano, jogador, jogo):
+        if dano <= 0 or jogo.rng.random() >= jogador.chance(self.CHANCE[self.nivel - 1]):
+            return dano
+        from jogo.efeitos import OndaDoGrito, TextoFlutuante
+        for inimigo in jogo.inimigos_proximos(jogador.posicao, self.RAIO):
+            direcao = inimigo.posicao - jogador.posicao
+            inimigo.empurrar(direcao if direcao.length_squared() > 0 else pygame.Vector2(1, 0), self.FORCA)
+        jogo.adicionar(OndaDoGrito(jogador, self.RAIO))
+        jogo.adicionar(TextoFlutuante("NO VOLUME MÁXIMO!", jogador.posicao - (0, 60), Cor.CURA, 18))
+        return 0
 
 
 class GarrafaTermica(Item):
@@ -94,6 +112,11 @@ class OculosDeGrau(Item):
     ICONE = "icones/oculos.png"
     MELHORIAS = ("+5% de crítico.", "+5% de crítico.", "+5% de crítico.")
     PRECO_DESBLOQUEIO = 300
+    DISFARCE_POR_NIVEL = 0.20        # cada nível esconde melhor a Cola
+
+    @property
+    def disfarce_de_cola(self):
+        return self.DISFARCE_POR_NIVEL * self.nivel
 
     def aplicar(self, jogador):
         jogador.chance_critico += 0.05 * self.nivel
@@ -117,7 +140,6 @@ class Cola(Item):
     CHANCE_FLAGRA = (0.02, 0.03, 0.04)        # por nível que o herói sobe
     EXPERIENCIA_PUNIDO = 0.5
     NIVEIS_DE_PUNICAO = 2
-    REDUCAO_POR_OCULOS = 0.20           # cada nível do Óculos de Grau esconde melhor a cola
 
     def __init__(self):
         super().__init__()
@@ -138,9 +160,8 @@ class Cola(Item):
         chance = self.CHANCE_FLAGRA[self.nivel - 1]
         if jogo.chefe is not None and jogo.chefe.ativo:
             chance *= 2                  # o professor está olhando
-        for item in jogador.itens:
-            if isinstance(item, OculosDeGrau):
-                chance *= max(0.0, 1 - self.REDUCAO_POR_OCULOS * item.nivel)
+        for item in jogador.itens:       # quem disfarça a cola (os Óculos de Grau) diz o quanto
+            chance *= max(0.0, 1 - item.disfarce_de_cola)
         return chance
 
     def ao_subir_de_nivel(self, jogador, jogo):
@@ -275,6 +296,133 @@ class KitDePrimeirosSocorros(Item):
             jogo.adicionar(PocaoDeVida(inimigo.posicao + (10, 0)))
 
 
-ITENS = (CadernoDeResumos, Energetico, MarmitaDoRU, MochilaPesada, FoneDeOuvido, RelogioDePulso, GarrafaTermica,
-         TenisDeCorrida, OculosDeGrau, Cola, ConviteDaAtletica, Pendrive, MoedaDaSorte, JogoDeCintura,
-         KitDePrimeirosSocorros)
+class AtestadoMedico(Item):
+    """Uma vez só: o golpe que derrubaria o aluno vira atestado. Volta com metade da vida e o susto derruba quem
+    estava em volta (chefes e mini-chefes aguentam)."""
+    NOME = "Atestado Médico"
+    DESCRICAO = "Uma vez por partida: em vez de cair, volta com 50% da vida e derruba os inimigos em volta."
+    ICONE = "icones/caderno.png"
+    NIVEL_MAXIMO = 1
+    MELHORIAS = ()
+    VIDA = 0.50
+    RAIO = 320
+    INVENCIVEL = 1.5
+
+    def aplicar(self, jogador):
+        """Nada fixo: o efeito está em `ao_ser_atingido`."""
+
+    def ao_ser_atingido(self, dano, jogador, jogo):
+        if dano < jogador.vida:
+            return dano
+        from jogo.efeitos import OndaDoGrito, TextoFlutuante
+        jogador.vida = jogador.vida_maxima * self.VIDA
+        jogador.invencivel = max(jogador.invencivel, self.INVENCIVEL)
+        for inimigo in jogo.inimigos_proximos(jogador.posicao, self.RAIO):
+            if not inimigo.CHEFE:
+                jogo.causar_dano(inimigo, inimigo.vida * 10, inimigo.posicao - jogador.posicao)
+        jogo.adicionar(OndaDoGrito(jogador, self.RAIO))
+        jogo.adicionar(TextoFlutuante("ATESTADO MÉDICO!", jogador.posicao - (0, 70), Cor.CURA, 22, duracao=1.5))
+        jogador.consumir_item(self)
+        return 0
+
+
+class NoiteSemDormir(Item):
+    NOME = "Noite sem Dormir"
+    DESCRICAO = "+7,5% de dano e armas 2,5% mais rápidas por nível, mas leva 30% a mais de dano."
+    ICONE = "icones/energetico.png"
+    MELHORIAS = ("+7,5% de dano e -2,5% de recarga.",) * 3
+    DANO_RECEBIDO = 1.30
+
+    def aplicar(self, jogador):
+        jogador.mult_dano *= 1 + 0.075 * self.nivel
+        jogador.mult_recarga *= 1 - 0.025 * self.nivel
+
+    def ao_ser_atingido(self, dano, jogador, jogo):
+        return dano * self.DANO_RECEBIDO
+
+
+class PreTreinoDuvidoso(Item):
+    NOME = "Pré-treino Duvidoso"
+    DESCRICAO = "+10% de dano por nível, mas a vida escorre 5% por segundo até sobrar 1."
+    ICONE = "icones/energetico.png"
+    MELHORIAS = ("+10% de dano.",) * 3
+    ESCORRE = 0.05                   # fração da vida máxima por segundo
+
+    def aplicar(self, jogador):
+        jogador.mult_dano *= 1 + 0.10 * self.nivel
+
+    def atualizar(self, dt, jogador, jogo):
+        if jogador.vida > 1 and not jogador.imortal:
+            jogador.vida = max(1.0, jogador.vida - jogador.vida_maxima * self.ESCORRE * dt)
+
+
+class ParcelarNoCartao(Item):
+    NOME = "Parcelar no Cartão"
+    DESCRICAO = "Cada golpe entra só 30% na hora; o resto vem parcelado em 3 s."
+    ICONE = "icones/moeda.png"
+    MELHORIAS = ("Parcelado em 4 s.", "Parcelado em 5 s.", "Parcelado em 6 s.")
+    NA_HORA = 0.30
+    PARCELAS = (3.0, 4.0, 5.0, 6.0)  # segundos em que o resto do golpe é cobrado
+
+    def __init__(self):
+        super().__init__()
+        self.dividas = []            # [quanto falta, quanto cobra por segundo]
+
+    def aplicar(self, jogador):
+        """Nada fixo: o efeito está nos golpes."""
+
+    def ao_ser_atingido(self, dano, jogador, jogo):
+        if dano <= 0:
+            return dano
+        resto = dano * (1 - self.NA_HORA)
+        self.dividas.append([resto, resto / self.PARCELAS[self.nivel - 1]])
+        return dano * self.NA_HORA
+
+    @property
+    def em_aberto(self):
+        return sum(divida[0] for divida in self.dividas)
+
+    def atualizar(self, dt, jogador, jogo):
+        if jogador.imortal:
+            self.dividas = []
+            return
+        for divida in self.dividas:
+            parcela = min(divida[0], divida[1] * dt)
+            divida[0] -= parcela
+            jogador.vida = jogador.vida - parcela
+        self.dividas = [d for d in self.dividas if d[0] > 1e-6]
+
+
+class MensalidadeDaAtletica(Item):
+    NOME = "Mensalidade da Atlética"
+    DESCRICAO = "Custa 3 moedas por segundo; enquanto tiver moedas: +7,5% de dano por nível e -10% de dano recebido."
+    ICONE = "icones/atletica.png"
+    MELHORIAS = ("+7,5% de dano enquanto paga.",) * 3
+    CUSTO = 3                        # moedas por segundo
+    PROTECAO = 0.90
+
+    def __init__(self):
+        super().__init__()
+        self._a_pagar = 0.0
+
+    def aplicar(self, jogador):
+        """Nada fixo: o bônus depende de ter moedas."""
+
+    def atualizar(self, dt, jogador, jogo):
+        from jogo.jogador.bonus import BonusTemporario
+        self._a_pagar += self.CUSTO * dt
+        while self._a_pagar >= 1 and jogo.placar.moedas > 0:
+            jogo.placar.moedas -= 1
+            self._a_pagar -= 1
+        if jogo.placar.moedas <= 0:
+            self._a_pagar = 0.0
+            return
+        jogador.adicionar_bonus(BonusTemporario("mensalidade", "dano", 1 + 0.075 * self.nivel, 0.3))
+
+    def ao_ser_atingido(self, dano, jogador, jogo):
+        return dano * self.PROTECAO if jogo.placar.moedas > 0 else dano
+
+
+ITENS = (Energetico, MarmitaDoRU, MochilaPesada, FoneDeOuvido, GarrafaTermica, TenisDeCorrida, OculosDeGrau, Cola,
+         ConviteDaAtletica, Pendrive, MoedaDaSorte, JogoDeCintura, KitDePrimeirosSocorros, AtestadoMedico,
+         NoiteSemDormir, PreTreinoDuvidoso, ParcelarNoCartao, MensalidadeDaAtletica)

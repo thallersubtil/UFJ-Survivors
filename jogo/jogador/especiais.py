@@ -25,7 +25,7 @@ class Zoltraak(Especial):
 
     def ativar(self, dono, jogo):
         rolagem = sum(jogo.rng.randint(1, self.FACES) for _ in range(self.DADOS))
-        jogo.adicionar(RaioZoltraak(dono, rolagem * self.DANO_POR_PONTO * dono.multiplicador_dano))
+        jogo.adicionar(RaioZoltraak(dono, rolagem * self.DANO_POR_PONTO * dono.multiplicador_dano * self.reforco))
         gritar(jogo, dono, f"{self.DADOS}d{self.FACES} = {rolagem}!", (200, 170, 255))
         Recursos.tocar("especial", 0.6)
 
@@ -149,7 +149,7 @@ class Lotacao(Especial):
             y = tela.top + tela.height * fracao
             x = tela.left - 120 if da_esquerda else tela.right + 120
             jogo.adicionar(FuscaVeiculo(pygame.Vector2(x, y), 1 if da_esquerda else -1, self.POSSESSAO,
-                                        self.DANO * dono.multiplicador_dano))
+                                        self.DANO * dono.multiplicador_dano * self.reforco))
         gritar(jogo, dono, "LOTAÇÃO!")
         Recursos.tocar("buzina", 0.6)
 
@@ -214,7 +214,7 @@ class ViradaDeNoite(Especial):
     def _disparar(self, dono, jogo):
         self.garrafa.gastar()
         direcao = dono.direcao_mira.rotate(jogo.rng.uniform(-self.ABERTURA, self.ABERTURA))
-        jogo.adicionar(CodigoDisparado(dono.posicao, direcao * self.VELOCIDADE, self.DANO * dono.multiplicador_dano,
+        jogo.adicionar(CodigoDisparado(dono.posicao, direcao * self.VELOCIDADE, self.DANO * dono.multiplicador_dano * self.reforco,
                                        jogo.rng.choice(CodigoDisparado.SIMBOLOS)))
         if self.garrafa.vazia:
             dono.adicionar_bonus(BonusTemporario("sem_cafe", "velocidade", self.LENTIDAO, self.ABSTINENCIA))

@@ -184,7 +184,8 @@ class Robo:
     @property
     def distancia_de_combate(self):
         """A que distância do alvo a arma principal (a de nível mais alto) acerta. Arma com alcance de tiro
-        fica longe; arma que age em volta do aluno (Caramelo, Apostila, Wi-Fi) precisa do alvo dentro do raio."""
+        fica longe; arma que age em volta do aluno (Caramelo, Apostila, Wi-Fi) precisa do alvo dentro do raio, e a de
+        corpo a corpo (Régua, Caneta Bic), dentro do golpe."""
         principal = max(self.jogo.jogador.armas, key=lambda a: a.nivel, default=None)
         if principal is None:
             return self.DISTANCIA_DE_TIRO
@@ -193,6 +194,8 @@ class Robo:
             return min(self.DISTANCIA_DE_TIRO, alcance * 0.6)
         if "raio" in principal.ATRIBUTOS:
             return principal.valor("raio") * 0.8
+        if "alcance" in principal.ATRIBUTOS:
+            return principal.valor("alcance") * 0.7
         return self.DISTANCIA_DE_TIRO
 
     @property

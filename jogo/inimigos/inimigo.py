@@ -33,6 +33,7 @@ class Inimigo(SerVivo, ABC):
     CHANCE_IMA = 0.0015        # bem raro: o ímã puxa toda a experiência do mapa
     CONTA_NO_PLACAR = True     # se a morte vale eliminação, combo e itens (objeto quebrável: não)
     ALVO_DA_MIRA = True        # se a mira e as armas que procuram alvo escolhem este (objeto quebrável: não)
+    CHEFE = False              # chefe ou mini-chefe: aguenta o que derruba os comuns (Atestado Médico)
     CHANCE_MOEDA = 0.05
     CHANCE_CAFE = 0.03         # copo de café: doses para a Virada de Noite, ou um empurrão no especial
     MOEDAS_GIGANTE = 15

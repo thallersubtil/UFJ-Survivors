@@ -254,6 +254,17 @@ def test_reta_final_mata_mesmo_com_desvio_alto():
     assert caiu is not None, "o aluno passou das 20:30"
 
 
+def test_reta_final_mata_mesmo_com_atestado_medico():
+    from jogo.itens.itens import AtestadoMedico
+    jogo = partida(imortal=False)
+    jogo.jogador.adicionar_item(AtestadoMedico())
+    jogo.jogador.vida_maxima = 3000
+    jogo.jogador.vida = 3000
+    caiu = morre_antes_de(jogo, 20 * 60 + 30)
+    assert not any(isinstance(i, AtestadoMedico) for i in jogo.jogador.itens), "o atestado não foi usado"
+    assert caiu is not None, "o aluno passou das 20:30 com o atestado"
+
+
 # ---------------------------------------------------------------- resultado
 
 def morrer(jogo):

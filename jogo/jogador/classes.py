@@ -10,7 +10,7 @@ from jogo.armas.caramelo import Caramelo
 from jogo.armas.cobra_python import CobraPython
 from jogo.armas.controle import Controle
 from jogo.armas.fusca import FuscaAzul
-from jogo.armas.gemini import Gemini
+from jogo.armas.dado import DadoDeVinteLados
 from jogo.armas.quadro_branco import QuadroBranco
 from jogo.jogador.especiais import (Calourada, Lotacao, RevisaoParaProva, SuperSaiyajin, TelaAzul, ViradaDeNoite,
                                     Zoltraak)
@@ -75,7 +75,7 @@ class MestreDeRPG(Jogador):
     ROSTO = "rostos/mestre_de_rpg.png"
 
     def criar_arma_inicial(self):
-        return Gemini()
+        return DadoDeVinteLados()
 
     def criar_habilidades(self):
         return [RolagemDeIniciativa(), FichaDePersonagem(), TesteDeResistencia()]
