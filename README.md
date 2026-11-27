@@ -1,12 +1,12 @@
 # UFJ Survivors
 
-Sobreviva às provas do semestre na UFJ. Jogo 2D em Pygame no estilo "survivors", feito para o trabalho prático de Programação Orientada a Objetos: três provas de 4 minutos no Campus Jatobá (mapa gerado de satélite e OpenStreetMap), personagens ilustrados e animados no estilo Disgaea, inimigos que são objetos das matérias do semestre e, no fim de cada prova (aos 4, 8 e 12 minutos, com o chefe anterior vivo ou não), um professor possuído pela própria matéria como chefe. Quem derrota os três está aprovado, e a partida continua sem fim, cada vez mais difícil, até o aluno cair.
+Sobreviva às provas do semestre na UFJ. Jogo 2D em Pygame no estilo "survivors", feito para o trabalho prático de Programação Orientada a Objetos: um semestre de 20 minutos no Campus Jatobá (mapa gerado de satélite e OpenStreetMap), personagens ilustrados e animados no estilo Disgaea, inimigos que são objetos das matérias do semestre e, com hora marcada (5, 10 e 15 minutos, com o chefe anterior vivo ou não), um professor possuído pela própria matéria como chefe. O objetivo do meio do caminho é caçar os mini-chefes do mapa. Das 15:00 em diante a dificuldade dispara até ninguém passar muito dos 20:00: quem derrotou os três chefes termina o semestre com honras (e um bônus de moedas); quem não, é reprovado.
 
-| Prova | Chefe | Fases da luta |
+| Hora | Chefe | Fases da luta |
 |---|---|---|
-| 1ª | Professor de Cálculo | Cálculo I |
-| 2ª | Professor de Arquitetura e ED | Arquitetura de Computadores, depois Estrutura de Dados em C |
-| 3ª | Professora de TD e POO | Transformação Digital, depois Programação Orientada a Objetos |
+| 5:00 | Professor de Cálculo | Cálculo I |
+| 10:00 | Professor de Arquitetura e ED | Arquitetura de Computadores, depois Estrutura de Dados em C |
+| 15:00 | Professora de TD e POO | Transformação Digital, depois Programação Orientada a Objetos |
 
 No chefe de duas matérias, quando a vida da primeira zera, a segunda (mais difícil) possui o professor e a luta continua com a vida cheia.
 
@@ -52,14 +52,15 @@ py -3.12 -m venv .venv
 - **Aviso antes das formações:** setas vermelhas piscam na borda da tela por 1,2 s antes de um cerco ou de uma parede (dá para sair rolando).
 - **Dano com variação de ±10%** e crítico acima de 100% de chance virando dano extra.
 - **Cartas com peso:** a Cola e o que foi comprado na loja aparecem menos. **B** bane uma carta; com tudo no nível máximo (ou banido), as cartas passam a ser Lanche da Cantina (recupera 30% da vida máxima) ou Bolsa de Monitoria (50 moedas).
-- **Inimigos com peso por prova:** os da matéria de cada prova aparecem mais.
-- **Moedas por prova:** a 2ª paga 1,2x e a 3ª 1,4x.
-- **Bigorna:** o Monitor Possuído deixa uma bigorna que afia uma arma (+15% de dano, até 3 vezes por arma).
+- **Inimigos com peso por matéria:** os lacaios de cada matéria entram perto do chefe dela e aparecem mais.
+- **Bigorna:** cada mini-chefe do mapa deixa uma bigorna que afia uma arma (+15% de dano, até 3 vezes por arma).
 
-## Eventos das provas
+## Eventos do semestre
 
-- **Greve:** uma vez por prova (3:10 na 1ª, 3:15 na 2ª, 2:45 na 3ª), por 30 s não chega ninguém novo, os inimigos em campo se assustam e chovem notas em volta do aluno.
-- **Monitor Possuído:** mini-chefe da 2ª e da 3ª prova. Persegue o aluno e arremessa listas de exercícios (três de cada vez); ao morrer solta baú e moedas. Usa a arte do aluno tingida de roxo até ter arte própria.
+- **Chefes com hora marcada:** 5:00, 10:00 e 15:00, com PERIGO! na tela 3 s antes. O relógio não para na luta: se um chefe ainda está de pé, o próximo vem mesmo assim. Na chegada de cada um, os lacaios comuns saem de campo (chefes vivos e mini-chefes ficam).
+- **Greve:** às 7:30, por 30 s não chega ninguém novo, os inimigos em campo se assustam e chovem notas em volta do aluno.
+- **Formações e gigantes:** um cerco ou uma parede a cada ~90 s, com aviso; três lacaios gigantes com hora marcada (3:00, 8:00 e 13:00).
+- **Reta final:** das 15:00 em diante a dificuldade multiplica a cada 15 s (mais depressa depois das 18:00), com cercos a cada 45 s e um gigante por minuto. Aos 19:30 aparece "Faltam 30 s para o fim do semestre!"; depois dos 20:00 os inimigos ficam mais rápidos e o encostão passa da vida de qualquer aluno.
 - **Mini-chefes do mapa (opcionais):** desde o começo da partida há um círculo de invocação de cada um pelo campus, com o rosto do mini-chefe em cima. Quem nunca foi invocado é um mistério: o círculo, o mini-mapa e a seta mostram um "?" e o nome "Mini-boss misterioso"; invocado uma vez, ele fica revelado em todas as partidas (salvo no progresso). Ficar dentro do círculo por 2,5 s invoca (sair esvazia): a partida para, ele é apresentado com ilustração própria, como os chefes, e entra andando pela borda da tela. Quanto mais tarde na partida, mais forte ele vem (a vida base de novo a cada 3 minutos). Chefes e mini-chefes não são puxados, atrasados nem empurrados. Cada um guarda o seu lugar (segue o aluno só até certa distância e se recupera se ele fugir), traz os próprios lacaios, é forte para quem não tem melhorias e deixa um **baú garantido** e moedas. O tom é de piada interna:
 
   | Mini-chefe | Onde | Como ataca | Lacaios |
@@ -146,7 +147,7 @@ Para simular uma partida inteira sem janela (útil para balancear):
 | 3+ inimigos herdando de uma base | `jogo/inimigos/` | `Inimigo` e `Bug`, `CalculadoraBrava`, `MouseDeBolinha`, `Caixinha`, `PiCambaleante`, `Ponteiro`, `PilhaAA`, `PenteDeRAM`; chefes: `Chefe` > `ChefePossuido` > `ProfessorDeCalculo`, `ProfessorDeArquiteturaEED`, `ProfessoraDeTDEPOO`; matérias: `Materia` > `CalculoI`, `ArquiteturaDeComputadores`, `EstruturaDeDadosEmC`, `TransformacaoDigital`, `ProgramacaoOrientadaAObjetos` |
 | Polimorfismo num único laço, sem `if` por tipo | `jogo/jogo.py` | `Jogo.atualizar()` |
 | Encapsulamento com `@property` e validação | `jogo/nucleo/ser_vivo.py`, `jogo/placar.py`, `jogo/armas/arma.py` | `SerVivo.vida`, `Placar.pontos`, `ArmaDeDisparo.espera` (segundos até o próximo disparo) |
-| Composição | `jogo/jogo.py`, `jogo/jogador/jogador.py` | `Jogo` contém `Jogador`, `Fase` (a lista das três provas), `Placar`; `Jogador` contém `Arma`, `Item`, `Passiva`, `Especial`; `ChefePossuido` contém suas `Materia` |
+| Composição | `jogo/jogo.py`, `jogo/jogador/jogador.py` | `Jogo` contém `Jogador`, `Fase` (o `Semestre`, com o calendário das três provas), `Placar`; `Jogador` contém `Arma`, `Item`, `Passiva`, `Especial`; `ChefePossuido` contém suas `Materia` |
 | Métodos especiais | `jogo/ranking.py` | `RegistroRanking.__lt__`, `__eq__`, `__str__` |
 | `@classmethod` e `@staticmethod` | `jogo/inimigos/fabrica.py`, `jogo/nucleo/colisao.py` | `FabricaDeInimigos.criar()`, `Colisao.circulos_colidem()` |
 
@@ -198,7 +199,7 @@ class CafeFrio(Inimigo):
         self.ir_em_direcao(jogo.jogador.posicao, dt)
 ```
 
-Para ele aparecer, acrescente `(tempo_em_segundos, "cafe_frio")` em `APRESENTACOES` de uma das provas (`ProvaDeCalculo`, `ProvaDeArquiteturaEED` ou `ProvaDeTDEPOO`, em `jogo/fase.py`).
+Para ele aparecer, acrescente `(tempo_em_segundos, "cafe_frio")` em `APRESENTACOES` do `Semestre` (`jogo/fase.py`).
 
 ## Como criar uma matéria (ou um chefe) novo
 

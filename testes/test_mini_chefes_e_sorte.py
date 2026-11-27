@@ -8,7 +8,7 @@ from jogo.aplicacao import Aplicacao
 from jogo.cenas.chefe import CenaChefe
 from jogo.cenas.minimapa import CenaMiniMapa
 from jogo.cenas.partida import CenaPartida
-from jogo.fase import PROVAS, ProvaDeCalculo
+from jogo.fase import Semestre
 from jogo.inimigos.fabrica import FabricaDeInimigos
 from jogo.inimigos.lacaios_do_campus import LacaioDoCampus
 from jogo.inimigos.mini_chefes import MINI_CHEFES, MiniChefe
@@ -104,13 +104,12 @@ def test_todos_os_mini_chefes_ficam_disponiveis_desde_o_inicio():
     jogo = Jogo(Programador, semente=1)
     jogo.jogador.imortal = True
     assert jogo.marcadores() == []
-    while jogo.placar.tempo < ProvaDeCalculo.ABERTURA_DAS_INVOCACOES + 0.2:
+    while jogo.placar.tempo < Semestre.ABERTURA_DAS_INVOCACOES + 0.2:
         jogo.atualizar(1 / 30)
     circulos = jogo.grupos["invocacao"]
     assert sorted(c.nome_do_inimigo for c in circulos) == sorted(MINI_CHEFES)
     assert len(jogo.marcadores()) == len(MINI_CHEFES) - 1          # o culto secreto não aparece no mapa
-    for prova in PROVAS:                                           # a prova seguinte não espalha tudo de novo
-        prova().abrir_invocacoes(jogo)
+    jogo.fase.abrir_invocacoes(jogo)                               # chamar de novo não espalha tudo outra vez
     jogo._incorporar_novas()
     assert len(jogo.grupos["invocacao"]) == len(MINI_CHEFES)
 

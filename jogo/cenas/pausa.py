@@ -163,12 +163,11 @@ class CenaPausa(Cena):
         pygame.draw.line(ui, (70, 98, 84), (q.centerx + 30, q.y + 18), (q.centerx + 30, q.bottom - 18), 1)
         lado = pygame.Rect(q.centerx + 44, q.y + 14, q.right - q.centerx - 58, q.h - 28)
         if self.no_menu or not self.fotos:
-            aluno = self._aluno_em_giz(120)
-            ui.blit(aluno, aluno.get_rect(midtop=(lado.centerx, lado.y + 6)))
-            giz(ui, f"{jogo.jogador.NOME}  ·  nível {jogo.jogador.nivel}", (lado.centerx, lado.y + 136), 11, P.GIZ,
-                ancora="midtop", semente=5)
-            giz(ui, f"{jogo.placar.tempo_formatado}  ·  {jogo.fase.NOME}", (lado.centerx, lado.y + 154), 11,
-                (190, 214, 200), ancora="midtop", semente=6)
+            aluno = self._aluno_em_giz(78)
+            ui.blit(aluno, aluno.get_rect(midtop=(lado.centerx, lado.y + 2)))
+            giz(ui, f"{jogo.jogador.NOME}  ·  nível {jogo.jogador.nivel}  ·  {jogo.placar.tempo_formatado}",
+                (lado.centerx, lado.y + 84), 11, P.GIZ, ancora="midtop", semente=5)
+            self._calendario(ui, jogo, lado)
         else:
             coisa = self.fotos[self.foto]
             p = janela(self.tempo - self._tempo_foto, 0, 0.3)
@@ -181,6 +180,20 @@ class CenaPausa(Cena):
                 giz(ui, linha, (lado.centerx, lado.y + 112 + j * 14), 11, P.GIZ, ancora="midtop", semente=20 + j,
                     progresso=p)
         giz(ui, "Cima/baixo: menu e fotos    Esc: voltar", (q.x + 22, q.bottom - 22), 11, (150, 180, 164), semente=4)
+
+    def _calendario(self, ui, jogo, lado):
+        """O calendário de provas: a hora de cada chefe e como está cada prova."""
+        giz(ui, "Calendário de provas", (lado.centerx, lado.y + 106), 11, P.GIZ_AMARELO, ancora="midtop", semente=6)
+        for i, prova in enumerate(jogo.fase.provas):
+            minutos, segundos = divmod(int(prova.hora), 60)
+            if prova in jogo.notas:
+                situacao = "aprovado"
+            elif jogo.chefe_da_prova(prova) is not None:
+                situacao = "em campo"
+            else:
+                situacao = "por vir"
+            linha = f"{minutos:02d}:{segundos:02d}  {prova.curto}: {situacao}"
+            giz(ui, linha, (lado.x, lado.y + 124 + i * 16), 11, (190, 214, 200), semente=30 + i)
 
     def _varal(self, ui):
         kv = ease_out(janela(self.tempo, 0.3, 0.4))

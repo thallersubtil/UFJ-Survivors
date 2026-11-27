@@ -6,7 +6,7 @@ import pytest
 
 from jogo.armas.cobra_python import CobraPython
 from jogo.coletaveis.coletaveis import Bigorna
-from jogo.fase import ProvaDeCalculo, ProvaDeTDEPOO
+from jogo.fase import Semestre
 from jogo.inimigos.bug import Bug
 from jogo.itens.itens import Cola, ITENS
 from jogo.jogador.classes import Programador
@@ -37,13 +37,9 @@ def test_critico_acima_de_cem_por_cento_bate_mais_forte(jogo_limpo):
     assert vida - bug.vida >= 100 * 2.5 * 0.9
 
 
-def test_provas_seguintes_pagam_mais_moedas():
-    assert ProvaDeTDEPOO.MULT_MOEDAS > ProvaDeCalculo.MULT_MOEDAS == 1.0
-
-
 def test_inimigos_da_materia_nascem_mais(jogo_limpo):
     jogo = jogo_limpo()
-    fase = ProvaDeCalculo()
+    fase = Semestre()
     fase.atualizar(31, jogo)
     assert fase.pesos[fase.ativos.index("calculadora")] > fase.pesos[fase.ativos.index("bug")]
 

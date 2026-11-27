@@ -10,18 +10,18 @@ def test_prova_aprovada_tira_nota_pela_vida_que_sobrou(jogo_limpo):
     assert Boletim.nota_de_aprovacao(jogo.jogador) == 10.0
 
 
-def _semestre(jogo, indice):
-    from jogo.fase import PROVAS
-    jogo.fases = [prova() for prova in PROVAS]
-    jogo.indice_fase = indice
-    jogo.fase = jogo.fases[indice]
+def _semestre(jogo, tempo):
+    """A partida com o calendário inteiro, parada em `tempo` segundos."""
+    from jogo.fase import Semestre
+    jogo.fase = Semestre()
+    jogo.fase.tempo = tempo
     return jogo
 
 
 def test_boletim_tem_uma_linha_por_prova(jogo_limpo):
-    jogo = _semestre(jogo_limpo(), 1)
-    jogo.notas = {0: 9.0}                 # passou na 1ª prova e caiu na metade da 2ª
-    jogo.fase.tempo = jogo.fase.DURACAO / 2
+    from jogo.fase import CALENDARIO
+    jogo = _semestre(jogo_limpo(), 7.5 * 60)
+    jogo.notas = {CALENDARIO[0]: 9.0}     # passou na 1ª prova e caiu na metade da 2ª
     linhas = Boletim(jogo).linhas
     assert len(linhas) == 3
     assert linhas[0].nota == 9.0 and linhas[0].aprovado and linhas[0].situacao == "APROVADO"
@@ -30,8 +30,9 @@ def test_boletim_tem_uma_linha_por_prova(jogo_limpo):
 
 
 def test_media_so_das_provas_cursadas(jogo_limpo):
-    jogo = _semestre(jogo_limpo(), 2)
-    jogo.notas = {0: 8.0, 1: 10.0, 2: 7.0}
+    from jogo.fase import CALENDARIO
+    jogo = _semestre(jogo_limpo(), 16 * 60)
+    jogo.notas = dict(zip(CALENDARIO, (8.0, 10.0, 7.0)))
     jogo.venceu = True
     boletim = Boletim(jogo)
     cursadas = [l.nota for l in boletim.linhas if l.nota is not None]
@@ -40,18 +41,20 @@ def test_media_so_das_provas_cursadas(jogo_limpo):
 
 def test_derrubar_o_chefe_guarda_a_nota_da_prova_dele(jogo_limpo):
     from jogo.inimigos.fabrica import FabricaDeInimigos
-    jogo = _semestre(jogo_limpo(), 1)
+    from jogo.fase import CALENDARIO
+    jogo = _semestre(jogo_limpo(), 7 * 60)
     chefe = FabricaDeInimigos.criar("chefe_calculo", jogo.jogador.posicao + (300, 0))
-    jogo.iniciar_chefe(chefe, jogo.fases[0])        # o chefe da 1ª prova ainda vivo durante a 2ª
-    jogo.aprovar_prova(chefe)
-    assert list(jogo.notas) == [0] and 6 <= jogo.notas[0] <= 10
+    jogo.iniciar_chefe(chefe, CALENDARIO[0])        # o chefe da 1ª prova ainda vivo durante a 2ª
+    jogo.aprovar(chefe)
+    assert list(jogo.notas) == [CALENDARIO[0]] and 6 <= jogo.notas[CALENDARIO[0]] <= 10
 
 
 def test_prova_com_o_chefe_vivo_conta_como_reprovada_pelo_dano_nele(jogo_limpo):
     from jogo.inimigos.fabrica import FabricaDeInimigos
-    jogo = _semestre(jogo_limpo(), 1)
+    from jogo.fase import CALENDARIO
+    jogo = _semestre(jogo_limpo(), 7 * 60)
     chefe = FabricaDeInimigos.criar("chefe_calculo", jogo.jogador.posicao + (300, 0))
-    jogo.iniciar_chefe(chefe, jogo.fases[0])
+    jogo.iniciar_chefe(chefe, CALENDARIO[0])
     chefe.vida = chefe.vida_maxima / 2
     primeira = Boletim(jogo).linhas[0]
     assert primeira.situacao == "REPROVADO" and primeira.nota == Boletim.nota_contra_o_chefe(chefe) == 5.0

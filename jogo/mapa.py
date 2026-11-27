@@ -215,6 +215,7 @@ class MapaUFJ(Mapa):
             for cx in range(r.left // self.CELULA, r.right // self.CELULA + 1):
                 for cy in range(r.top // self.CELULA, r.bottom // self.CELULA + 1):
                     self._celulas.setdefault((cx, cy), []).append(predio)
+        Recursos.imagem(self.chao)       # o chão é consultado já no 1º quadro (passo na mata): lê agora, não no meio do jogo
 
     @classmethod
     def carregar(cls, rng=None):

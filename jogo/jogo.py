@@ -13,7 +13,7 @@ from jogo.coletaveis.coletaveis import Moeda, Nota
 from jogo.config import (ALTURA, BONUS_67_DURACAO, BONUS_67_VELOCIDADE, LARGURA,
                          LIMITE_COLETAVEIS, LIMITE_EFEITOS, MAX_INIMIGOS, SORTEIOS_POR_PARTIDA, BANIMENTOS_POR_PARTIDA, Cor)
 from jogo.efeitos import TextoFlutuante
-from jogo.fase import ModoSemFim, semestre
+from jogo.fase import Semestre
 from jogo.jogador.bonus import BonusTemporario
 from jogo.mapa import MapaUFJ
 from jogo.nucleo.camera import Camera
@@ -39,25 +39,20 @@ class Jogo:
     CURA_ENTRE_PROVAS = 0.5      # fração da vida máxima recuperada quando um chefe cai
     MOEDAS_POR_PROVA = 150       # bônus de moedas a cada prova aprovada
     MOEDAS_POR_MINUTO = 6        # bolsa pelo tempo sobrevivido, paga no fim
+    BONUS_HONRAS = 400           # fim do semestre com honras (os três chefes derrotados): bônus pago no fim...
+    MOEDAS_POR_MINI_CHEFE = 40   # ...mais isto por mini-chefe derrotado na partida
     QUEBRAVEIS_NO_INICIO = 80    # caixas, lixeiras e vasos espalhados pelo campus quando a partida começa (não voltam)
     ESPACO_ENTRE_QUEBRAVEIS = 320    # distância mínima entre dois deles
     LONGE_DO_ALUNO = 900         # nenhum nasce na tela de onde o aluno começa
     FOLGA_DO_QUEBRAVEL = 40      # espaço livre de prédio em volta do objeto
 
-    def __init__(self, classe_jogador, fase=None, semente=None, mapa=None, fases=None, sem_fim=None):
+    def __init__(self, classe_jogador, fase=None, semente=None, mapa=None):
         self.rng = random.Random(semente)
         self.mapa = mapa or MapaUFJ.carregar(self.rng) or Cenario(rng=self.rng)
         self.arena = self.mapa.arena
         self.jogador = classe_jogador(self.mapa.inicio)
-        if sem_fim is None:
-            sem_fim = fase is None and fases is None      # o semestre inteiro segue sem fim depois do último chefe
-        self.sem_fim = sem_fim
-        if fases is None:
-            fases = [fase] if fase is not None else semestre()
-        self.fases = list(fases)
-        self.indice_fase = 0
         self.treino = False
-        self.fase = self.fases[0]
+        self.fase = fase if fase is not None else Semestre()
         self.placar = Placar()
         self.camera = Camera(LARGURA, ALTURA, self.arena)
         self.entrada = Entrada()
@@ -70,7 +65,7 @@ class Jogo:
         self.sorteios_restantes = SORTEIOS_POR_PARTIDA
         self.banimentos_restantes = BANIMENTOS_POR_PARTIDA
         self.chefes = []                 # chefes em campo, do mais antigo para o mais novo (podem ser dois)
-        self._prova_de = {}              # chefe -> índice da prova que ele encerra (a nota vai para ela)
+        self._prova_de = {}              # chefe -> ProvaMarcada que ele encerra (a nota vai para ela)
         self.chefe_a_apresentar = None   # chefe que acabou de chegar e ainda não foi apresentado (a cena consome)
         self.perigo = 0.0                # segundos de aviso de PERIGO antes do chefe (o HUD desenha)
         self.terminou = False
@@ -80,7 +75,8 @@ class Jogo:
         self.marcados = set()         # CHAVEs dos mini-chefes que o aluno marcou no mini-mapa (ganham seta na tela)
         self.mini_chefes_conhecidos = set()   # CHAVEs dos já invocados alguma vez (os outros são misteriosos)
         self.marcos = set()           # coisas que aconteceram na partida (para as conquistas)
-        self.notas = {}               # índice da prova -> nota de quem derrotou o chefe dela (para o boletim)
+        self.notas = {}               # ProvaMarcada -> nota de quem derrotou o chefe dela (para o boletim)
+        self.mini_chefes_derrotados = 0
         self._ultima_nota = None
         self.adicionar(self.jogador)
         for entidade in self.mapa.entidades():
@@ -113,8 +109,8 @@ class Jogo:
 
     @classmethod
     def a_partir_de(cls, classe_jogador, opcoes, semente=None):
-        """Monta a partida a partir das OpcoesDePartida (provas, treino, imortal, aparência)."""
-        jogo = cls(classe_jogador, fases=opcoes.criar_fases(), semente=semente, sem_fim=not opcoes.treino)
+        """Monta a partida a partir das OpcoesDePartida (treino, imortal, compras da loja)."""
+        jogo = cls(classe_jogador, fase=opcoes.criar_fase(), semente=semente)
         jogo.treino = opcoes.treino
         jogo.jogador.imortal = opcoes.imortal
         jogo.jogador.desbloqueios = opcoes.desbloqueios
@@ -122,7 +118,7 @@ class Jogo:
         lanche = (opcoes.lanche(),) if opcoes.lanche is not None else ()
         jogo.jogador.receber_melhorias(tuple(opcoes.melhorias) + lanche)
         if opcoes.direto_no_chefe:
-            jogo.evoluir_jogador(jogo.fase.NIVEL_TREINO - 1)
+            jogo.evoluir_jogador(opcoes.prova.nivel_treino - 1)
         return jogo
 
     def evoluir_jogador(self, niveis):
@@ -220,7 +216,7 @@ class Jogo:
     def inimigo_mais_proximo(self, posicao, raio_max, excluir=None):
         melhor, melhor_distancia = None, raio_max * raio_max
         for e in self.grade.proximos(posicao, raio_max):
-            if e is excluir or not e.ativo:
+            if e is excluir or not e.ativo or not e.ALVO_DA_MIRA:
                 continue
             distancia = e.posicao.distance_squared_to(posicao)
             if distancia <= melhor_distancia:
@@ -229,7 +225,7 @@ class Jogo:
 
     def inimigo_com_mais_vida(self, posicao, raio_max):
         candidatos = [e for e in self.grade.proximos(posicao, raio_max)
-                      if e.ativo and e.posicao.distance_squared_to(posicao) <= raio_max * raio_max]
+                      if e.ativo and e.ALVO_DA_MIRA and e.posicao.distance_squared_to(posicao) <= raio_max * raio_max]
         return max(candidatos, key=lambda e: e.vida, default=None)
 
     # Regras
@@ -320,7 +316,7 @@ class Jogo:
             coletavel.puxar_experiencia()
 
     def ganhar_moedas(self, quantidade):
-        self.placar.adicionar_moedas(round(quantidade * self.jogador.mult_moedas * self.fase.MULT_MOEDAS))
+        self.placar.adicionar_moedas(round(quantidade * self.jogador.mult_moedas))
 
     def multar(self, quantidade):
         """Tira moedas pegas nesta partida (multa da Bibliotecária). Não deixa o saldo negativo."""
@@ -346,12 +342,25 @@ class Jogo:
         """Foi invocado: o nome e o rosto deixam de ser segredo (a CenaPartida guarda isso no progresso)."""
         self.mini_chefes_conhecidos.add(chave)
 
+    def contar_mini_chefe(self):
+        """Um mini-chefe do mapa caiu (conta para o bônus de honras e o HUD)."""
+        self.mini_chefes_derrotados += 1
+
+    @property
+    def bonus_de_honras(self):
+        """O bônus do fim do semestre com honras; zero para quem não derrotou os três chefes."""
+        if not self.venceu:
+            return 0
+        return round((self.BONUS_HONRAS + self.MOEDAS_POR_MINI_CHEFE * self.mini_chefes_derrotados)
+                     * self.jogador.mult_moedas)
+
     def moedas_ganhas(self):
-        """Moedas que vão para o Centro Acadêmico: as pegas mais a bolsa pelo tempo. Treino não paga."""
+        """Moedas que vão para o Centro Acadêmico: as pegas, a bolsa pelo tempo e, com honras, o bônus.
+        Treino não paga."""
         if self.treino:
             return 0
         bolsa = round(self.placar.tempo / 60 * self.MOEDAS_POR_MINUTO * self.jogador.mult_moedas)
-        return self.placar.moedas + bolsa
+        return self.placar.moedas + bolsa + self.bonus_de_honras
 
     def soltar_nota(self, posicao, valor):
         """Solta uma nota; acima do limite, soma o valor na última nota solta."""
@@ -371,15 +380,17 @@ class Jogo:
         """O chefe em campo há mais tempo, ou None. Com dois em campo, o outro está em `chefes`."""
         return self.chefes[0] if self.chefes else None
 
-    def chefe_da_prova(self, indice):
-        """O chefe vivo que encerra a prova `indice`, ou None."""
-        return next((c for c in self.chefes if self._prova_de.get(c) == indice), None)
+    def chefe_da_prova(self, prova):
+        """O chefe vivo que encerra a `prova` (uma ProvaMarcada), ou None."""
+        return next((c for c in self.chefes if self._prova_de.get(c) == prova), None)
 
     def iniciar_chefe(self, chefe, prova=None):
-        """Põe em campo o chefe que encerra `prova` (por padrão, a fase atual)."""
-        prova = prova if prova is not None else self.fase
-        if prova in self.fases:
-            self._prova_de[chefe] = self.fases.index(prova)
+        """Põe em campo o chefe que encerra `prova`. Os lacaios comuns saem para abrir espaço; chefes
+        vivos e mini-chefes ficam (cada um decide em `ao_chegar_o_chefe`)."""
+        for inimigo in self.inimigos:
+            inimigo.ao_chegar_o_chefe(self)
+        if prova is not None:
+            self._prova_de[chefe] = prova
         self.chefes.append(chefe)
         self.chefe_a_apresentar = chefe
         self.perigo = 0.0
@@ -392,46 +403,33 @@ class Jogo:
         Recursos.tocar("buzina", 0.5)
 
     @property
-    def ultima_fase(self):
-        return self.indice_fase + 1 >= len(self.fases)
-
-    @property
-    def provas_vencidas(self):
+    def chefes_derrotados(self):
         return len(self.notas)
 
-    def avancar_prova(self):
-        """O tempo da prova atual acabou: a seguinte começa no relógio, mesmo com chefe em campo.
-        Na última não há para onde ir; ela continua até os chefes caírem."""
-        if self.ultima_fase:
-            return
-        self.indice_fase += 1
-        self.fase = self.fases[self.indice_fase]
-        self.anunciar(self.fase.NOME, 4)
-
-    def aprovar_prova(self, chefe):
-        """O chefe caiu: a prova dele está aprovada (nota, moedas, cura e baú). Com todas as provas
-        aprovadas o semestre está vencido, e a partida ou acaba (treino) ou segue sem fim."""
-        indice = self._prova_de.pop(chefe, self.indice_fase)
+    def aprovar(self, chefe):
+        """O chefe caiu: a prova dele está aprovada (nota, moedas, cura e baú). Com as provas todas
+        aprovadas o semestre está vencido: o treino acaba aí; a partida segue até o aluno cair."""
+        prova = self._prova_de.pop(chefe, None)
         if chefe in self.chefes:
             self.chefes.remove(chefe)
-        self.notas[indice] = Boletim.nota_de_aprovacao(self.jogador)
+        if prova is not None:
+            self.notas[prova] = Boletim.nota_de_aprovacao(self.jogador)
+            self.anunciar(f"Aprovado em {prova.materia}!", 3)
         self.ganhar_moedas(self.MOEDAS_POR_PROVA)
-        self.anunciar(f"Aprovado em {self.fases[indice].MATERIA}!", 3)
-        if len(self.notas) >= len(self.fases):
-            self.venceu = True
-            if not self.sem_fim:
-                self.terminar()
-                return
-            self.fase = ModoSemFim(inicio=self.placar.tempo, placar=self.placar)
-            self.anunciar("Semestre aprovado! Agora é o Projeto de extensão: sem fim", 5)
         self.jogador.curar(self.jogador.vida_maxima * self.CURA_ENTRE_PROVAS)
         self.pedir_bau()
+        if prova is not None and len(self.notas) >= len(self.fase.provas):
+            self.venceu = True
+            if self.treino:
+                self.terminar()
+            else:
+                self.anunciar("Semestre aprovado! Agora é aguentar até o fim", 5)
 
     def anunciar(self, texto, duracao=2.5):
         self.anuncios.append([texto, duracao])
 
     def terminar(self, venceu=None):
-        """Acaba a partida. Quem já venceu o semestre continua aprovado, mesmo caindo no modo sem fim;
+        """Acaba a partida. Quem já derrotou os três chefes termina com honras, mesmo caindo depois;
         `venceu` só é passado para forçar o resultado (testes e telas)."""
         if self.terminou:
             return
@@ -442,4 +440,4 @@ class Jogo:
 
     def resultado(self, nome):
         return RegistroRanking(nome, self.jogador.NOME, self.placar.pontuacao_final(self.venceu),
-                               self.placar.tempo, self.venceu)
+                               self.placar.tempo, self.venceu, self.chefes_derrotados)

@@ -3,7 +3,7 @@ import pygame
 
 from jogo.cenas.cena import Cena
 from jogo.cenas.widgets import TECLAS_CONFIRMAR
-from jogo.fase import PROVAS
+from jogo.fase import CALENDARIO
 import jogo.inimigos  # noqa: F401  (importar o pacote registra os chefes na fábrica)
 from jogo.inimigos.fabrica import FabricaDeInimigos
 from jogo.nucleo.recursos import Recursos
@@ -37,14 +37,14 @@ class CenaTreino(Cena):
         self.app.trocar(CenaMatricula(self.app, opcoes))
 
     def escolher(self, i):
-        i %= len(PROVAS)
+        i %= len(CALENDARIO)
         if i != self.indice:
             self.indice, self._t_foco = i, self.tempo
 
     @staticmethod
     def chefe_da(prova):
         try:
-            return FabricaDeInimigos.classe(prova.CHEFE)
+            return FabricaDeInimigos.classe(prova.chefe)
         except (KeyError, ValueError):
             return None
 
@@ -56,7 +56,7 @@ class CenaTreino(Cena):
 
     def linha(self, i):
         esq, _ = self._paginas
-        passo = min(88, (esq.h - 50) // max(1, len(PROVAS)))
+        passo = min(88, (esq.h - 50) // max(1, len(CALENDARIO)))
         return pygame.Rect(esq.x + 8, esq.y + 44 + i * passo, esq.w - 16, passo - 8)
 
     def caixa_marcar(self, i):
@@ -78,14 +78,14 @@ class CenaTreino(Cena):
             elif evento.key in (pygame.K_DOWN, pygame.K_s):
                 self.escolher(self.indice + 1)
             elif evento.key in TECLAS_CONFIRMAR:
-                self._comecar(PROVAS[self.indice])
+                self._comecar(CALENDARIO[self.indice])
         elif evento.type in (pygame.MOUSEMOTION, pygame.MOUSEBUTTONDOWN):
             pos = CamadaPixel.para_camada(evento.pos)
             clique = evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1
-            for i in range(len(PROVAS)):
+            for i in range(len(CALENDARIO)):
                 if self.linha(i).collidepoint(pos):
                     if clique and i == self.indice:
-                        self._comecar(PROVAS[i])
+                        self._comecar(CALENDARIO[i])
                     else:
                         self.escolher(i)
                     return
@@ -141,14 +141,14 @@ class CenaTreino(Cena):
         for y in range(ag.y + 10, ag.bottom - 8, 14):                         # espiral
             pygame.draw.ellipse(ui, P.ESC, (ag.centerx - 10, y, 20, 9))
             pygame.draw.ellipse(ui, (190, 190, 200), (ag.centerx - 9, y + 1, 18, 7), 2)
-        for i in range(len(PROVAS)):                                          # abas coloridas
+        for i in range(len(CALENDARIO)):                                          # abas coloridas
             r = pygame.Rect(dir_.right - 2, dir_.y + 40 + i * 40, 14, 30)
             pygame.draw.rect(ui, self.CORES[i % 5], r, border_top_right_radius=4, border_bottom_right_radius=4)
             pygame.draw.rect(ui, P.ESC, r, 1, border_top_right_radius=4, border_bottom_right_radius=4)
         texto(ui, "NOVEMBRO", (esq.x + 14, esq.y + 10), TINTA, 23, contorno=None)
         texto(ui, "semana de provas", (esq.right - 12, esq.y + 18), P.MARGEM, 11, contorno=None, media=True,
               ancora="topright")
-        for i, prova in enumerate(PROVAS):
+        for i, prova in enumerate(CALENDARIO):
             self._compromisso(ui, i, prova, esq)
         self._anotacoes(ui, dir_)
 
@@ -163,7 +163,7 @@ class CenaTreino(Cena):
         texto(ui, dia_txt[1], (dia.centerx, dia.y + 17), P.BRANCO, 23, contorno=None, ancora="midtop")
         texto(ui, f"{i + 1}ª PROVA", (esq.x + 60, r.y), (60, 60, 90), 11, contorno=None)
         largura = esq.w - 140
-        materia = quebrar(prova.ROTULO.replace(" -> ", " e "), fonte(11), largura)[:3]
+        materia = quebrar(prova.rotulo.replace(" -> ", " e "), fonte(11), largura)[:3]
         if sel:
             prog = ease_out(janela(self.tempo, self._t_foco, 0.35))
             marca = pygame.Surface((int((largura + 4) * prog) + 1, 13 * len(materia) + 1), pygame.SRCALPHA)
@@ -189,12 +189,12 @@ class CenaTreino(Cena):
         fita(ui, (cx, cy - 34), ang + 6)
 
     def _anotacoes(self, ui, dir_):
-        prova = PROVAS[self.indice]
+        prova = CALENDARIO[self.indice]
         chefe = self.chefe_da(prova)
         troca = ease_out(janela(self.tempo, self._t_foco, 0.3))
         texto(ui, "anotações", (dir_.x + 14, dir_.y + 10), TINTA, 23, contorno=None)
         y = dir_.y + 44
-        titulo = quebrar(f"{self.indice + 1}ª prova: {prova.ROTULO.replace(' -> ', ' e ')}", fonte(11), dir_.w - 34)[:2]
+        titulo = quebrar(f"{self.indice + 1}ª prova: {prova.rotulo.replace(' -> ', ' e ')}", fonte(11), dir_.w - 34)[:2]
         for j, linha in enumerate(titulo):
             texto(ui, linha, (dir_.x + 14, y + j * 13), P.MARGEM, 11, contorno=None, alfa=int(255 * troca))
         y += 13 * (len(titulo) - 1)

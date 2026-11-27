@@ -1,4 +1,4 @@
-"""Fases: linha do tempo de inimigos, mini-chefes e chefe."""
+"""Fases: linha do tempo de inimigos, mini-chefes e chefes. O jogo tem uma só, o Semestre."""
 import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -6,7 +6,7 @@ from typing import Callable
 
 import pygame
 
-from jogo.config import ALTURA, DURACAO_PROVA, LARGURA, MAX_INIMIGOS
+from jogo.config import ALTURA, DURACAO_SEMESTRE, LARGURA, MAX_INIMIGOS
 from jogo.inimigos.fabrica import FabricaDeInimigos
 
 
@@ -21,7 +21,7 @@ class EventoDaFase:
 class Fase(ABC):
     NOME = "Fase"
     MATERIA = ""                   # o que aparece em "Aprovado em ..." e "Reprovado em ..."
-    DURACAO = DURACAO_PROVA
+    DURACAO = DURACAO_SEMESTRE
     APRESENTACOES = ()
     INTERVALO_NASCIMENTO = 0.5    # segundos entre um grupo e outro no começo da partida
     INTERVALO_MINIMO = 0.1        # o intervalo encurta com o tempo, mas nunca passa disto
@@ -30,8 +30,6 @@ class Fase(ABC):
     ALVO_POR_SEGUNDO = 0.5        # quantos a mais a cada segundo de partida...
     ALVO_ACELERACAO = 1.5         # ...e mais isto vezes (minutos de partida)²: o começo é calmo, o fim enche a tela
     ALIVIO_COM_CHEFE = 0.6        # com chefe em campo o alvo cai para esta fração (a luta já ocupa o aluno)
-    INICIO_DIFICULDADE = 0        # segundos de partida já passados quando esta fase começa
-    MULT_MOEDAS = 1.0             # provas mais adiantadas pagam mais moedas
     PASSO_DIFICULDADE = 180       # segundos para a dificuldade subir 1 ponto
 
     def __init__(self):
@@ -49,23 +47,37 @@ class Fase(ABC):
     def criar_eventos(self):
         """Lista de EventoDaFase (mini-chefes, formações, chefe)."""
 
+    provas = ()                   # as ProvaMarcada desta fase (o Semestre tem o calendário)
+    AVISO_DO_FIM = 30.0           # segundos antes do fim em que o aviso aparece (e o relógio fica vermelho)
+
     @property
     def titulo(self):
         """O que o HUD mostra embaixo do relógio."""
         return self.NOME
 
     @property
-    def tempo_de_partida(self):
-        """Segundos desde o começo da partida (o relógio desta fase mais o que veio antes dela)."""
-        return self.INICIO_DIFICULDADE + self.tempo
+    def prova_em_curso(self):
+        """A prova cujo chefe ainda vai chegar, ou None."""
+        return None
+
+    @property
+    def restante(self):
+        """Segundos até o fim do semestre (zero depois disso): o relógio do HUD conta para trás."""
+        return max(0.0, self.DURACAO - self.tempo)
 
     @property
     def escala_dificuldade(self):
-        return 1 + self.tempo_de_partida / self.PASSO_DIFICULDADE
+        """Quanto vida, dano e velocidade dos inimigos que nascem agora crescem sobre o valor base."""
+        return 1 + self.tempo / self.PASSO_DIFICULDADE
+
+    @property
+    def furia(self):
+        """Multiplicador extra de dano e velocidade de quem nasce agora (1 = nenhum). O Semestre usa no fim."""
+        return 1.0
 
     def alvo_de_inimigos(self):
-        """Quantos inimigos a fase quer em campo agora: cresce com o tempo de partida, até o teto."""
-        tempo = self.tempo_de_partida
+        """Quantos inimigos a fase quer em campo agora: cresce com o tempo, até o teto."""
+        tempo = self.tempo
         alvo = self.ALVO_INICIAL + tempo * self.ALVO_POR_SEGUNDO + self.ALVO_ACELERACAO * (tempo / 60) ** 2
         return min(MAX_INIMIGOS, int(alvo))
 
@@ -76,7 +88,7 @@ class Fase(ABC):
 
     def intervalo_de_nascimento(self):
         """Segundos entre um grupo e o próximo: quanto mais tarde na partida, mais rápido eles chegam."""
-        intervalo = self.INTERVALO_NASCIMENTO / (1 + self.tempo_de_partida / self.TEMPO_PARA_DOBRAR)
+        intervalo = self.INTERVALO_NASCIMENTO / (1 + self.tempo / self.TEMPO_PARA_DOBRAR)
         return max(self.INTERVALO_MINIMO, intervalo)
 
     def atualizar(self, dt, jogo):
@@ -111,7 +123,13 @@ class Fase(ABC):
         centro = self.posicao_de_nascimento(jogo)
         for _ in range(quantidade):
             espalhar = pygame.Vector2(jogo.rng.uniform(-40, 40), jogo.rng.uniform(-40, 40))
-            jogo.adicionar(FabricaDeInimigos.criar(nome, centro + espalhar, self.escala_dificuldade))
+            jogo.adicionar(self.criar(nome, centro + espalhar))
+
+    def criar(self, nome, posicao):
+        """Um lacaio com a força deste instante da fase (escala e fúria)."""
+        inimigo = FabricaDeInimigos.criar(nome, posicao, self.escala_dificuldade)
+        inimigo.enfurecer(self.furia)
+        return inimigo
 
     @staticmethod
     def posicao_de_nascimento(jogo):
@@ -144,15 +162,14 @@ class Fase(ABC):
     def formacao_circulo(self, jogo, nome, quantidade, raio=560):
         for i in range(quantidade):
             direcao = pygame.Vector2(1, 0).rotate(360 * i / quantidade)
-            jogo.adicionar(FabricaDeInimigos.criar(nome, jogo.jogador.posicao + direcao * raio,
-                                                   self.escala_dificuldade))
+            jogo.adicionar(self.criar(nome, jogo.jogador.posicao + direcao * raio))
 
     def formacao_parede(self, jogo, nome, quantidade, lado=None):
         lado = lado or jogo.rng.choice((-1, 1))
         x = jogo.jogador.posicao.x + lado * (LARGURA / 2 + 60)
         for i in range(quantidade):
             y = jogo.jogador.posicao.y + (i - (quantidade - 1) / 2) * 36
-            jogo.adicionar(FabricaDeInimigos.criar(nome, (x, y), self.escala_dificuldade))
+            jogo.adicionar(self.criar(nome, (x, y)))
 
     DURACAO_GREVE = 30.0
     INTERVALO_NOTA_GREVE = 0.5
@@ -182,13 +199,9 @@ class Fase(ABC):
             posicao = jogo.jogador.posicao + pygame.Vector2(math.cos(angulo), math.sin(angulo)) * distancia
             jogo.soltar_nota(jogo.mapa.empurrar(posicao, 12), self.VALOR_NOTA_GREVE)
 
-    def chamar_monitor(self, jogo):
-        monitor = FabricaDeInimigos.criar("monitor_possuido", self.posicao_de_nascimento(jogo), self.escala_dificuldade)
-        jogo.adicionar(monitor)
-        jogo.anunciar("Mini-chefe: Monitor Possuído!", 3)
-
     def chamar_mini_chefe(self, jogo, nome):
         gigante = FabricaDeInimigos.criar_gigante(nome, self.posicao_de_nascimento(jogo), self.escala_dificuldade)
+        gigante.enfurecer(self.furia)
         jogo.adicionar(gigante)
         jogo.anunciar(f"Mini-chefe: {gigante.NOME} Gigante!", 3)
 
@@ -229,184 +242,149 @@ class Fase(ABC):
             self.abrir_invocacao(jogo, nome, anunciar=False)
         jogo.anunciar("Os mini-chefes estão pelo campus  [M] mapa", 4)
 
-    def chamar_chefe(self, jogo, nome):
-        """Põe o chefe em campo e avisa o Jogo de que o tempo desta fase acabou: a próxima começa no
-        relógio, com o chefe vivo ou não."""
+    def chamar_chefe(self, jogo, prova):
+        """Põe em campo o chefe da `prova` (uma ProvaMarcada). O relógio segue: quem decide quando o
+        próximo vem é a hora dele, não a queda deste."""
         self.chefe_apareceu = True
-        jogo.iniciar_chefe(FabricaDeInimigos.criar(nome, self.posicao_de_nascimento(jogo)), self)
-        jogo.avancar_prova()
+        jogo.iniciar_chefe(FabricaDeInimigos.criar(prova.chefe, self.posicao_de_nascimento(jogo)), prova)
 
 
-class Prova(Fase):
-    """Fase descrita só por dados: quem aparece e quando, formações, mini-chefes e o chefe.
+@dataclass(frozen=True)
+class ProvaMarcada:
+    """Uma prova do calendário: a hora em que o chefe chega e o que mostrar dela nas telas."""
+    hora: float              # segundos de partida em que o chefe chega
+    chefe: str               # nome do chefe na FabricaDeInimigos
+    materia: str             # o que aparece em "Aprovado em ..." e "Reprovado em ..."
+    rotulo: str              # nome curto, para o boletim, o calendário e o menu de treino
+    nivel_treino: int        # nível típico do aluno quando o chefe chega (treino direto no chefe)
+    curto: str               # nome curtinho, para o calendário da pausa
+    inicio: float = 0.0      # quando a prova começa a "correr" (a hora da anterior): para a nota de quem cai antes
 
-    Cada prova do semestre é uma subclasse que só preenche as constantes abaixo.
+
+CALENDARIO = (
+    ProvaMarcada(5 * 60, "chefe_calculo", "Cálculo I", "Cálculo I", 7, "Cálculo I"),
+    ProvaMarcada(10 * 60, "chefe_arquitetura_ed", "Arquitetura de Computadores e Estrutura de Dados em C",
+                 "Arquitetura -> Estrutura de Dados em C", 10, "Arquitetura e ED", inicio=5 * 60),
+    ProvaMarcada(15 * 60, "chefe_td_poo", "Transformação Digital e Programação Orientada a Objetos",
+                 "Transformação Digital -> POO", 13, "TD e POO", inicio=10 * 60),
+)
+
+
+class Semestre(Fase):
+    """O semestre inteiro numa linha do tempo só: os lacaios de cada matéria entram perto do chefe dela,
+    os três chefes chegam com hora marcada (o relógio não para na luta) e, das 15:00 em diante, a
+    dificuldade dispara até ninguém passar muito dos 20:00.
+
+    Para o treino, `provas` pode ser só a prova escolhida: a fase chama apenas aquele chefe.
     """
 
-    @property
-    @abstractmethod
-    def CHEFE(self):
-        """Nome do chefe na FabricaDeInimigos. Cada prova define como constante de classe."""
-
-    ROTULO = ""                  # nome curto, para o menu de treino
-    NIVEL_TREINO = 1             # nível típico do aluno quando o chefe chega (treino direto no chefe)
-    FORMACOES = ()               # um lacaio por minuto (1, 2 e 3 min), alternando círculo e parede; o 4º minuto é do chefe
-    AVISO_DO_CHEFE = 3.0         # segundos de "PERIGO!" na tela antes do chefe chegar
-    MINI_CHEFES = ()             # (segundos, nome do lacaio que vira gigante)
-    GREVE = None                 # segundos em que começa a greve (None: sem greve); termina antes do chefe
-    MONITOR = None               # segundos em que chega o Monitor Possuído (None: não vem)
-
-    def criar_eventos(self):
-        eventos = [EventoDaFase(tempo, lambda jogo, n=nome: self.chamar_mini_chefe(jogo, n), f"{nome} gigante")
-                   for tempo, nome in self.MINI_CHEFES]
-        eventos.append(EventoDaFase(self.ABERTURA_DAS_INVOCACOES, self.abrir_invocacoes, "Mini-chefes no mapa"))
-        eventos.append(EventoDaFase(self.DURACAO, lambda jogo: self.chamar_chefe(jogo, self.CHEFE), "Chefe"))
-        eventos.append(EventoDaFase(self.DURACAO - self.AVISO_DO_CHEFE,
-                                    lambda jogo: jogo.avisar_perigo(self.AVISO_DO_CHEFE), "Aviso do chefe"))
-        if self.GREVE is not None:
-            eventos.append(EventoDaFase(self.GREVE, self.iniciar_greve, "Greve"))
-        if self.MONITOR is not None:
-            eventos.append(EventoDaFase(self.MONITOR, self.chamar_monitor, "Monitor Possuído"))
-        for i, nome in enumerate(self.FORMACOES):
-            if i % 2 == 0:
-                acao = lambda jogo, n=nome: self.avisar_formacao(jogo, "circulo", n, 24)
-            else:
-                acao = lambda jogo, n=nome: self.avisar_formacao(jogo, "parede", n, 20)
-            eventos.append(EventoDaFase(60 * (i + 1) - self.AVISO, acao, f"Formação de {nome}"))
-        return eventos
-
-    def adiantar_para_o_chefe(self):
-        """Modo treino: começa a prova poucos segundos antes do chefe chegar."""
-        self.adiantar_para(self.DURACAO - self.AVISO_DO_CHEFE)
-
-
-class ProvaDeCalculo(Prova):
-    NOME = "1ª prova: Cálculo I"
-    MATERIA = "Cálculo I"
-    CHEFE = "chefe_calculo"
-    ROTULO = "Cálculo I"
-    NIVEL_TREINO = 6
-    INICIO_DIFICULDADE = 0
-    APRESENTACOES = (          # (segundos, inimigo, peso no sorteio): os da matéria aparecem mais
+    NOME = "Semestre"
+    AVISO_DO_CHEFE = 3.0         # segundos de "PERIGO!" na tela antes de cada chefe
+    APRESENTACOES = (            # (segundos, inimigo, peso no sorteio): cada matéria perto do seu chefe
         (0, "bug", 2.0),
         (30, "calculadora", 3.0),
         (70, "pi", 3.0),
         (110, "caixinha", 1.0),
         (170, "mouse", 1.0),
+        (320, "pente_ram", 3.0),
+        (370, "ponteiro", 3.0),
+        (420, "pilha", 2.0),
     )
-    FORMACOES = ("bug", "calculadora", "pi")
-    MINI_CHEFES = ((150, "calculadora"),)
-    GREVE = 190                # a greve dura 30 s: precisa acabar antes de o chefe chegar (240 s)
-
-
-class ProvaDeArquiteturaEED(Prova):
-    NOME = "2ª prova: Arquitetura e Estrutura de Dados"
-    MATERIA = "Arquitetura de Computadores e Estrutura de Dados em C"
-    CHEFE = "chefe_arquitetura_ed"
-    ROTULO = "Arquitetura -> Estrutura de Dados em C"
-    NIVEL_TREINO = 10
-    INICIO_DIFICULDADE = 240
-    MULT_MOEDAS = 1.2
-    APRESENTACOES = (
-        (0, "bug", 2.0),
-        (0, "mouse", 2.0),
-        (30, "pente_ram", 3.0),
-        (70, "ponteiro", 3.0),
-        (110, "pilha", 2.0),
-        (170, "calculadora", 0.5),
+    FORMACOES = (                # (segundos, lacaio): alternando cerco e parede, uma a cada ~90 s
+        (90, "bug"), (180, "calculadora"), (270, "pi"), (390, "mouse"), (480, "ponteiro"),
+        (570, "pente_ram"), (690, "caixinha"), (780, "pilha"), (870, "bug"),
     )
-    FORMACOES = ("mouse", "ponteiro", "pente_ram")
-    MINI_CHEFES = ((150, "pente_ram"),)
-    GREVE = 195
-    MONITOR = 100
+    GIGANTES = ((180, "calculadora"), (480, "pente_ram"), (780, "caixinha"))   # lacaios gigantes com hora marcada
+    GREVE = 450                  # 7:30, longe das horas dos chefes
 
+    INICIO_DA_RETA_FINAL = 15 * 60     # daqui em diante a dificuldade multiplica (o antigo "modo sem fim")
+    APERTO = 18 * 60             # e daqui em diante multiplica mais depressa
+    INTERVALO_DE_ONDA = 15.0     # a cada tantos segundos da reta final...
+    FATOR_POR_ONDA = 1.15        # ...a dificuldade é multiplicada por isto
+    FATOR_NO_APERTO = 1.3        # ...ou por isto, depois do APERTO
+    FURIA_POR_SEGUNDO = 1.35     # depois dos 20:00, dano e velocidade de quem nasce multiplicam por isto a cada segundo
+    INTERVALO_FORMACAO_FINAL = 45.0    # na reta final, um cerco ou uma parede de tanto em tanto tempo
+    INTERVALO_GIGANTE_FINAL = 60.0     # e um gigante
 
-class ProvaDeTDEPOO(Prova):
-    NOME = "3ª prova: Transformação Digital e POO"
-    MATERIA = "Transformação Digital e Programação Orientada a Objetos"
-    CHEFE = "chefe_td_poo"
-    ROTULO = "Transformação Digital -> POO"
-    NIVEL_TREINO = 13
-    INICIO_DIFICULDADE = 480
-    MULT_MOEDAS = 1.4
-    APRESENTACOES = (
-        (0, "bug", 2.0),
-        (0, "caixinha", 3.0),
-        (30, "pi", 1.0),
-        (60, "ponteiro", 2.0),
-        (90, "pilha", 1.0),
-        (120, "mouse", 1.0),
-        (150, "pente_ram", 1.0),
-        (180, "calculadora", 1.0),
-    )
-    FORMACOES = ("caixinha", "bug", "ponteiro")
-    MINI_CHEFES = ((120, "caixinha"), (210, "ponteiro"))
-    GREVE = 165
-    MONITOR = 75
-
-
-PROVAS = (ProvaDeCalculo, ProvaDeArquiteturaEED, ProvaDeTDEPOO)
-
-
-class ModoSemFim(Fase):
-    """Depois do último chefe: a partida segue até o aluno cair, e a dificuldade multiplica a cada 15 s.
-
-    É uma Fase como as provas (o Jogo só chama `atualizar`), mas não tem chefe nem fim: em vez de
-    uma linha do tempo fixa, repete formações e gigantes. As "ondas" de 15 s só servem para a conta da
-    dificuldade: a tela não as mostra; no fim aparecem só o tempo que o aluno durou e os pontos que fez aqui.
-    """
-
-    NOME = "Projeto de extensão: sem prazo para acabar"
-    MATERIA = "Projeto de Extensão"
-    INTERVALO_DE_ONDA = 15.0       # segundos de cada onda
-    FATOR_POR_ONDA = 1.15          # a cada onda a dificuldade é multiplicada por isto (cresce exponencialmente)
-    MULT_MOEDAS = 1.6
-    INTERVALO_FORMACAO = 45.0      # de tanto em tanto tempo, um cerco ou uma parede
-    INTERVALO_GIGANTE = 60.0       # e um lacaio gigante
-    APRESENTACOES = ((0, "bug", 2.0), (0, "calculadora", 1.0), (0, "pi", 1.0), (0, "caixinha", 2.0),
-                     (0, "mouse", 1.0), (0, "pente_ram", 1.0), (0, "ponteiro", 2.0), (0, "pilha", 1.0))
-
-    def __init__(self, inicio=0.0, placar=None):
+    def __init__(self, provas=CALENDARIO):
+        self.provas = tuple(provas)           # antes do super(): criar_eventos usa
         super().__init__()
-        self.INICIO_DIFICULDADE = inicio      # segundos de partida quando o modo sem fim começou
-        self._pontuacao_inicial = placar.pontuacao_final(False) if placar is not None else 0
-        self._proxima_formacao = self.INTERVALO_FORMACAO
-        self._proximo_gigante = self.INTERVALO_GIGANTE
-        self._formacoes = 0
+        self._formacoes_finais = 0           # cercos e paredes já chamados na reta final
+        self._gigantes_finais = 0
 
     def criar_eventos(self):
-        return []                  # nada com hora marcada: tudo aqui se repete (veja `atualizar`)
+        eventos = [EventoDaFase(self.ABERTURA_DAS_INVOCACOES, self.abrir_invocacoes, "Mini-chefes no mapa"),
+                   EventoDaFase(self.GREVE, self.iniciar_greve, "Greve")]
+        for prova in self.provas:
+            eventos.append(EventoDaFase(prova.hora - self.AVISO_DO_CHEFE,
+                                        lambda jogo: jogo.avisar_perigo(self.AVISO_DO_CHEFE), "Aviso do chefe"))
+            eventos.append(EventoDaFase(prova.hora, lambda jogo, p=prova: self.chamar_chefe(jogo, p), prova.rotulo))
+        for tempo, nome in self.GIGANTES:
+            eventos.append(EventoDaFase(tempo, lambda jogo, n=nome: self.chamar_mini_chefe(jogo, n), f"{nome} gigante"))
+        for i, (tempo, nome) in enumerate(self.FORMACOES):
+            tipo, quantidade = ("circulo", 24) if i % 2 == 0 else ("parede", 20)
+            eventos.append(EventoDaFase(tempo - self.AVISO, lambda jogo, n=nome, t=tipo, q=quantidade:
+                                        self.avisar_formacao(jogo, t, n, q), f"Formação de {nome}"))
+        eventos.append(EventoDaFase(self.INICIO_DA_RETA_FINAL,
+                                    lambda jogo: jogo.anunciar("Reta final: a dificuldade só sobe daqui em diante!", 4),
+                                    "Reta final"))
+        eventos.append(EventoDaFase(self.DURACAO - self.AVISO_DO_FIM,
+                                    lambda jogo: jogo.anunciar("Faltam 30 s para o fim do semestre!", 4),
+                                    "Aviso do fim"))
+        eventos.append(EventoDaFase(self.DURACAO, lambda jogo: jogo.anunciar("O semestre acabou!", 4), "Fim"))
+        return eventos
 
     @property
-    def onda(self):
-        """Quantos degraus de dificuldade já passaram, a partir de 1 (só para a conta; não aparece na tela)."""
-        return int(self.tempo // self.INTERVALO_DE_ONDA) + 1
-
-    @property
-    def titulo(self):
-        return "Projeto de extensão"
-
-    def pontos_feitos(self, placar):
-        """Pontos que o aluno fez desde que o projeto de extensão começou (eliminações e tempo)."""
-        return placar.pontuacao_final(False) - self._pontuacao_inicial
+    def reta_final(self):
+        return self.tempo >= self.INICIO_DA_RETA_FINAL
 
     @property
     def escala_dificuldade(self):
-        """A dificuldade de quando o modo começou, multiplicada por FATOR_POR_ONDA a cada onda que passou."""
-        base = 1 + self.INICIO_DIFICULDADE / self.PASSO_DIFICULDADE
-        return base * self.FATOR_POR_ONDA ** (self.onda - 1)
+        """Cresce em linha até as 15:00; na reta final multiplica a cada onda, mais depressa depois das 18:00."""
+        base = 1 + min(self.tempo, self.INICIO_DA_RETA_FINAL) / self.PASSO_DIFICULDADE
+        ondas = max(0.0, min(self.tempo, self.APERTO) - self.INICIO_DA_RETA_FINAL) / self.INTERVALO_DE_ONDA
+        ondas_no_aperto = max(0.0, self.tempo - self.APERTO) / self.INTERVALO_DE_ONDA
+        return base * self.FATOR_POR_ONDA ** int(ondas) * self.FATOR_NO_APERTO ** int(ondas_no_aperto)
+
+    @property
+    def furia(self):
+        """Depois dos 20:00, dano e velocidade de quem nasce disparam: fugir, rolar e desviar deixam de bastar."""
+        return self.FURIA_POR_SEGUNDO ** max(0.0, self.tempo - self.DURACAO)
+
+    def alvo_de_inimigos(self):
+        return MAX_INIMIGOS if self.tempo >= self.DURACAO else super().alvo_de_inimigos()
+
+    def alvo_com(self, jogo):
+        return self.alvo_de_inimigos() if self.tempo >= self.DURACAO else super().alvo_com(jogo)
+
+    @property
+    def prova_em_curso(self):
+        return next((p for p in self.provas if p.hora > self.tempo), None)
+
+    @property
+    def titulo(self):
+        prova = self.prova_em_curso
+        if prova is None:
+            return "Reta final"
+        return f"{CALENDARIO.index(prova) + 1}ª prova: {prova.rotulo.replace(' -> ', ' e ')}" \
+            if prova in CALENDARIO else prova.rotulo
+
+    def adiantar_para_a_prova(self, prova):
+        """Modo treino: começa poucos segundos antes de o chefe da `prova` chegar."""
+        self.adiantar_para(prova.hora - self.AVISO_DO_CHEFE)
 
     def atualizar(self, dt, jogo):
         super().atualizar(dt, jogo)
-        if self.tempo >= self._proxima_formacao:
-            self._proxima_formacao += self.INTERVALO_FORMACAO
-            self._formacoes += 1
-            self.avisar_formacao(jogo, "circulo" if self._formacoes % 2 else "parede", jogo.rng.choice(self.ativos), 24)
-        if self.tempo >= self._proximo_gigante:
-            self._proximo_gigante += self.INTERVALO_GIGANTE
+        if self.tempo >= self.DURACAO:
+            for inimigo in jogo.inimigos:        # quem já estava em campo também se enfurece
+                inimigo.enfurecer(self.furia)
+        if not self.reta_final or not self.ativos:
+            return
+        decorrido = self.tempo - self.INICIO_DA_RETA_FINAL
+        if decorrido >= (self._formacoes_finais + 1) * self.INTERVALO_FORMACAO_FINAL:
+            self._formacoes_finais += 1
+            tipo = "circulo" if self._formacoes_finais % 2 else "parede"
+            self.avisar_formacao(jogo, tipo, jogo.rng.choice(self.ativos), 24)
+        if decorrido >= (self._gigantes_finais + 1) * self.INTERVALO_GIGANTE_FINAL:
+            self._gigantes_finais += 1
             self.chamar_mini_chefe(jogo, jogo.rng.choice(self.ativos))
-
-
-def semestre():
-    """As três provas em ordem, cada uma uma instância nova."""
-    return [classe() for classe in PROVAS]

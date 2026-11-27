@@ -195,10 +195,3 @@ def test_as_armas_acertam_o_objeto_e_ele_solta_cura_ou_moedas_sem_contar_no_plac
     jogo.rng = rng_fixo(0.99)
     QUEBRAVEIS[0](heroi.posicao + (700, 0)).ao_morrer(jogo)
     assert len(coletaveis(jogo, Moeda)) == antes + 1
-
-
-def test_modo_sem_fim_se_chama_projeto_de_extensao():
-    from jogo.fase import ModoSemFim
-    fase = ModoSemFim(inicio=720)
-    assert "Projeto de extensão" in fase.NOME and "Projeto de extensão" in fase.titulo
-    assert "TCC" not in fase.NOME + fase.MATERIA + fase.titulo

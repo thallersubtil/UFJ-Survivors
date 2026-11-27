@@ -16,7 +16,7 @@ FPS = 60
 ESCALA_PIXEL = 2          # a arte do mundo é pixel art ampliada 2x, sem suavizar
 
 ARENA_LARGURA, ARENA_ALTURA = 3200, 1800
-DURACAO_PROVA = 4 * 60          # cada uma das três provas; o chefe chega no fim (aos 4, 8 e 12 min de partida)
+DURACAO_SEMESTRE = 20 * 60      # o semestre: chefes às 5, 10 e 15 min; depois disso ninguém dura muito
 MAX_INIMIGOS = 450              # teto de inimigos em campo (o alvo cresce com o tempo até aqui)
 DISTANCIA_REPOSICIONAR = 1400   # inimigo mais longe que isso do herói renasce perto dele
 INVENCIBILIDADE_APOS_DANO = 0.5

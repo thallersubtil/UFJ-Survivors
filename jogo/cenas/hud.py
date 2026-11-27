@@ -4,6 +4,7 @@ import math
 import pygame
 
 from jogo.config import COMBO_ESPECIAL
+from jogo.inimigos.mini_chefes import MINI_CHEFES
 from jogo.nucleo.recursos import Recursos
 from jogo.ui.pixel import (A, ESCALA, L, CamadaPixel, Paleta as P, barra, ease_back, fonte, icone, janela, moldura,
                            no_quadrado, texto)
@@ -187,8 +188,13 @@ class Hud:
         pilula = pygame.Rect(0, 0, 74, 24)
         pilula.midtop = (L // 2, 9)
         moldura(ui, pilula, fundo=(22, 26, 52), raio=8, brilho=False)
-        texto(ui, placar.tempo_formatado, pilula.center, P.BRANCO, 23, contorno=None, ancora="center")
+        restante = jogo.fase.restante
+        minutos, segundos = divmod(int(math.ceil(restante)), 60)
+        cor = P.VERM if restante <= jogo.fase.AVISO_DO_FIM else P.BRANCO     # contagem regressiva até os 20:00
+        texto(ui, f"{minutos:02d}:{segundos:02d}", pilula.center, cor, 23, contorno=None, ancora="center")
         texto(ui, jogo.fase.titulo.upper(), (L // 2, 35), (210, 220, 255), 11, ancora="midtop")
+        texto(ui, f"Mini-chefes: {jogo.mini_chefes_derrotados}/{len(MINI_CHEFES)}", (L - 6, 48), P.CINZA, 11,
+              ancora="topright")
         moeda = icone("icones/moeda.png", 12)
         larg = max(1, int(12 * abs(math.cos(self.tempo * 3))))      # moeda girando
         valor = str(placar.moedas)

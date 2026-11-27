@@ -51,7 +51,7 @@ def test_calculo_tem_uma_fase_e_derrota_vence(jogo_limpo):
     chefe = colocar_chefe(jogo, "chefe_calculo")
     assert chefe.total_de_fases == 1 and not chefe.tem_proxima_materia
     assert jogo.causar_dano(chefe, 10 ** 7)
-    assert jogo.terminou and jogo.venceu
+    assert chefe not in jogo.chefes and jogo.baus_pendentes == 1      # o chefe caiu: baú e cura
 
 
 def test_ataques_de_calculo_lancam_simbolos_investem_e_chamam(jogo_limpo):

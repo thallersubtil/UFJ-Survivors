@@ -86,6 +86,9 @@ class Chefe(Inimigo, ABC):
             self._indice += 1
             self._espera_ataque = self.intervalo_ataque
 
+    def ao_chegar_o_chefe(self, jogo):
+        """Outro chefe chegou: este continua a luta."""
+
     def possuir(self, duracao):
         """Chefes não são possuídos pelo Fusca."""
 

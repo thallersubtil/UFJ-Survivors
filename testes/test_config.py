@@ -5,7 +5,7 @@ def test_tamanhos_da_janela_e_da_arena():
     assert (config.LARGURA, config.ALTURA) == (1280, 720)
     assert config.ARENA_LARGURA > config.LARGURA
     assert config.ARENA_ALTURA > config.ALTURA
-    assert config.DURACAO_PROVA == 240      # o chefe de cada prova chega aos 4, 8 e 12 minutos
+    assert config.DURACAO_SEMESTRE == 20 * 60      # chefes às 5, 10 e 15 min; a reta final mata até os 20
 
 
 def test_fonte_existe():

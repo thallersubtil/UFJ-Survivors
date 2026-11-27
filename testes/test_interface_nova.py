@@ -291,7 +291,7 @@ def test_fim_de_jogo_boletim_desenha_aprovado_e_reprovado(tmp_path):
         for t in (0.1, 1.5, 3.1, 4.0):
             cena.tempo = t
             cena.desenhar(pygame.Surface((1280, 720)))
-        assert len(cena.boletim.linhas) == len(partida.jogo.fases)
+        assert len(cena.boletim.linhas) == len(partida.jogo.fase.provas)
 
 
 def test_cada_classe_tem_rosto_e_o_hud_e_a_carteirinha_usam_ele(tmp_path):
@@ -320,11 +320,11 @@ def test_cada_classe_tem_rosto_e_o_hud_e_a_carteirinha_usam_ele(tmp_path):
 def test_perigo_avisa_antes_e_a_partida_para_para_apresentar_o_chefe(tmp_path):
     from jogo.cenas.chefe import CenaChefe
     from jogo.cenas.partida import CenaPartida
-    from jogo.fase import ProvaDeCalculo
+    from jogo.fase import CALENDARIO
     from jogo.jogador.classes import Programador
     from jogo.opcoes import OpcoesDePartida
     app = _app(tmp_path)
-    opcoes = OpcoesDePartida.treino_contra(ProvaDeCalculo, direto_no_chefe=True, imortal=True)
+    opcoes = OpcoesDePartida.treino_contra(CALENDARIO[0], direto_no_chefe=True, imortal=True)
     partida = CenaPartida(app, Programador, opcoes)
     app.trocar(partida)
     jogo = partida.jogo

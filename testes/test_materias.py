@@ -74,7 +74,7 @@ def test_so_a_ultima_materia_vence_a_luta(jogo_limpo):
     derrotar_fase(jogo, chefe)
     chefe.troca = 0
     assert jogo.causar_dano(chefe, 10 ** 7)
-    assert jogo.terminou and jogo.venceu
+    assert chefe not in jogo.chefes and jogo.baus_pendentes == 1      # o chefe caiu: baú e cura
 
 
 @pytest.mark.parametrize("nome", ["chefe_calculo", "chefe_arquitetura_ed", "chefe_td_poo"])

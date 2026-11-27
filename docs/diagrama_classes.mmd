@@ -54,7 +54,6 @@ classDiagram
     class PiCambaleante
     class Ponteiro
     class PilhaAA
-    class MonitorPossuido
     class PenteDeRAM
     class Chefe {
         <<abstract>>
@@ -191,11 +190,11 @@ classDiagram
     class DadoDoMestre
     class Jogo {
         +entidades: list~Entidade~
-        +fases: list~Fase~
+        +fase: Fase
         +chefes: list~Chefe~
         +a_partir_de(classe, opcoes)$ Jogo
-        +avancar_prova()
-        +aprovar_prova(chefe)
+        +iniciar_chefe(chefe, prova)
+        +aprovar(chefe)
         +atualizar(dt)
         +causar_dano(inimigo, dano)
     }
@@ -203,21 +202,20 @@ classDiagram
         <<abstract>>
         +criar_eventos()* list
         +escala_dificuldade «property»
+        +furia «property»
         +alvo_de_inimigos() int
         +posicao_de_nascimento(jogo)$
     }
-    class Prova {
-        <<abstract>>
-        +CHEFE: str
+    class Semestre {
+        +provas: tuple~ProvaMarcada~
         +APRESENTACOES: tuple
-        +adiantar_para_o_chefe()
-    }
-    class ProvaDeCalculo
-    class ProvaDeArquiteturaEED
-    class ProvaDeTDEPOO
-    class ModoSemFim {
-        +onda: int «property»
         +escala_dificuldade «property»
+        +adiantar_para_a_prova(prova)
+    }
+    class ProvaMarcada {
+        +hora: float
+        +chefe: str
+        +materia: str
     }
     class Placar {
         -_pontos: int
@@ -258,11 +256,11 @@ classDiagram
     }
     class Decoracao
     class OpcoesDePartida {
-        +provas: tuple
+        +prova: ProvaMarcada
         +treino: bool
         +direto_no_chefe: bool
         +imortal: bool
-        +criar_fases() list
+        +criar_fase() Semestre
     }
     class Animador {
         +atual: str
@@ -297,7 +295,6 @@ classDiagram
     Inimigo <|-- PiCambaleante
     Inimigo <|-- Ponteiro
     Inimigo <|-- PilhaAA
-    Inimigo <|-- MonitorPossuido
     Inimigo <|-- MiniChefe
     Inimigo <|-- ObjetoQuebravel
     MiniChefe <|-- TiaDaCantina
@@ -337,14 +334,11 @@ classDiagram
     Arma <|-- ArmaDeDisparo
     Arma <|-- ArmaContinua
     Arma <|-- Colab
-    Fase <|-- Prova
-    Prova <|-- ProvaDeCalculo
-    Prova <|-- ProvaDeArquiteturaEED
-    Prova <|-- ProvaDeTDEPOO
-    Fase <|-- ModoSemFim
+    Fase <|-- Semestre
+    Semestre o-- ProvaMarcada : calendário
 
     Jogo *-- Jogador
-    Jogo *-- Fase : 3 provas e o modo sem fim
+    Jogo *-- Fase : o semestre
     Jogo *-- Placar
     Jogo *-- Mapa
     Mapa <|-- MapaUFJ

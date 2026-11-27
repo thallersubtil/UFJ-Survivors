@@ -8,7 +8,7 @@ from abc import abstractmethod
 
 import pygame
 
-from jogo.coletaveis.coletaveis import Moeda
+from jogo.coletaveis.coletaveis import Bigorna, Moeda
 from jogo.config import Cor
 from jogo.efeitos import TextoFlutuante
 from jogo.inimigos.fabrica import FabricaDeInimigos
@@ -199,6 +199,9 @@ class MiniChefe(Inimigo):
     def fator_de_dano(self):
         return 1 + max(0.0, self.escala - 1) * self.GANHO_DANO
 
+    def ao_chegar_o_chefe(self, jogo):
+        """Um chefe principal chegou: o mini-chefe continua onde está."""
+
     def assustar(self, duracao):
         """Mini-chefe não cai em trote."""
 
@@ -211,9 +214,11 @@ class MiniChefe(Inimigo):
     def ao_morrer(self, jogo):
         super().ao_morrer(jogo)
         jogo.adicionar(Moeda(self.posicao - (18, 0), self.MOEDAS))
+        jogo.adicionar(Bigorna(self.posicao + (30, 10)))
         jogo.marcos.add("mini_chefe")
+        jogo.contar_mini_chefe()
         jogo.marcados.discard(self.CHAVE)
-        jogo.anunciar(f"{self.NOME}: fora de combate! Pegue o baú", 3)
+        jogo.anunciar(f"{self.NOME}: fora de combate! Pegue o baú e a bigorna", 3)
 
     def desenhar_corpo(self, tela, camera):
         super().desenhar_corpo(tela, camera)

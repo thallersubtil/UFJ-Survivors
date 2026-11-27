@@ -7,15 +7,17 @@ class RegistroRanking:
 
     TAMANHO_NOME = 12
 
-    def __init__(self, nome, heroi, pontos, tempo, venceu=False):
+    def __init__(self, nome, heroi, pontos, tempo, venceu=False, chefes=0):
         self.nome = str(nome or "").strip()[: self.TAMANHO_NOME] or "Anônimo"
         self.heroi = str(heroi)
         self.pontos = int(pontos)
         self.tempo = float(tempo)
         self.venceu = bool(venceu)
+        self.chefes = int(chefes)          # chefes derrotados na partida
 
     def _chave(self):
-        return self.pontos, -self.tempo
+        """Mais pontos primeiro; no empate, mais chefes; depois, menos tempo."""
+        return self.pontos, self.chefes, -self.tempo
 
     def __lt__(self, outro):
         if not isinstance(outro, RegistroRanking):
@@ -25,8 +27,8 @@ class RegistroRanking:
     def __eq__(self, outro):
         if not isinstance(outro, RegistroRanking):
             return NotImplemented
-        return (self.nome, self.heroi, self.pontos, round(self.tempo, 2), self.venceu) == \
-               (outro.nome, outro.heroi, outro.pontos, round(outro.tempo, 2), outro.venceu)
+        return (self.nome, self.heroi, self.pontos, round(self.tempo, 2), self.venceu, self.chefes) == \
+               (outro.nome, outro.heroi, outro.pontos, round(outro.tempo, 2), outro.venceu, outro.chefes)
 
     __hash__ = None
 
@@ -36,11 +38,12 @@ class RegistroRanking:
 
     def para_dict(self):
         return {"nome": self.nome, "heroi": self.heroi, "pontos": self.pontos,
-                "tempo": self.tempo, "venceu": self.venceu}
+                "tempo": self.tempo, "venceu": self.venceu, "chefes": self.chefes}
 
     @classmethod
     def de_dict(cls, dados):
-        return cls(dados["nome"], dados["heroi"], dados["pontos"], dados["tempo"], dados.get("venceu", False))
+        return cls(dados["nome"], dados["heroi"], dados["pontos"], dados["tempo"], dados.get("venceu", False),
+                   dados.get("chefes", 0))
 
 
 class Ranking:

@@ -21,6 +21,7 @@ class ObjetoQuebravel(Inimigo, ABC):
     EXPERIENCIA = 0
     TENACIDADE = 1.0               # nada puxa, atrasa ou trava um objeto
     CONTA_NO_PLACAR = False        # quebrar caixa não é eliminação nem entra no combo
+    ALVO_DA_MIRA = False           # a mira procura inimigos; o objeto só quebra quando um golpe passa por ele
     CHANCE_DE_CURA = 0.4           # senão, moedas
     MOEDAS = (3, 6)                # (mínimo, máximo) de moedas quando não sai cura
 

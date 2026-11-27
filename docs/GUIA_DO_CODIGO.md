@@ -4,7 +4,7 @@ Mapa de tudo o que já existe no UFJ Survivors, na ordem em que vale a pena ente
 
 ## 1. O jogo em uma frase
 
-O herói (um aluno) anda pelo Campus Jatobá; as armas atacam sozinhas; ondas de inimigos (objetos das matérias) crescem com o tempo de partida ao longo das três provas de 4 minutos; inimigos mortos soltam notas que dão experiência; a cada nível o jogador escolhe uma carta (arma, melhoria ou item); no fim de cada prova (aos 4, 8 e 12 minutos do relógio, mesmo com o chefe anterior vivo) chega o chefe: um professor possuído pela própria matéria. Vencer os três chefes = "APROVADO!", e a partida segue sem fim (o Projeto de extensão), cada vez mais difícil, até o aluno cair; morrer antes disso = "REPROVADO!".
+O herói (um aluno) anda pelo Campus Jatobá; as armas atacam sozinhas; ondas de inimigos (objetos das matérias) crescem com o tempo ao longo de um semestre de 20 minutos; inimigos mortos soltam notas que dão experiência; a cada nível o jogador escolhe uma carta (arma, melhoria ou item); com hora marcada (5, 10 e 15 minutos do relógio, mesmo com o chefe anterior vivo) chega um chefe: um professor possuído pela própria matéria. Das 15:00 em diante a dificuldade dispara até o aluno cair por volta dos 20:00. Quem derrotou os três chefes termina com honras; quem não, é reprovado.
 
 ## 2. Como o programa roda
 
@@ -84,7 +84,7 @@ BonusTemporario               efeitos com tempo (combo 67, Super Saiyajin)
 ### Partida, mapa e telas
 
 ```
-Fase (abstrata: criar_eventos)  -> Prova -> ProvaDeCalculo, ProvaDeArquiteturaEED, ProvaDeTDEPOO   jogo/fase.py
+Fase (abstrata: criar_eventos)  -> Semestre (o calendário: três ProvaMarcada)   jogo/fase.py
 Materia (abstrata: ataques)     -> CalculoI, ArquiteturaDeComputadores, EstruturaDeDadosEmC,
                                    TransformacaoDigital, ProgramacaoOrientadaAObjetos   jogo/inimigos/materias/
 AcaoDoChefe (abstrata)          -> Investida, Rajada   jogo/inimigos/acoes_do_chefe.py
@@ -117,25 +117,26 @@ Por que composição e não herança entre `Jogador` e `Arma`: o jogador **tem**
 | Polimorfismo (2) | `Passiva.aplicar` | O `Jogador` chama `passiva.aplicar(self)` sem saber qual é a classe, do mesmo jeito que faz com os itens. |
 | `@staticmethod` | `Colisao.circulos_colidem` | Função pura de geometria; não precisa de instância. |
 
-Durante o escudo ou a troca de matéria o chefe fica `invulneravel` (propriedade que todo `Inimigo` tem, falsa por padrão): `Jogo.causar_dano` não mostra dano e o chefe não fere por contato. `Prova` e `ChefePossuido` são abstratas de verdade: `CHEFE` e `MATERIAS` são propriedades abstratas que cada subclasse preenche com uma constante.
+Durante o escudo ou a troca de matéria o chefe fica `invulneravel` (propriedade que todo `Inimigo` tem, falsa por padrão): `Jogo.causar_dano` não mostra dano e o chefe não fere por contato. `ChefePossuido` é abstrata de verdade: `MATERIAS` é uma propriedade abstrata que cada chefe preenche com uma constante.
 
-Pergunta provável: "o que muda se eu criar um inimigo novo?". Resposta: nada nas classes existentes. Arquivo novo em `jogo/inimigos/`, classe herdando de `Inimigo`, `@FabricaDeInimigos.registrar("nome")`, implementar `mover()`; para aparecer, uma linha em `APRESENTACOES` de uma das provas. A receita completa está no `AGENTS.md`. Para um chefe novo, o mesmo vale com `Materia` e `ChefePossuido`.
+Pergunta provável: "o que muda se eu criar um inimigo novo?". Resposta: nada nas classes existentes. Arquivo novo em `jogo/inimigos/`, classe herdando de `Inimigo`, `@FabricaDeInimigos.registrar("nome")`, implementar `mover()`; para aparecer, uma linha em `APRESENTACOES` do `Semestre`. A receita completa está no `AGENTS.md`. Para um chefe novo, o mesmo vale com `Materia` e `ChefePossuido`.
 
-## 7. As três provas (`jogo/fase.py`)
+## 7. O semestre (`jogo/fase.py`)
 
-| Prova | Lacaios | Mini-chefe | Chefe (no fim dos 4 min: 4:00, 8:00 e 12:00 de partida) |
-|---|---|---|---|
-| `ProvaDeCalculo` | bug, calculadora, pi, caixinha, mouse | Calculadora Gigante (2:30) | Cálculo I |
-| `ProvaDeArquiteturaEED` | bug, mouse, pente de RAM, ponteiro, pilha, calculadora | Pente de RAM Gigante (2:30) | Arquitetura de Computadores, depois Estrutura de Dados em C |
-| `ProvaDeTDEPOO` | todos | Caixinha Gigante (2:00), Ponteiro Gigante (3:30) | Transformação Digital, depois POO |
+Uma fase só, `Semestre(Fase)`, com a linha do tempo inteira. O calendário (`CALENDARIO`) tem três `ProvaMarcada` (dados: hora, chefe, matéria, rótulo, nível do treino):
 
-- Cada prova é uma subclasse de `Prova` que só preenche dados (`APRESENTACOES`, `FORMACOES`, `MINI_CHEFES`, `CHEFE`); a `Prova` monta a linha do tempo a partir deles.
-- Cada prova dura 4 minutos e continua de onde a anterior parou (`INICIO_DIFICULDADE` = 0, 240 e 480 s; `tempo_de_partida` soma os dois); a dificuldade sobe com esse tempo (`escala_dificuldade`).
-- **Mais inimigos com o tempo**: `alvo_de_inimigos()` (quantos a fase quer em campo) cresce com o tempo de partida, de 10 no começo a 154 aos 4 min, 346 aos 8 e o teto `MAX_INIMIGOS` (450) aos 10; `intervalo_de_nascimento()` encurta junto (de 0,5 s para 0,125 s entre um grupo e outro). Com chefe em campo o alvo cai para 60% (`alvo_com`).
-- **Chefes no relógio**: o evento do fim da prova chama `Fase.chamar_chefe`, que põe o chefe em campo (`Jogo.iniciar_chefe`) e avisa `Jogo.avancar_prova()`: a prova seguinte começa na hora, sem limpar o campo, com o chefe vivo ou não. `Jogo.chefes` guarda os que estão em campo (podem ser dois; `Jogo.chefe` é o mais antigo) e o HUD desenha uma barra para cada um.
-- Quando um chefe cai, `Jogo.aprovar_prova(chefe)` guarda a nota da prova dele em `Jogo.notas[índice]`, paga as moedas, cura metade da vida e dá um baú. Com as três provas aprovadas, `venceu` vira verdadeiro e a fase passa a ser `ModoSemFim` (no treino a partida acaba ali).
-- **Modo sem fim** (`ModoSemFim`, uma `Fase` como as provas): todos os lacaios, uma formação a cada 45 s, um gigante a cada 60 s, e a dificuldade multiplicada por 1,15 a cada 15 s (`escala_dificuldade` sobrescrito: cresce exponencialmente). Essa conta não aparece na tela: o HUD mostra só "Projeto de extensão" e, no fim, o boletim diz quanto tempo o aluno durou nele e quantos pontos fez ali (`ModoSemFim.pontos_feitos`). Só acaba quando o aluno cai.
-- **O que conta como vitória**: derrotar os três chefes. Quem cai no modo sem fim continua aprovado: o boletim mostra as três notas, o ranking registra `venceu`, os pontos levam o bônus de vitória mais o tempo e as eliminações do Projeto de extensão, e as moedas pegas lá também valem (1,6x). Quem cai antes é reprovado em toda prova cujo chefe estava vivo (nota de 4 a 5,9 pelo dano feito nele) e na prova que corria (até 4 pelo tempo); as que não começaram ficam como NÃO CURSOU.
+| Hora | Chefe | Lacaios que entram perto dele |
+|---|---|---|
+| 5:00 | Cálculo I | bug, calculadora, pi, caixinha, mouse |
+| 10:00 | Arquitetura de Computadores, depois Estrutura de Dados em C | pente de RAM, ponteiro, pilha |
+| 15:00 | Transformação Digital, depois POO | (todos os anteriores) |
+
+- `Semestre` só preenche dados (`APRESENTACOES`, `FORMACOES`, `GIGANTES`, `GREVE`) e monta a linha do tempo em `criar_eventos`: aviso de PERIGO e chefe na hora de cada prova, um cerco ou parede a cada ~90 s, três gigantes (3:00, 8:00, 13:00), greve às 7:30 e os avisos das 15:00 e das 19:30.
+- **Mais inimigos com o tempo**: `alvo_de_inimigos()` cresce com o relógio até `MAX_INIMIGOS`; `intervalo_de_nascimento()` encurta junto. Com chefe em campo o alvo cai para 60% (`alvo_com`).
+- **Chefes no relógio**: `Fase.chamar_chefe(jogo, prova)` põe o chefe em campo com `Jogo.iniciar_chefe(chefe, prova)`, que antes pede a cada inimigo `ao_chegar_o_chefe` (o lacaio comum sai; `Chefe` e `MiniChefe` sobrescrevem para ficar). O relógio não para: `Jogo.chefes` guarda os que estão em campo e o HUD desenha uma barra para cada um.
+- Quando um chefe cai, `Jogo.aprovar(chefe)` guarda a nota da prova dele em `Jogo.notas[prova]`, paga as moedas, cura metade da vida e dá um baú. Com as três provas aprovadas, `venceu` vira verdadeiro (no treino a partida acaba ali; no semestre, segue).
+- **Reta final**: das 15:00 em diante `escala_dificuldade` multiplica por 1,15 a cada 15 s e, depois das 18:00, por 1,3. Depois dos 20:00 a `furia` da fase multiplica dano e velocidade de todo inimigo em campo (`Inimigo.enfurecer`) e o alvo vai ao teto: ninguém dura muito.
+- **O que conta como vitória**: derrotar os três chefes. Quem cai depois disso termina "com honras": o boletim mostra as três notas, o ranking registra `venceu` e o número de chefes, e as moedas levam o bônus (`Jogo.bonus_de_honras`: `BONUS_HONRAS` mais `MOEDAS_POR_MINI_CHEFE` por mini-chefe derrotado). Quem cai antes é reprovado em toda prova cujo chefe estava vivo (nota de 4 a 5,9 pelo dano feito nele) e na prova que corria (até 4 pelo tempo); as que não começaram ficam como NÃO CURSOU.
 
 ### Como o chefe possuído funciona
 

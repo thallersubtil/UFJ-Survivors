@@ -273,15 +273,13 @@ def test_feixe_de_abducao_e_um_golpe_no_chao_com_arte_propria(jogo_limpo):
     assert depois.get_bounding_rect().height > antes.get_bounding_rect().height      # a coluna de luz subiu
 
 
-def test_mini_ovni_atira_laser_e_monitor_arremessa_listas(jogo_limpo):
+def test_mini_ovni_atira_laser(jogo_limpo):
     jogo = jogo_limpo()
     jogo.jogador.imortal = True
     ovni = FabricaDeInimigos.criar("mini_ovni", jogo.jogador.posicao + (260, 0))
-    monitor = FabricaDeInimigos.criar("monitor_possuido", jogo.jogador.posicao + (300, 0))
     for _ in range(100):
         ovni.mover(1 / 30, jogo)
-        monitor.mover(1 / 30, jogo)
-    assert artes_lancadas(jogo) == {"laser", "oficio"}
+    assert artes_lancadas(jogo) == {"laser"}
 
 
 def test_marca_acompanha_o_dono_e_some(jogo_limpo):

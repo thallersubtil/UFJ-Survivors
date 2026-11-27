@@ -32,6 +32,7 @@ class Inimigo(SerVivo, ABC):
     TAMANHO_GRUPO = (1, 1)       # (mínimo, máximo) de inimigos que nascem juntos
     CHANCE_IMA = 0.0015        # bem raro: o ímã puxa toda a experiência do mapa
     CONTA_NO_PLACAR = True     # se a morte vale eliminação, combo e itens (objeto quebrável: não)
+    ALVO_DA_MIRA = True        # se a mira e as armas que procuram alvo escolhem este (objeto quebrável: não)
     CHANCE_MOEDA = 0.05
     MOEDAS_GIGANTE = 15
 
@@ -40,6 +41,7 @@ class Inimigo(SerVivo, ABC):
     GANHO_DANO = 0.12         # por ponto de dificuldade: no fim do semestre o encostão dói ~50% a mais
 
     TENACIDADE = 0.0          # 0 a 1: quanto resiste a puxão, lentidão e empurrão (chefes e mini-chefes: 1)
+    TETO_DA_FURIA = 3.0       # depois dos 20:00 a fúria multiplica o dano sem limite, mas a velocidade só até isto
 
     ESCALA_GIGANTE = 3
     VIDA_GIGANTE = 30
@@ -49,6 +51,7 @@ class Inimigo(SerVivo, ABC):
     def __init__(self, posicao, escala=1.0):
         super().__init__(posicao, self.RAIO, self.VIDA * escala)
         self.escala = escala
+        self.furia = 1.0             # 1 = normal; depois dos 20:00 o Semestre enfurece quem nasce
         self.velocidade = self.VELOCIDADE * self.fator_de_velocidade(escala)
         self.tempo = 0.0
         self.possuido = 0.0
@@ -167,7 +170,19 @@ class Inimigo(SerVivo, ABC):
     @property
     def dano_de_contato(self):
         """O encostão dói mais conforme a prova avança (a mesma escala que dá vida e velocidade ao inimigo)."""
-        return self.DANO * (1 + max(0.0, self.escala - 1) * self.GANHO_DANO)
+        return self.DANO * (1 + max(0.0, self.escala - 1) * self.GANHO_DANO) * self.furia
+
+    def enfurecer(self, furia):
+        """O fim do semestre passou: o dano de contato multiplica por `furia` e a velocidade também, até
+        TETO_DA_FURIA. A fúria só sobe; chamar de novo com o mesmo valor não muda nada."""
+        nova = max(self.furia, furia)
+        self.velocidade *= min(nova, self.TETO_DA_FURIA) / min(self.furia, self.TETO_DA_FURIA)
+        self.furia = nova
+
+    def ao_chegar_o_chefe(self, jogo):
+        """Um chefe principal entrou em campo: o lacaio comum sai para abrir espaço para a luta.
+        Chefes e mini-chefes sobrescrevem para ficar."""
+        self.remover()
 
     def assustar(self, duracao):
         """Trote Reverso: por um tempo, foge do aluno em vez de atacar."""

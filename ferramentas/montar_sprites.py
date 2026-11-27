@@ -42,8 +42,6 @@ def maior_parte(imagem):
 BRUTA = Path(__file__).resolve().parent.parent / "arte_bruta" / "disgaea"
 
 RECEITA = [
-    ("aluno1_parado.png", "aluno1", "parado", 4, 76, {}),
-    ("aluno1_andar.png", "aluno1", "andar", 4, 76, {}),
     ("professor_parado.png", "professor", "parado", 4, 124, {}),
     ("professor_andar.png", "professor", "andar", 4, 124, {}),
     ("bug_andar.png", "bug", "andar", 4, 28, {}),

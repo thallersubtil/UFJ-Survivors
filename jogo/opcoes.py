@@ -1,13 +1,13 @@
-"""Como a partida vai ser: quais provas, se é treino, a aparência do aluno e o que ele comprou na loja."""
+"""Como a partida vai ser: semestre inteiro ou treino contra um chefe, e o que o aluno comprou na loja."""
 from dataclasses import dataclass, replace
 from typing import Optional
 
-from jogo.fase import PROVAS
+from jogo.fase import Semestre
 
 
 @dataclass(frozen=True)
 class OpcoesDePartida:
-    provas: tuple = PROVAS            # classes de Prova, na ordem
+    prova: Optional[object] = None    # treino: a ProvaMarcada escolhida (None: o semestre inteiro)
     treino: bool = False              # treino não entra no ranking
     direto_no_chefe: bool = False     # começa a prova poucos segundos antes do chefe
     imortal: bool = False             # o herói não leva dano
@@ -18,8 +18,8 @@ class OpcoesDePartida:
 
     @classmethod
     def treino_contra(cls, prova, direto_no_chefe=False, imortal=False):
-        """Opções do modo treino: só a prova escolhida."""
-        return cls(provas=(prova,), treino=True, direto_no_chefe=direto_no_chefe, imortal=imortal)
+        """Opções do modo treino: só o chefe da `prova` (uma ProvaMarcada do calendário)."""
+        return cls(prova=prova, treino=True, direto_no_chefe=direto_no_chefe, imortal=imortal)
 
     def com_progresso(self, progresso):
         """As mesmas opções, com o que o aluno comprou no Centro Acadêmico."""
@@ -27,9 +27,11 @@ class OpcoesDePartida:
                        lanche=None if self.treino else progresso.lanche_reservado,
                        mini_chefes_conhecidos=frozenset(progresso.mini_chefes_conhecidos))
 
-    def criar_fases(self):
-        fases = [classe() for classe in self.provas]
+    def criar_fase(self):
+        """O Semestre: inteiro, ou no treino só com a prova escolhida (e, se pedido, já perto do chefe)."""
+        if self.prova is None:
+            return Semestre()
+        fase = Semestre(provas=(self.prova,))
         if self.direto_no_chefe:
-            for fase in fases:
-                fase.adiantar_para_o_chefe()
-        return fases
+            fase.adiantar_para_a_prova(self.prova)
+        return fase

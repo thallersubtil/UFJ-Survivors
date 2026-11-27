@@ -38,9 +38,9 @@ def test_lanche_vale_so_na_proxima_partida(progresso):
 
 
 def test_treino_nao_gasta_nem_usa_lanche(progresso):
-    from jogo.fase import ProvaDeCalculo
+    from jogo.fase import CALENDARIO
     progresso.comprar_lanche(Coxinha)
-    opcoes = OpcoesDePartida.treino_contra(ProvaDeCalculo).com_progresso(progresso)
+    opcoes = OpcoesDePartida.treino_contra(CALENDARIO[0]).com_progresso(progresso)
     assert opcoes.lanche is None
 
 

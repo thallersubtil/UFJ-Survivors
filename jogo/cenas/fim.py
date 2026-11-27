@@ -45,18 +45,18 @@ class CenaFimDeJogo(Cena):
 
     @staticmethod
     def motivo(jogo):
-        """Em que matéria o aluno reprovou (a do chefe mais antigo em campo ou, sem chefe, a da prova);
-        para quem venceu o semestre e caiu no projeto de extensão, quanto durou nele e quantos pontos fez."""
+        """A frase do fim: honras para quem derrotou os três chefes; senão, onde o aluno reprovou (no chefe
+        mais antigo em campo, na prova que corria ou no fim do semestre)."""
         if jogo.venceu:
-            pontos = getattr(jogo.fase, "pontos_feitos", None)
-            if pontos is None:                  # treino: acabou quando o chefe caiu
+            if jogo.treino:                     # treino: acabou quando o chefe caiu
                 return ""
-            minutos, segundos = divmod(int(jogo.fase.tempo), 60)
-            return (f"Semestre aprovado. Projeto de extensão: durou {minutos:02d}:{segundos:02d} "
-                    f"e fez {_milhar(pontos(jogo.placar))} pontos.")
+            return f"Fim do semestre com honras! Bônus de {_milhar(jogo.bonus_de_honras)} moedas."
         if jogo.chefe is not None and jogo.chefe.ativo:
             return f"Reprovado em {jogo.chefe.nome}."
-        return f"Reprovado em {jogo.fase.MATERIA}." if jogo.fase.MATERIA else "Reprovado."
+        prova = jogo.fase.prova_em_curso
+        if prova is None:
+            return "Reprovado: o semestre acabou."
+        return f"Reprovado em {prova.materia}."
 
     # ------------------------------------------------------------ regras
     def _salvar(self):
@@ -215,7 +215,7 @@ class CenaFimDeJogo(Cena):
         if self.tempo > 3.0:
             aprovado = self.jogo.venceu
             k = ease_back(janela(self.tempo, 3.0, 0.3), 2.5)
-            marca = carimbo("APROVADO" if aprovado else "REPROVADO", (40, 150, 60) if aprovado else P.MARGEM, 14,
+            marca = carimbo("HONRAS" if aprovado and not self.jogo.treino else "APROVADO" if aprovado else "REPROVADO", (40, 150, 60) if aprovado else P.MARGEM, 14,
                             2.6 - 1.6 * k, 23)
             ui.blit(marca, marca.get_rect(center=(b.right - 110, b.bottom - 50)))
             if self.tempo < 3.15:

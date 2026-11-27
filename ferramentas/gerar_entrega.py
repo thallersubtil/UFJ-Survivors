@@ -39,7 +39,7 @@ FAMILIAS = (
     ("Passiva", "Passiva de cada classe do aluno"),
     ("Especial", "Habilidade ativa de cada classe"),
     ("Materia", "O que possui cada professor"),
-    ("Fase", "As três provas do semestre"),
+    ("Fase", "O semestre: o calendário dos três chefes"),
     ("Mapa", "Campus Jatobá e pátio genérico"),
     ("Melhoria", "Melhorias permanentes da loja"),
     ("Lanche", "Lanches da cantina"),

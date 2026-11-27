@@ -130,12 +130,13 @@ def test_moeda_coletada_vai_para_o_placar_com_bonus(jogo_limpo):
     assert jogo.placar.moedas == 15
 
 
-def test_passar_de_prova_paga_moedas(jogo_limpo):
-    from jogo.fase import semestre
+def test_derrotar_um_chefe_paga_moedas(jogo_limpo):
+    from jogo.fase import CALENDARIO
+    from jogo.inimigos.fabrica import FabricaDeInimigos
     jogo = jogo_limpo()
-    jogo.fases = semestre()
-    jogo.fase = jogo.fases[0]
-    jogo.aprovar_prova(object())             # qualquer chefe: a prova aprovada é a atual
+    chefe = FabricaDeInimigos.criar("chefe_calculo", jogo.jogador.posicao + (300, 0))
+    jogo.iniciar_chefe(chefe, CALENDARIO[0])
+    jogo.aprovar(chefe)
     assert jogo.placar.moedas == jogo.MOEDAS_POR_PROVA
 
 
