@@ -36,7 +36,7 @@ class Jogador(SerVivo, ABC):
     XP_BASE = 18
     XP_LINEAR = 10
     XP_QUADRATICO = 3.4
-    MAX_ITENS = 4                # habilidades passivas
+    MAX_ITENS = 4                # itens passivos (as habilidades da classe não ocupam vaga)
     ALCANCE_COLETA_BASE = 90
     MULT_CRITICO = 2.0           # quanto o acerto crítico multiplica o dano
     GANHO_VELOCIDADE_POR_NIVEL = 0.01    # o aluno pega ritmo: +1% de velocidade por nível
@@ -64,7 +64,8 @@ class Jogador(SerVivo, ABC):
         self.animador = Animador(self._animacoes(), inicial="parado")
         self.nivel = 1
         self.experiencia = 0
-        self.passiva = self.criar_passiva()
+        self.habilidades = []                              # as que o aluno já pegou nas cartas
+        self.habilidades_da_classe = self.criar_habilidades()   # as três que as cartas podem oferecer
         self.recalcular_atributos()
         self.especial = self.criar_especial()
         self.especial.cargas_maximas = self.cargas_especial
@@ -75,8 +76,8 @@ class Jogador(SerVivo, ABC):
         """Arma com que este herói começa."""
 
     @abstractmethod
-    def criar_passiva(self):
-        """Passiva desta classe (cresce com o nível)."""
+    def criar_habilidades(self):
+        """As três habilidades desta classe (uma instância de cada), que as cartas de nível oferecem."""
 
     @abstractmethod
     def criar_especial(self):
@@ -103,14 +104,14 @@ class Jogador(SerVivo, ABC):
         self.cargas_especial = 1
         self.chance_carona = 0.0       # Cara da Carona: moeda extra de quem morre possuído
         self.mult_moedas = 1.0
+        self.capacidade_cafe = 100     # doses da garrafa da Virada de Noite (Cafeinado aumenta)
 
     def recalcular_atributos(self):
-        """Zera os modificadores e deixa a passiva, cada item e cada melhoria aplicarem o seu (polimorfismo)."""
+        """Zera os modificadores e deixa cada habilidade, item e melhoria aplicar o seu (polimorfismo)."""
         maxima_antes = self.vida_maxima
         self._redefinir_atributos()
-        self.passiva.aplicar(self)
-        for item in self.itens:
-            item.aplicar(self)
+        for reagente in self.reagentes:
+            reagente.aplicar(self)
         for melhoria in self.melhorias:
             melhoria.aplicar(self)
         self.vida_maxima = (self.VIDA + self.vida_maxima_extra) * self.mult_vida_maxima
@@ -121,7 +122,7 @@ class Jogador(SerVivo, ABC):
 
     def chance(self, base):
         """Chance `base` (0 a 1) já com a sorte do aluno: crítico, desvio, moedas, baús."""
-        return max(0.0, base * (1 + self.sorte))
+        return max(0.0, base * (1 + self.sorte) * self.multiplicador("sorte"))
 
     def receber_melhorias(self, melhorias):
         """Começa a partida com as melhorias permanentes da loja."""
@@ -172,6 +173,48 @@ class Jogador(SerVivo, ABC):
             self.remover_arma(arma, jogo)
         self.armas.append(receita())
 
+    @property
+    def reagentes(self):
+        """Itens e habilidades: os dois reagem à partida pelos mesmos ganchos (ReageAoJogo)."""
+        return self.itens + self.habilidades
+
+    def adicionar_habilidade(self, habilidade):
+        if habilidade in self.habilidades:
+            raise ValueError(f"{habilidade.NOME} já foi pega")
+        self.habilidades.append(habilidade)
+        self.recalcular_atributos()
+
+    def subir_nivel_habilidade(self, habilidade):
+        habilidade.subir_nivel()
+        self.recalcular_atributos()
+
+    def avisar_acerto(self, inimigo, jogo):
+        for reagente in self.reagentes:
+            reagente.ao_acertar(inimigo, self, jogo)
+
+    def avisar_critico(self, inimigo, jogo):
+        for reagente in self.reagentes:
+            reagente.ao_critico(inimigo, self, jogo)
+
+    def avisar_eliminacao(self, inimigo, jogo):
+        for reagente in self.reagentes:
+            reagente.ao_eliminar(inimigo, self, jogo)
+
+    def filtrar_dano(self, dano, jogo):
+        """O dano de um golpe depois de cada item e habilidade dizer o seu (0: o golpe não entrou)."""
+        for reagente in self.reagentes:
+            dano = reagente.ao_ser_atingido(dano, self, jogo)
+        return dano
+
+    def ao_subir_de_nivel(self, jogo):
+        """Subiu um nível na partida. Classes com algo que muda com o nível (os períodos do Calouro) sobrescrevem."""
+        for reagente in list(self.reagentes):
+            reagente.ao_subir_de_nivel(self, jogo)
+
+    def ao_pegar_cafe(self, jogo):
+        """Pegou um copo de café: quem decide o que ele faz é o especial."""
+        self.especial.ao_pegar_cafe(self, jogo)
+
     def adicionar_item(self, item):
         if len(self.itens) >= self.MAX_ITENS:
             raise ValueError("o herói já carrega o máximo de itens")
@@ -187,8 +230,8 @@ class Jogador(SerVivo, ABC):
         self.recalcular_atributos()
 
     def curar(self, quantidade):
-        """Recupera vida, já com o que faz a cura render mais (Garrafa Térmica)."""
-        super().curar(quantidade * self.mult_cura)
+        """Recupera vida, já com o que faz a cura render mais (Garrafa Térmica, CON da Ficha de Personagem)."""
+        super().curar(quantidade * self.mult_cura * self.multiplicador("cura"))
 
     @property
     def experiencia_necessaria(self):
@@ -221,23 +264,26 @@ class Jogador(SerVivo, ABC):
             self.nivel += 1
             ganhos += 1
         if ganhos:
-            self.recalcular_atributos()     # passivas crescem com o nível
+            self.recalcular_atributos()     # há habilidades que crescem com o nível do aluno (Cafeinado)
         return ganhos
 
     @property
     def pode_levar_dano(self):
         return self.invencivel <= 0 and not self.rolamento.protegido and self.esta_vivo and not self.imortal
 
-    def rolar(self):
+    def rolar(self, jogo=None):
         """Esquiva (Shift ou botão direito): rola na direção do movimento, invencível enquanto dura."""
         if not self.esta_vivo or not self.rolamento.iniciar(self.direcao_movimento):
             return False
         Recursos.tocar("rolar", 0.35)
+        if jogo is not None:
+            for reagente in self.reagentes:
+                reagente.ao_rolar(self, jogo)
         return True
 
     def receber_dano(self, quantidade):
         morreu = super().receber_dano(quantidade)
-        self.invencivel = INVENCIBILIDADE_APOS_DANO
+        self.invencivel = max(self.invencivel, INVENCIBILIDADE_APOS_DANO)
         self.careta = self.DURACAO_DA_CARETA
         return morreu
 
@@ -315,10 +361,11 @@ class Jogador(SerVivo, ABC):
         self.bonus = [b for b in self.bonus if b.ativo]
         self._atualizar_animacao(dt)
         self.especial.atualizar(dt, self.mult_recarga * self.mult_especial)
+        self.especial.agir(dt, self, jogo)
         for arma in list(self.armas):
             arma.atualizar(dt, jogo, self)
-        for item in list(self.itens):
-            item.atualizar(dt, self, jogo)
+        for reagente in list(self.reagentes):
+            reagente.atualizar(dt, self, jogo)
 
     def desenhar(self, tela, camera):
         imagem = self.animador.quadro_atual

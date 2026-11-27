@@ -4,6 +4,8 @@ from types import SimpleNamespace
 import pygame
 import pytest
 
+from jogo.efeitos import AuraSSJ
+
 from jogo.armas.caramelo import Caramelo
 from jogo.armas.cobra_python import CobraPython
 from jogo.itens.item import Item
@@ -24,7 +26,7 @@ class Turbo(Item):
 
 class JogoFalso:
     def __init__(self, direcao=(0, 0), mira=None):
-        self.entrada = SimpleNamespace(direcao=pygame.Vector2(direcao), mira=mira)
+        self.entrada = SimpleNamespace(direcao=pygame.Vector2(direcao), mira=mira, segurando_especial=False)
         self.arena = pygame.Rect(0, 0, 3200, 1800)
         self.rng = random.Random(1)      # o Programador sorteia se o disparo repete
         self.adicionados = []
@@ -131,7 +133,7 @@ def test_super_saiyajin_dobra_o_dano_e_cria_aura():
     assert j.usar_especial(jogo)
     assert j.tem_bonus("ssj")
     assert j.multiplicador_dano == pytest.approx(2.0)
-    assert len(jogo.adicionados) == 1
+    assert sum(isinstance(e, AuraSSJ) for e in jogo.adicionados) == 1
     assert not j.usar_especial(jogo)
 
 

@@ -23,7 +23,7 @@ import pygame  # noqa: E402
 
 import jogo as pacote  # noqa: E402
 
-RAIZES = ("Entidade", "Arma", "Item", "Fase", "Mapa", "Materia", "Passiva", "Especial", "Melhoria",
+RAIZES = ("Entidade", "Arma", "Item", "Fase", "Mapa", "Materia", "Habilidade", "Especial", "Melhoria",
           "JogoDeAposta", "Lanche", "Conquista", "Cena", "Mesa", "AcaoDoChefe")
 GANCHOS = ("mover", "ao_morrer", "desenhar_corpo", "atacar")
 TOTAL = 0          # classes do pacote jogo, contadas em carregar_classes

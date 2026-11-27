@@ -366,3 +366,56 @@ class QuadroBrancoNoChao(Ajudante):
             y = meio[1] - 18 + i * 18
             pygame.draw.line(sup, (60, 110, 200, int(120 * alfa)), (meio[0] - 30 + i * 6, y), (meio[0] + 26 - i * 4, y), 3)
         tela.blit(sup, sup.get_rect(center=(round(c.x), round(c.y))))
+
+
+class Veterano(Ajudante):
+    """O veterano da habilidade Veterano Camarada: anda atrás do aluno e usa uma cópia da arma inicial dele, com
+    uma fração da força. Para a arma, ele é o "dono": tem posição, mira e multiplicadores, como o aluno."""
+
+    ALTURA = 56
+    ATRAS = 70                   # a que distância ele segue o aluno
+
+    def __init__(self, aluno, arma):
+        super().__init__(aluno.posicao - (self.ATRAS, 0), 20)
+        self.aluno = aluno
+        self.arma = arma
+        self.forca = 0.5
+        self.direcao_mira = pygame.Vector2(1, 0)
+        self.olhando_esquerda = False
+        self.tempo = 0.0
+        self.animador = self.criar_animador(aluno.PASTA_SPRITE, aluno.IMAGEM, self.ALTURA)
+
+    # o que as armas leem do dono
+    @property
+    def multiplicador_dano(self):
+        return self.aluno.multiplicador_dano * self.forca
+
+    @property
+    def multiplicador_recarga(self):
+        return self.aluno.multiplicador_recarga
+
+    @property
+    def chance_repeticao(self):
+        return self.aluno.chance_repeticao
+
+    def chance(self, base):
+        return self.aluno.chance(base)
+
+    def atualizar(self, dt, jogo):
+        self.tempo += dt
+        self.animador.atualizar(dt)
+        falta = self.aluno.posicao - self.posicao
+        if falta.length() > self.ATRAS:
+            self.posicao += falta.normalize() * min(falta.length() - self.ATRAS, self.aluno.velocidade * dt)
+        alvo = jogo.inimigo_mais_proximo(self.posicao, 700)
+        if alvo is not None and alvo.posicao != self.posicao:
+            self.direcao_mira = (alvo.posicao - self.posicao).normalize()
+            self.olhando_esquerda = self.direcao_mira.x < 0
+        inicial = next((a for a in self.aluno.armas if type(a) is type(self.arma)), None)
+        if inicial is not None and inicial.nivel != self.arma.nivel:     # acompanha o nível da arma do aluno
+            self.arma.nivel = inicial.nivel
+        self.arma.atualizar(dt, jogo, self)
+
+    def desenhar(self, tela, camera):
+        desenhar_sprite(tela, camera, self.animador.quadro_atual, self.posicao, espelhar=self.olhando_esquerda,
+                        alfa=200)

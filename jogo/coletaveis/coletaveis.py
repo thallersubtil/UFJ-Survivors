@@ -1,4 +1,4 @@
-"""Coisas que o herói pega no chão: notas (experiência), ímã, poção, moedas e baú."""
+"""Coisas que o herói pega no chão: notas (experiência), ímã, café, poção, moedas e baú."""
 import math
 from abc import ABC, abstractmethod
 
@@ -31,7 +31,7 @@ class Coletavel(Entidade, ABC):
         self.animador.atualizar(dt)
         jogador = jogo.jogador
         if self.MAGNETICO and not self.atraido and \
-                self.posicao.distance_to(jogador.posicao) <= jogador.alcance_coleta:
+                self.posicao.distance_to(jogador.posicao) <= jogador.alcance_coleta * jogador.multiplicador("coleta"):
             self.atraido = True
         if self.atraido:
             falta = jogador.posicao - self.posicao
@@ -89,6 +89,18 @@ class Ima(Coletavel):
         jogo.puxar_experiencia()
         jogo.adicionar(TextoFlutuante("ÍMÃ!", self.posicao, Cor.DESTAQUE, 20))
         Recursos.tocar("coleta", 0.5)
+
+
+class CopoDeCafe(Coletavel):
+    """Café caído: para o Programador, mais doses na garrafa da Virada de Noite; para os outros, adianta o
+    especial (cada especial decide em `ao_pegar_cafe`)."""
+    IMAGEM = "sprites/cafe.png"
+    ALTURA = 30
+
+    def ao_coletar(self, jogo):
+        jogo.jogador.ao_pegar_cafe(jogo)
+        jogo.adicionar(TextoFlutuante("CAFÉ!", self.posicao, Cor.CAFE, 18))
+        Recursos.tocar("coleta", 0.4)
 
 
 class PocaoDeVida(Coletavel):

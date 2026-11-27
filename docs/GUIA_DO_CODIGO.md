@@ -42,10 +42,9 @@ Regras centrais também ficam no `Jogo`: `causar_dano` (dano em inimigo, número
 ```
 Entidade (abstrata: atualizar, desenhar)            jogo/nucleo/entidade.py
 ├─ SerVivo (abstrata: vida com @property)           jogo/nucleo/ser_vivo.py
-│  ├─ Jogador (abstrata: criar_arma_inicial, criar_passiva, criar_especial)   jogo/jogador/classes.py
-│  │  ├─ Otaku           130 de vida, lento, Caramelo + Instinto Otaku (crítico por nível) + Super Saiyajin
-│  │  ├─ Programador      80 de vida, rápido, Cobra Python + Laço de Repetição + Tela Azul
-│  │  └─ MestreDeRPG     100 de vida, Gemini + Rolagem de Iniciativa + Zoltraak
+│  ├─ Jogador (abstrata: criar_arma_inicial, criar_habilidades, criar_especial)   jogo/jogador/classes.py
+│  │  └─ as 7 classes (Otaku, Programador, MestreDeRPG, Monitor, Gamer, Calouro, CaraDaCarona): arma inicial +
+│  │     3 habilidades nas cartas + especial (o do Programador, a ViradaDeNoite, contém a GarrafaDeCafe)
 │  └─ Inimigo (abstrata: mover)                     jogo/inimigos/inimigo.py
 │     ├─ Bug, CalculadoraBrava, MouseDeBolinha, Caixinha (-> CaixinhaPequena),
 │     │  PiCambaleante, Ponteiro, PilhaAA, PenteDeRAM      (um arquivo cada)
@@ -98,7 +97,7 @@ FabricaDeInimigos, Colisao, Camera, GradeEspacial, Recursos, Animacao, Animador
 
 - `Jogo` contém `Jogador`, as três `Fase` (provas) e a atual, `Placar`, `Mapa`, `Camera`, `GradeEspacial` e a lista de entidades.
 - `ChefePossuido` contém suas `Materia`: o chefe não **é** Cálculo; ele **está possuído** por Cálculo. Por isso composição: o mesmo professor troca de matéria no meio da luta, o que herança não permitiria.
-- `Jogador` contém uma lista de `Arma` (até 4), uma lista de `Item` (até 4), uma `Passiva`, um `Especial`, bônus temporários e um `Animador`.
+- `Jogador` contém uma lista de `Arma` (até 4), uma lista de `Item` (até 4), as `Habilidade` que pegou (até 3, da classe), um `Especial`, bônus temporários e um `Animador`. A `ViradaDeNoite` (especial do Programador) contém a `GarrafaDeCafe`.
 - `Animador` contém várias `Animacao` (parado, andar), e cada `Animacao` contém os quadros.
 
 Por que composição e não herança entre `Jogador` e `Arma`: o jogador **tem** armas, não **é** uma arma; ele ganha, troca e funde armas durante a partida, o que herança não permitiria.
@@ -110,11 +109,11 @@ Por que composição e não herança entre `Jogador` e `Arma`: o jogador **tem**
 | Classe abstrata | `Entidade` (`atualizar`, `desenhar` com `@abstractmethod`) | Não existe "uma entidade" genérica na tela; ela só define o contrato que o laço do `Jogo` usa. |
 | Herança (3+ inimigos) | `Inimigo` e 8 lacaios + `Chefe` > `ChefePossuido` > 3 chefes | O que é comum (vida, perseguir, soltar nota, animação) está em `Inimigo`; cada lacaio só sobrescreve `mover` e às vezes `ao_morrer`. |
 | Polimorfismo | `Jogo.atualizar`, laço `for e in self.entidades` | O mesmo `e.atualizar()` faz o Bug correr, o Ponteiro mergulhar e a nota ser atraída. |
-| Encapsulamento | `SerVivo.vida`, `Placar.pontos`, `ArmaDeDisparo.espera` | O atributo real é `_vida`; o setter impede vida negativa ou acima do máximo. Na arma, `_espera` são os segundos até o próximo disparo: o setter recusa o que não é número (`TypeError`) e valor negativo (`ValueError`), e é por ele que `atualizar` desconta o tempo. A munição (`municao`) saiu do jogo em 26/11 e a `espera` entrou no lugar dela como exemplo. |
+| Encapsulamento | `SerVivo.vida`, `Placar.pontos`, `GarrafaDeCafe.municao` | O atributo real é `_vida`; o setter impede vida negativa ou acima do máximo. A munição são as doses de café da garrafa do Programador: o setter só aceita número inteiro (`TypeError`) entre 0 e a capacidade (`ValueError`), e é por `gastar()` que cada tiro da Virada de Noite desconta uma dose. |
 | Composição | ver seção 5 | |
 | Métodos especiais | `RegistroRanking.__lt__`, `__eq__`, `__str__` | `__lt__` é o que deixa `sorted()` ordenar o ranking. |
 | `@classmethod` | `FabricaDeInimigos.registrar/criar` | A fábrica guarda um registro na própria classe; inimigo novo se registra com um decorador. |
-| Polimorfismo (2) | `Passiva.aplicar` | O `Jogador` chama `passiva.aplicar(self)` sem saber qual é a classe, do mesmo jeito que faz com os itens. |
+| Polimorfismo (2) | `ReageAoJogo` (itens e habilidades) | O `Jogador` chama `aplicar`, `ao_acertar`, `ao_eliminar`, `ao_ser_atingido` e os outros ganchos em itens e habilidades juntos (`reagentes`), sem saber qual é qual; cada classe sobrescreve só os que usa. |
 | `@staticmethod` | `Colisao.circulos_colidem` | Função pura de geometria; não precisa de instância. |
 
 Durante o escudo ou a troca de matéria o chefe fica `invulneravel` (propriedade que todo `Inimigo` tem, falsa por padrão): `Jogo.causar_dano` não mostra dano e o chefe não fere por contato. `ChefePossuido` é abstrata de verdade: `MATERIAS` é uma propriedade abstrata que cada chefe preenche com uma constante.
@@ -147,10 +146,11 @@ Uma fase só, `Semestre(Fase)`, com a linha do tempo inteira. O calendário (`CA
 
 ## 8. Sistemas de jogo
 
-- **Armas sem munição**: `ArmaDeDisparo` atira sempre que a `espera` zera e volta a esperar a recarga da arma; não há café nem nada para acabar. O que existia em volta do café foi trocado: a Garrafa Térmica faz toda cura render mais, o lanche virou Caldo de Cana e o Programador ganhou o Laço de Repetição (chance de o disparo repetir) e a Tela Azul (trava os inimigos da tela).
-- **Experiência e cartas**: notas dão experiência; `Progressao` (`jogo/progressao.py`) sorteia 3 cartas (arma nova, melhoria, item). R sorteia de novo, P pula. Com tudo no nível máximo, as cartas viram duas: recuperar 30% da vida ou ganhar 50 moedas.
+- **Armas e munição**: `ArmaDeDisparo` atira sempre que a `espera` zera e volta a esperar a recarga da arma. A munição do jogo é do Programador: a Virada de Noite enche a `GarrafaDeCafe` e, segurando Espaço, cada dose é um tiro de código; os copos de café que os inimigos soltam (`CopoDeCafe`) chamam `Jogador.ao_pegar_cafe`, e o especial decide: a Virada põe 10 doses na garrafa, os outros adiantam a recarga.
+- **Habilidades**: cada classe tem três (`criar_habilidades`), que aparecem nas cartas de nível (nova ou próximo nível, até 3). Uma habilidade soma um efeito fixo em `aplicar` e reage à partida pelos ganchos de `ReageAoJogo`, os mesmos dos itens: o `Jogo` avisa o `Jogador` (acerto, crítico, eliminação, golpe, rolamento, nível) e ele repassa a itens e habilidades.
+- **Experiência e cartas**: notas dão experiência; `Progressao` (`jogo/progressao.py`) sorteia 3 cartas (arma nova, item, habilidade ou melhoria). R sorteia de novo, P pula. Com tudo no nível máximo, as cartas viram duas: recuperar 30% da vida ou ganhar 50 moedas.
 - **Ímã**: cada inimigo comum tem 0,15% de chance de soltar um `Ima`; quem pega chama `Jogo.puxar_experiencia()`, que manda todo coletável `puxar_experiencia()`. Só a `Nota` sobrescreve o método (voa até o aluno); os outros herdam o que não faz nada, então não há `isinstance`. A Revisão para Prova do Monitor usa o mesmo caminho.
-- **Cura**: os inimigos não soltam mais poção. Ela vem (1) dos objetos quebráveis e (2) do item Kit de Primeiros Socorros, que a cada 30, 24, 18 ou 12 s (conforme o nível) faz o próximo eliminado soltar uma poção, pelo gancho `Item.ao_eliminar`, chamado em `Jogo._contar_eliminacao`.
+- **Cura**: os inimigos não soltam mais poção. Ela vem (1) dos objetos quebráveis e (2) do item Kit de Primeiros Socorros, que a cada 30, 24, 18 ou 12 s (conforme o nível) faz o próximo eliminado soltar uma poção, pelo gancho `ao_eliminar`, que `Jogo._contar_eliminacao` repassa pelo `Jogador.avisar_eliminacao`.
 - **Objetos quebráveis** (`jogo/inimigos/quebraveis.py`): `CaixaDePapelao`, `Lixeira` e `VasoDePlanta` herdam de `ObjetoQuebravel`, que herda de `Inimigo` para toda arma já saber acertá-los, e sobrescreve `mover` (não anda), `tocar_jogador` (não fere), `empurrar`, `possuir`, `assustar` e `ao_morrer` (solta poção ou moedas). Ficam no grupo `quebravel`, fora da lista de inimigos: não pesam no alvo da fase, e `CONTA_NO_PLACAR = False` os deixa fora das eliminações e do combo. O `Jogo` espalha 80 pelo campus uma vez só, no começo (`_espalhar_quebraveis`): em pontos sorteados, fora dos prédios, a pelo menos 320 de distância uns dos outros e 900 de onde o aluno começa. Sem semente, cada partida tem um arranjo diferente; quebrado, o objeto não volta.
 - **Mini-chefe misterioso**: `LocalDeInvocacao.NOME` e `rosto` são propriedades: enquanto o mini-chefe não foi invocado em partida nenhuma, devolvem "Mini-boss misterioso" e um rosto com "?", e o círculo fica lilás. Invocar chama `Jogo.conhecer_mini_chefe`, a `CenaPartida` grava a CHAVE no `Progresso` na hora, e as próximas partidas recebem os conhecidos pelas `OpcoesDePartida`. A marcação no mini-mapa (`Jogo.marcados`) guarda a CHAVE, não o nome, porque vários misteriosos têm o mesmo nome na tela.
 - **Colabs**: duas armas no nível máximo viram uma terceira.

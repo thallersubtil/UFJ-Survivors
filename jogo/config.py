@@ -42,6 +42,7 @@ class Cor:
     TEXTO_FRACO = (168, 160, 190)
     VIDA = (226, 64, 74)
     EXPERIENCIA = (96, 196, 255)
+    CAFE = (176, 112, 64)
     DESTAQUE = (255, 214, 92)
     DANO = (255, 255, 255)
     DANO_FORTE = (255, 214, 92)

@@ -51,6 +51,7 @@ class Hud:
         self._heroi(ui, jogo)
         self._vagas(ui, jogo)
         self._tempo_e_placar(ui, jogo)
+        self._contadores(ui, jogo)
         self._chefe(ui, jogo)
         self._anuncios(ui, jogo)
         self.camada.apresentar(tela)
@@ -155,9 +156,34 @@ class Hud:
         if especial.cargas_maximas > 1:               # Pendrive: cargas guardadas
             rotulo += f"  x{especial.cargas}"
         texto(ui, rotulo, (58, 44), P.OURO if pronto else P.CINZA, 11)
+        self._medidor_extra(ui, especial)
         # rolamento: tracinho embaixo do retrato
         rolamento = j.rolamento
         barra(ui, (6, 64 - 2, 46, 4), rolamento.progresso, P.VERDE if rolamento.pronto else P.CINZA)
+
+    LIMITE_DO_MEDIDOR = 0.2           # abaixo disto o medidor extra pisca (garrafa quase vazia)
+
+    def _medidor_extra(self, ui, especial):
+        """O medidor que o especial pede (o café da Virada de Noite), logo abaixo da barra do especial."""
+        medidor = especial.medidor_extra
+        if medidor is None:
+            return
+        valor, maximo, cor = medidor
+        fracao = valor / maximo if maximo else 0.0
+        if fracao < self.LIMITE_DO_MEDIDOR and int(self.tempo * 6) % 2:
+            cor = P.VERM
+        x = 58 + fonte(11).size("ESPECIAL PRONTO! (ESPAÇO)")[0] + 8
+        barra(ui, (x, 46, 60, 6), fracao, cor, cor)
+        texto(ui, f"{valor}/{maximo}", (x + 64, 42), P.BRANCO, 11)
+
+    def _contadores(self, ui, jogo):
+        """Contadores das habilidades que têm um (COMBO 23/50, LINHAS 120), à direita, embaixo dos do placar."""
+        y = 60
+        for habilidade in jogo.jogador.habilidades:
+            contador = habilidade.contador
+            if contador is not None:
+                texto(ui, contador, (L - 6, y), P.OURO, 11, ancora="topright")
+                y += 12
 
     def _vaga(self, ui, x, y, coisa, tam=22):
         no_maximo = coisa is not None and coisa.no_maximo

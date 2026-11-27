@@ -56,3 +56,22 @@ class Especial(ABC):
     @abstractmethod
     def ativar(self, dono, jogo):
         """Efeito do especial."""
+
+    def agir(self, dt, dono, jogo):
+        """Chamado a cada quadro. Só especiais que duram (a Virada de Noite, que atira enquanto há café) usam."""
+
+    def adiantar(self, fracao):
+        """Adianta a recarga em `fracao` da RECARGA (o café caído dá um empurrão no especial)."""
+        if self.restante > 0:
+            self.restante = max(0.0, self.restante - self.RECARGA * fracao)
+
+    CARGA_DO_CAFE = 0.03          # quanto um copo de café adianta a recarga
+
+    def ao_pegar_cafe(self, dono, jogo):
+        """O aluno pegou um copo de café. Por padrão adianta a recarga; a Virada de Noite enche a garrafa."""
+        self.adiantar(self.CARGA_DO_CAFE)
+
+    @property
+    def medidor_extra(self):
+        """Um medidor a mais no HUD, como (valor, máximo, cor), ou None. Só a Virada de Noite tem (o café)."""
+        return None

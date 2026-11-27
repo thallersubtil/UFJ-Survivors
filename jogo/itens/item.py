@@ -1,8 +1,10 @@
 """Base dos itens passivos."""
 from abc import ABC, abstractmethod
 
+from jogo.jogador.reacao import ReageAoJogo
 
-class Item(ABC):
+
+class Item(ReageAoJogo, ABC):
     NOME = "Item"
     DESCRICAO = ""
     ICONE = ""
@@ -41,15 +43,6 @@ class Item(ABC):
 
     def descricao_proxima(self):
         return "" if self.no_maximo else self.MELHORIAS[self._nivel - 1]
-
-    def atualizar(self, dt, jogador, jogo):
-        """Chamado a cada quadro. Só itens com efeito ativo (ex.: Convite da Atlética) usam."""
-
-    def ao_eliminar(self, inimigo, jogador, jogo):
-        """Chamado a cada inimigo que o herói elimina. Só itens que reagem a isso (Kit de Primeiros Socorros) usam."""
-
-    def ao_subir_de_nivel(self, jogador, jogo):
-        """Chamado a cada nível que o herói sobe. A maioria dos itens não faz nada."""
 
     @abstractmethod
     def aplicar(self, jogador):

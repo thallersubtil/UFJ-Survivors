@@ -1,4 +1,4 @@
-"""Classes de personagem: cada uma com arma inicial (ativa), passiva e especial próprios."""
+"""Classes de personagem: cada uma com arma inicial (ativa), três habilidades e especial próprios."""
 import random
 
 import pytest
@@ -8,49 +8,48 @@ from jogo.armas.cobra_python import CobraPython
 from jogo.armas.gemini import Gemini
 from jogo.inimigos.bug import Bug
 from jogo.jogador.classes import CLASSES, MestreDeRPG, Otaku, Programador
-from jogo.jogador.especiais import SuperSaiyajin, TelaAzul, Zoltraak
-from jogo.jogador.passiva import Passiva
-from jogo.jogador.passivas import InstintoOtaku, LacoDeRepeticao, RolagemDeIniciativa
+from jogo.jogador.especiais import SuperSaiyajin, ViradaDeNoite, Zoltraak
+from jogo.jogador.habilidade import Habilidade
+from jogo.jogador.habilidades import (ArmaduraDeRoteiro, Cafeinado, Compilar, FichaDePersonagem, InstintoOtaku,
+                                      LacoDeRepeticao, PoderDaAmizade, RolagemDeIniciativa, TesteDeResistencia)
 
 
-def subir_ate(jogador, nivel):
-    while jogador.nivel < nivel:
-        jogador.ganhar_experiencia(jogador.experiencia_necessaria - jogador.experiencia)
-
-
-def test_passiva_e_abstrata():
+def test_habilidade_e_abstrata():
     with pytest.raises(TypeError):
-        Passiva()
+        Habilidade()
 
 
-@pytest.mark.parametrize("classe, arma, passiva, especial", [
-    (Otaku, Caramelo, InstintoOtaku, SuperSaiyajin),
-    (Programador, CobraPython, LacoDeRepeticao, TelaAzul),
-    (MestreDeRPG, Gemini, RolagemDeIniciativa, Zoltraak),
+@pytest.mark.parametrize("classe, arma, habilidades, especial", [
+    (Otaku, Caramelo, (InstintoOtaku, ArmaduraDeRoteiro, PoderDaAmizade), SuperSaiyajin),
+    (Programador, CobraPython, (LacoDeRepeticao, Cafeinado, Compilar), ViradaDeNoite),
+    (MestreDeRPG, Gemini, (RolagemDeIniciativa, FichaDePersonagem, TesteDeResistencia), Zoltraak),
 ])
-def test_cada_classe_tem_ativa_passiva_e_especial_proprios(classe, arma, passiva, especial):
+def test_cada_classe_tem_ativa_habilidades_e_especial_proprios(classe, arma, habilidades, especial):
     j = classe((0, 0))
     assert [type(a) for a in j.armas] == [arma]
-    assert isinstance(j.passiva, passiva)
+    assert tuple(type(h) for h in j.habilidades_da_classe) == habilidades
+    assert j.habilidades == []                      # começa sem nenhuma: elas vêm nas cartas
     assert isinstance(j.especial, especial)
     assert classe in CLASSES
 
 
-def test_classes_tem_nome_e_descricao():
+def test_classes_tem_nome_descricao_e_tres_habilidades():
     for classe in CLASSES:
         j = classe((0, 0))
         assert classe.NOME and classe.DESCRICAO
-        assert j.passiva.NOME and j.passiva.DESCRICAO
+        assert len(j.habilidades_da_classe) == 3
+        for h in j.habilidades_da_classe:
+            assert h.NOME and h.DESCRICAO and h.ICONE and len(h.MELHORIAS) == h.NIVEL_MAXIMO - 1
 
 
-def test_otaku_ganha_chance_de_critico_a_cada_nivel():
+def test_instinto_otaku_da_critico_e_cresce_com_a_carta():
     j = Otaku((0, 0))
-    inicial = j.chance_critico
-    assert inicial > 0
-    subir_ate(j, 10)
-    assert j.chance_critico > inicial
-    subir_ate(j, 200)
-    assert j.chance_critico == pytest.approx(InstintoOtaku.MAXIMO)
+    assert j.chance_critico == 0
+    instinto = j.habilidades_da_classe[0]
+    j.adicionar_habilidade(instinto)
+    primeiro = j.chance_critico
+    j.subir_nivel_habilidade(instinto)
+    assert j.chance_critico > primeiro > 0
 
 
 def test_outras_classes_nao_tem_critico():
@@ -58,19 +57,18 @@ def test_outras_classes_nao_tem_critico():
     assert MestreDeRPG((0, 0)).chance_critico == 0
 
 
-def test_programador_repete_mais_disparos_conforme_sobe_de_nivel():
+def test_laco_de_repeticao_repete_disparos():
     j = Programador((0, 0))
-    antes = j.chance_repeticao
-    subir_ate(j, 11)
-    assert j.chance_repeticao > antes > 0
-    assert j.mult_recarga == 1.0            # a passiva antiga (recarga e café) não existe mais
+    assert j.chance_repeticao == 0
+    j.adicionar_habilidade(j.habilidades_da_classe[0])
+    assert j.chance_repeticao > 0
 
 
-def test_mestre_de_rpg_recarrega_o_especial_mais_rapido():
+def test_rolagem_de_iniciativa_recarrega_o_especial_mais_rapido():
     j = MestreDeRPG((0, 0))
-    j.especial.restante = j.especial.RECARGA
-    subir_ate(j, 20)
+    j.adicionar_habilidade(j.habilidades_da_classe[0])
     assert j.mult_especial < 1
+    j.especial.restante = j.especial.RECARGA
     restante = j.especial.restante
     j.especial.atualizar(1.0, j.mult_recarga * j.mult_especial)
     assert restante - j.especial.restante > 1.0
@@ -97,11 +95,11 @@ def test_sem_chance_de_critico_o_dano_e_o_normal(jogo_limpo):
     assert 9 <= vida - bug.vida <= 11            # variação de ±10%, sem crítico
 
 
-def test_especial_do_programador_gasta_a_carga_e_nao_mexe_na_recarga_das_armas(jogo_limpo):
-    """A Virada de Noite (café cheio e armas mais rápidas) saiu; o efeito da Tela Azul está em test_sem_municao."""
+def test_especial_do_programador_enche_a_garrafa_e_nao_mexe_na_recarga_das_armas(jogo_limpo):
     jogo = jogo_limpo(Programador)
     j = jogo.jogador
     assert j.usar_especial(jogo)
+    assert j.especial.garrafa.municao == j.especial.garrafa.capacidade
     assert not j.especial.pronto
     assert j.multiplicador_recarga == j.mult_recarga
 

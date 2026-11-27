@@ -232,7 +232,7 @@ class CenaMatricula(Cena):
         tela.set_clip(None)
 
     def _dados(self, ui, r, heroi):
-        """Ficha da classe no monitor: nome, descrição, barras e os três blocos (arma, passiva, especial)."""
+        """Ficha da classe no monitor: nome, descrição, barras e os três blocos (arma, habilidades, especial)."""
         fraco = (176, 190, 226)
         texto(ui, heroi.NOME.upper(), (r.x, r.y - 2), P.OURO, 23)
         texto(ui, heroi.DESCRICAO, (r.x, r.y + 22), fraco, 11, contorno=None, media=True)
@@ -243,8 +243,11 @@ class CenaMatricula(Cena):
             texto(ui, nome, (r.x, y), fraco, 11, contorno=None, media=True)
             barra(ui, (r.x + 66, y + 2, r.w - 100, 8), valor / maximo, cor)
             texto(ui, str(round(valor)), (r.right, y), P.BRANCO, 11, contorno=None, ancora="topright")
-        arma, passiva, especial = heroi.armas[0], heroi.passiva, heroi.especial
-        blocos = (("ARMA", arma.NOME, arma.DESCRICAO, arma.ICONE), ("PASSIVA", passiva.NOME, passiva.DESCRICAO, None),
+        arma, especial = heroi.armas[0], heroi.especial
+        habilidades = heroi.habilidades_da_classe
+        blocos = (("ARMA", arma.NOME, arma.DESCRICAO, arma.ICONE),
+                  ("HABILIDADES", "", ", ".join(h.NOME for h in habilidades) + " (nas cartas de nível)",
+                   habilidades[0].ICONE),
                   ("ESPECIAL", especial.NOME, especial.DESCRICAO, especial.ICONE))
         for i, (tipo, nome, descricao, ic) in enumerate(blocos):
             y = r.y + 68 + i * 36

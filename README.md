@@ -95,15 +95,17 @@ No menu principal. As moedas pegas nas provas (mais um bônus por prova aprovada
 **Conquistas** (botão CONQUISTAS): 10 metas que pagam moedas uma vez só, conferidas no fim de cada partida: passar em Cálculo, semestre aprovado, combo 67, mil eliminações, nível 40, fazer uma colab, ser pego colando, chegar ao fim de uma greve, afiar a mesma arma 3 vezes e jogar com todas as classes.
 ## Classes
 
-| Classe | Ativa (arma inicial) | Passiva | Especial |
+| Classe | Arma inicial | Habilidades (nas cartas de nível, 3 níveis cada) | Especial |
 |---|---|---|---|
-| Otaku | Caramelo | Instinto Otaku: chance de crítico (dano em dobro) que cresce a cada nível | Super Saiyajin |
-| Programador | Cobra Python | Laço de Repetição: cada disparo tem 6% de chance de repetir na hora, e mais 1,6% por nível (até 35%) | Tela Azul: os inimigos da tela travam por 4 s e os projéteis deles somem (chefes e mini-chefes não travam) |
-| Mestre de RPG | Gemini | Rolagem de Iniciativa: o especial recarrega 2% mais rápido por nível | Zoltraak |
-| Monitor | Quadro Branco: área no chão que atrasa e fere | Plantão de Dúvidas: regenera vida e puxa notas de mais longe, crescendo por nível | Revisão para Prova: puxa todas as notas e cura 30% |
-| Gamer | Controle: ricocheteia entre inimigos | Reflexo: rolamento recarrega mais rápido, crescendo por nível | Speedrun: 6 s de velocidade alta e invencibilidade |
-| Calouro | Apostila | Sede de Aprender: +10% de experiência e +1% por nível | Trote Reverso: inimigos em volta levam dano e fogem por 5 s |
-| Cara da Carona | Fusca Azul | Carona Solidária: quem morre possuído pode deixar moeda | Lotação: 4 fuscas cruzam a tela |
+| Otaku | Caramelo | **Instinto Otaku**: 8% de chance de acerto crítico (dano em dobro).; **Armadura de Roteiro**: O golpe que te derrubaria deixa 1 de vida e 2 s de invencibilidade. Volta em 90 s.; **Poder da Amizade**: +5% de dano por amigo em campo (Caramelo, Fusca, mascotes, possuídos), até +50%. | **Super Saiyajin**: Cabelo dourado: dano em dobro e mais velocidade. A cada uso sobe de nível (SSJ2, SSJ3). |
+| Programador | Cobra Python | **Laço de Repetição**: Cada disparo tem 10% de chance de repetir na hora.; **Cafeinado**: Armas recarregam 1,6% mais rápido por nível do aluno; a garrafa da Virada leva +20 doses.; **Compilar**: Andando, acumula linhas de código; parado 1 s, compila: um pulso com o dano acumulado. | **Virada de Noite**: Enche a garrafa com 100 doses de café; segurando Espaço, cada dose é um tiro de código na mira. |
+| Mestre de RPG | Gemini | **Rolagem de Iniciativa**: O especial recarrega 15% mais rápido.; **Ficha de Personagem**: A cada 15 s, +30% num atributo sorteado por 15 s (FOR, DES, CON, INT, SAB ou CAR).; **Teste de Resistência**: Ao levar um golpe, rola um d20: com 18 ou mais, o golpe não entra. | **Zoltraak**: Um raio mágico enorme na direção da mira, que atravessa tudo. O dano é rolado em 8d6. |
+| Monitor | Quadro Branco | **Plantão de Dúvidas**: Recupera 0,4 de vida por segundo e puxa as notas 20% mais de longe.; **Caneta Vermelha**: 10% de chance de marcar o inimigo com um X: ele leva 25% a mais de dano e pode curar ao morrer.; **Horário de Atendimento**: Parado por 1 s: os inimigos em volta ficam 20% mais lentos e você cura 2% da vida a cada 2 s. | **Revisão para Prova**: Puxa todas as notas do campus, recupera 30% da vida e abre por 10 s uma zona onde nada te fere. |
+| Gamer | Controle | **Reflexo**: O rolamento recarrega 15% mais rápido.; **Frame Perfect**: Rolar no último instante antes de um golpe: câmera lenta por 1 s e +30% de dano por 8 s.; **Combo**: 50 acertos sem levar dano: +20% de velocidade e 20% de chance de golpe duplo por 10 s. | **Tela Azul**: O jogo dos inimigos trava: os da tela ficam parados por 4 s e os projéteis deles somem. |
+| Calouro | Apostila | **Sede de Aprender**: +15% de experiência.; **Veterano Camarada**: Um veterano anda com você e usa a sua arma inicial com 50% da força.; **Perdido no Campus**: +3% de velocidade por inimigo perto (até +80%) e +25% de experiência de quem morre perto. | **Calourada**: Festa! 40% dos inimigos em volta viram seus aliados por 8 s; os outros batem 30% mais fraco. |
+| Cara da Carona | Fusca Azul | **Carona Solidária**: Inimigo que morre possuído (atropelado) tem 12% de chance de deixar uma moeda.; **Buzina**: A cada 10 s, uma buzinada em volta: dano (mais forte no centro) e atordoa por um instante.; **Carro Lotado**: +3% de dano por passageiro (inimigo possuído) em campo, até +60%. | **Lotação**: Quatro fuscas lotados cruzam a tela atropelando e possuindo inimigos. |
+
+O aluno começa sem nenhuma habilidade: elas aparecem nas cartas de nível junto com armas e itens. O Programador é quem tem a munição do jogo: a Virada de Noite enche a garrafa de café e, segurando Espaço, cada dose é um tiro; os copos de café que os inimigos soltam enchem a garrafa (para as outras classes, adiantam o especial). O Super Saiyajin sobe de nível a cada uso; o Calouro avança de período a cada 10 níveis.
 
 As quatro últimas ainda usam a arte do Programador ou do Otaku (provisória). Na tela de escolha, as classes aparecem num carrossel.
 
@@ -147,8 +149,8 @@ Para simular uma partida inteira sem janela (útil para balancear):
 | Classe abstrata com `atualizar()` e `desenhar()` | `jogo/nucleo/entidade.py` | `Entidade` |
 | 3+ inimigos herdando de uma base | `jogo/inimigos/` | `Inimigo` e `Bug`, `CalculadoraBrava`, `MouseDeBolinha`, `Caixinha`, `PiCambaleante`, `Ponteiro`, `PilhaAA`, `PenteDeRAM`; chefes: `Chefe` > `ChefePossuido` > `ProfessorDeCalculo`, `ProfessorDeArquiteturaEED`, `ProfessoraDeTDEPOO`; matérias: `Materia` > `CalculoI`, `CalculoII`, `ArquiteturaDeComputadores`, `EstruturaDeDadosEmC`, `TransformacaoDigital`, `ProgramacaoOrientadaAObjetos` |
 | Polimorfismo num único laço, sem `if` por tipo | `jogo/jogo.py` | `Jogo.atualizar()` |
-| Encapsulamento com `@property` e validação | `jogo/nucleo/ser_vivo.py`, `jogo/placar.py`, `jogo/armas/arma.py` | `SerVivo.vida`, `Placar.pontos`, `ArmaDeDisparo.espera` (segundos até o próximo disparo) |
-| Composição | `jogo/jogo.py`, `jogo/jogador/jogador.py` | `Jogo` contém `Jogador`, `Fase` (o `Semestre`, com o calendário das três provas), `Placar`; `Jogador` contém `Arma`, `Item`, `Passiva`, `Especial`; `ChefePossuido` contém suas `Materia` |
+| Encapsulamento com `@property` e validação | `jogo/nucleo/ser_vivo.py`, `jogo/placar.py`, `jogo/jogador/garrafa_de_cafe.py` | `SerVivo.vida`, `Placar.pontos`, `GarrafaDeCafe.municao` (as doses de café da Virada de Noite) |
+| Composição | `jogo/jogo.py`, `jogo/jogador/jogador.py` | `Jogo` contém `Jogador`, `Fase` (o `Semestre`, com o calendário das três provas), `Placar`; `Jogador` contém `Arma`, `Item`, `Habilidade`, `Especial` (a `ViradaDeNoite` contém a `GarrafaDeCafe`); `ChefePossuido` contém suas `Materia` |
 | Métodos especiais | `jogo/ranking.py` | `RegistroRanking.__lt__`, `__eq__`, `__str__` |
 | `@classmethod` e `@staticmethod` | `jogo/inimigos/fabrica.py`, `jogo/nucleo/colisao.py` | `FabricaDeInimigos.criar()`, `Colisao.circulos_colidem()` |
 
@@ -164,7 +166,7 @@ Entregas: [etapa 1, proposta](docs/entregas/etapa1_proposta.md); etapa 2, protó
 main.py            ponto de entrada
 jogo/
   nucleo/          Entidade, SerVivo, Colisao, Animacao/Animador, câmera, grade espacial, arte e som
-  jogador/         Jogador, as classes e suas passivas, especiais, bônus temporários
+  jogador/         Jogador, as classes, Habilidade e as 21 habilidades, especiais, a Garrafa de Café, bônus temporários
   inimigos/        Inimigo, fábrica, um arquivo por inimigo, Chefe, ChefePossuido e os três chefes
     materias/      Materia e uma matéria por arquivo (os ataques de cada chefe)
   armas/           Arma e suas famílias, uma arma por arquivo, colabs

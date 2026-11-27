@@ -31,6 +31,7 @@ from jogo.inimigos.quebraveis import QUEBRAVEIS
 class Entrada:
     direcao: pygame.Vector2 = field(default_factory=pygame.Vector2)
     mira: Optional[pygame.Vector2] = None
+    segurando_especial: bool = False     # Espaço apertado (a Virada de Noite atira enquanto segura)
 
 
 class Jogo:
@@ -68,6 +69,7 @@ class Jogo:
         self._prova_de = {}              # chefe -> ProvaMarcada que ele encerra (a nota vai para ela)
         self.chefe_a_apresentar = None   # chefe que acabou de chegar e ainda não foi apresentado (a cena consome)
         self.perigo = 0.0                # segundos de aviso de PERIGO antes do chefe (o HUD desenha)
+        self.lentidao = 0.0              # segundos de câmera lenta (Frame Perfect)
         self.terminou = False
         self.venceu = False           # derrotou os três chefes ("Fim do semestre!")
         self._honras = False          # e ainda chegou vivo aos 20:00 ("Fim do semestre com honras!")
@@ -167,9 +169,18 @@ class Jogo:
         for nome in list(self.grupos):
             self.grupos[nome] = [e for e in self.grupos[nome] if e.ativo]
 
+    FATOR_DA_CAMERA_LENTA = 0.35
+
+    def camera_lenta(self, duracao):
+        """Tudo anda mais devagar por `duracao` segundos de relógio (Frame Perfect)."""
+        self.lentidao = max(self.lentidao, duracao)
+
     def atualizar(self, dt):
         if self.terminou:
             return
+        if self.lentidao > 0:
+            self.lentidao = max(0.0, self.lentidao - dt)
+            dt *= self.FATOR_DA_CAMERA_LENTA
         self.placar.tempo += dt
         self.perigo = max(0.0, self.perigo - dt)
         self.fase.atualizar(dt, self)
@@ -247,8 +258,16 @@ class Jogo:
         if critico:
             sobra = self.jogador.chance(self.jogador.chance_critico) - 1
             dano *= self.jogador.MULT_CRITICO + max(0.0, sobra)   # passou de 100%: crítico mais forte
+        duplo = self.jogador.multiplicador("golpe_duplo") - 1     # Combo do Gamer: chance de golpe duplo
+        if duplo > 0 and self.rng.random() < duplo:
+            dano *= 2
+        dano *= inimigo.fator_de_dano_recebido                     # marcado pela Caneta Vermelha leva mais
         dano = max(1, round(dano * self.rng.uniform(1 - self.VARIACAO_DANO, 1 + self.VARIACAO_DANO)))
         morreu = inimigo.receber_dano(dano)
+        if inimigo.CONTA_NO_PLACAR:
+            self.jogador.avisar_acerto(inimigo, self)
+            if critico:
+                self.jogador.avisar_critico(inimigo, self)
         if direcao is not None:
             inimigo.empurrar(direcao)
         if len(self.grupos["efeito"]) < LIMITE_EFEITOS:
@@ -287,8 +306,7 @@ class Jogo:
             self.adicionar(Moeda(inimigo.posicao + (12, 0)))     # Carona Solidária
         if self.placar.registrar_eliminacao(inimigo.valor_em_pontos):
             self._combo_67()
-        for item in self.jogador.itens:
-            item.ao_eliminar(inimigo, self.jogador, self)
+        self.jogador.avisar_eliminacao(inimigo, self)
 
     def _combo_67(self):
         self.jogador.adicionar_bonus(BonusTemporario("combo67", "velocidade", BONUS_67_VELOCIDADE, BONUS_67_DURACAO))
@@ -303,6 +321,10 @@ class Jogo:
             self.jogador.invencivel = self.FOLGA_DO_DESVIO
             self.adicionar(TextoFlutuante("DESVIOU!", self.jogador.posicao - (0, 30), Cor.CURA, 18))
             return False
+        dano = self.jogador.filtrar_dano(dano, self)      # itens e habilidades podem reduzir ou anular o golpe
+        if dano <= 0:
+            self.jogador.invencivel = max(self.jogador.invencivel, self.FOLGA_DO_DESVIO)
+            return False
         self.jogador.receber_dano(dano)
         self.placar.zerar_combo()
         self.adicionar(TextoFlutuante(f"-{round(dano)}", self.jogador.posicao - (0, 30), Cor.DANO_HEROI, 18))
@@ -314,8 +336,7 @@ class Jogo:
         niveis = heroi.ganhar_experiencia(quantidade * heroi.mult_experiencia * heroi.fator_experiencia)
         self.niveis_pendentes += niveis
         for _ in range(niveis):
-            for item in list(heroi.itens):
-                item.ao_subir_de_nivel(heroi, self)
+            heroi.ao_subir_de_nivel(self)
 
     def puxar_experiencia(self):
         """Ímã e Revisão para Prova: toda a experiência caída no mapa voa até o aluno. Cada coletável

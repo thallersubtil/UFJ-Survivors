@@ -8,52 +8,66 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Descrição: Resistente e lento. O Caramelo luta junto.
 - Vida: 80 | Velocidade: 180
 - Arma inicial: Caramelo
-- Passiva: Instinto Otaku — Chance de acerto crítico (dano em dobro) que cresce a cada nível.
-- Especial: Super Saiyajin — Cabelo dourado por 10 s: dano em dobro e mais velocidade.
+- Habilidade: Instinto Otaku — 8% de chance de acerto crítico (dano em dobro). | 16% de chance de crítico. | 25% de chance de crítico.
+- Habilidade: Armadura de Roteiro — O golpe que te derrubaria deixa 1 de vida e 2 s de invencibilidade. Volta em 90 s. | 3 s invencível; volta em 75 s. | 4 s invencível; volta em 60 s.
+- Habilidade: Poder da Amizade — +5% de dano por amigo em campo (Caramelo, Fusca, mascotes, possuídos), até +50%. | +7% de dano por amigo. | +10% de dano por amigo.
+- Especial: Super Saiyajin — Cabelo dourado: dano em dobro e mais velocidade. A cada uso sobe de nível (SSJ2, SSJ3).
 
 ### Programador
-- Descrição: Ágil e frágil. Atira em laço e trava o jogo dos inimigos.
+- Descrição: Ágil e frágil. Vira a noite atirando código à base de café.
 - Vida: 50 | Velocidade: 230
 - Arma inicial: Cobra Python
-- Passiva: Laço de Repetição — Cada disparo tem 6% de chance de repetir na hora, e mais 1,6% a cada nível (até 35%).
-- Especial: Tela Azul — O jogo dos inimigos trava: os da tela ficam parados por 4 s e os projéteis deles somem.
+- Habilidade: Laço de Repetição — Cada disparo tem 10% de chance de repetir na hora. | 18% de chance de repetir. | 28% de chance de repetir.
+- Habilidade: Cafeinado — Armas recarregam 1,6% mais rápido por nível do aluno; a garrafa da Virada leva +20 doses. | A garrafa leva +40 doses. | A garrafa leva +60 doses.
+- Habilidade: Compilar — Andando, acumula linhas de código; parado 1 s, compila: um pulso com o dano acumulado. | O pulso dá 1,5x o acumulado. | O pulso dá 2x o acumulado.
+- Especial: Virada de Noite — Enche a garrafa com 100 doses de café; segurando Espaço, cada dose é um tiro de código na mira.
 
 ### Mestre de RPG
 - Descrição: Equilibrado. O especial volta logo.
 - Vida: 60 | Velocidade: 205
 - Arma inicial: Gemini
-- Passiva: Rolagem de Iniciativa — O especial recarrega 3,2% mais rápido por nível (até 60%).
-- Especial: Zoltraak — Um raio mágico enorme na direção da mira, que atravessa tudo.
+- Habilidade: Rolagem de Iniciativa — O especial recarrega 15% mais rápido. | 30% mais rápido. | 45% mais rápido.
+- Habilidade: Ficha de Personagem — A cada 15 s, +30% num atributo sorteado por 15 s (FOR, DES, CON, INT, SAB ou CAR). | +40% no atributo sorteado. | +50% no atributo sorteado.
+- Habilidade: Teste de Resistência — Ao levar um golpe, rola um d20: com 18 ou mais, o golpe não entra. | Salva com 16 ou mais. | Salva com 14 ou mais.
+- Especial: Zoltraak — Um raio mágico enorme na direção da mira, que atravessa tudo. O dano é rolado em 8d6.
 
 ### Monitor
 - Descrição: Paciente. Atrasa os inimigos e se cuida sozinho.
 - Vida: 60 | Velocidade: 200
 - Arma inicial: Quadro Branco
-- Passiva: Plantão de Dúvidas — Recupera vida aos poucos e puxa as notas de mais longe; os dois crescem a cada nível.
-- Especial: Revisão para Prova — Puxa todas as notas do campus e recupera 30% da vida.
+- Habilidade: Plantão de Dúvidas — Recupera 0,4 de vida por segundo e puxa as notas 20% mais de longe. | 0,8 de vida por segundo; notas 40% mais de longe. | 1,2 por segundo; notas 60% mais de longe.
+- Habilidade: Caneta Vermelha — 10% de chance de marcar o inimigo com um X: ele leva 25% a mais de dano e pode curar ao morrer. | 15% de chance; o marcado leva 33% a mais. | 20% de chance; o marcado leva 50% a mais.
+- Habilidade: Horário de Atendimento — Parado por 1 s: os inimigos em volta ficam 20% mais lentos e você cura 2% da vida a cada 2 s. | 30% mais lentos; cura 3%. | 40% mais lentos; cura 4%.
+- Especial: Revisão para Prova — Puxa todas as notas do campus, recupera 30% da vida e abre por 10 s uma zona onde nada te fere.
 
 ### Gamer
-- Descrição: Rápido e frágil. Vive rolando.
+- Descrição: Rápido e frágil. Vive rolando e trava o jogo dos inimigos.
 - Vida: 55 | Velocidade: 235
 - Arma inicial: Controle
-- Passiva: Reflexo — O rolamento recarrega 10% mais rápido, e mais 2,4% a cada nível (até 55%).
-- Especial: Speedrun — Por 6 s: muito mais velocidade e invencível.
+- Habilidade: Reflexo — O rolamento recarrega 15% mais rápido. | 30% mais rápido. | 45% mais rápido.
+- Habilidade: Frame Perfect — Rolar no último instante antes de um golpe: câmera lenta por 1 s e +30% de dano por 8 s. | +45% de dano. | +60% de dano.
+- Habilidade: Combo — 50 acertos sem levar dano: +20% de velocidade e 20% de chance de golpe duplo por 10 s. | +30% de velocidade e de golpe duplo. | +40% de velocidade e de golpe duplo.
+- Especial: Tela Azul — O jogo dos inimigos trava: os da tela ficam parados por 4 s e os projéteis deles somem.
 
 ### Calouro
 - Descrição: Começa fraco, mas aprende rápido.
 - Vida: 50 | Velocidade: 215
 - Arma inicial: Apostila
-- Passiva: Sede de Aprender — +10% de experiência, e mais 1,6% a cada nível (até +40%).
-- Especial: Trote Reverso — Os inimigos em volta levam dano e fogem de você por 5 s.
+- Habilidade: Sede de Aprender — +15% de experiência. | +30% de experiência. | +45% de experiência.
+- Habilidade: Veterano Camarada — Um veterano anda com você e usa a sua arma inicial com 50% da força. | O veterano bate com 75% da força. | O veterano bate com 100% da força.
+- Habilidade: Perdido no Campus — +3% de velocidade por inimigo perto (até +80%) e +25% de experiência de quem morre perto. | +4% por inimigo; +35% de experiência. | +5% por inimigo; +50% de experiência.
+- Especial: Calourada — Festa! 40% dos inimigos em volta viram seus aliados por 8 s; os outros batem 30% mais fraco.
 
 ### Cara da Carona
 - Descrição: Todo mundo quer carona. O Fusca vem junto.
 - Vida: 65 | Velocidade: 195
 - Arma inicial: Fusca Azul
-- Passiva: Carona Solidária — Inimigo que morre possuído (atropelado) pode deixar uma moeda: 10%, e mais 1,6% por nível (até 40%).
+- Habilidade: Carona Solidária — Inimigo que morre possuído (atropelado) tem 12% de chance de deixar uma moeda. | 24% de chance de moeda. | 36% de chance de moeda.
+- Habilidade: Buzina — A cada 10 s, uma buzinada em volta: dano (mais forte no centro) e atordoa por um instante. | Buzinada 50% mais forte. | Buzinada com o dobro de dano.
+- Habilidade: Carro Lotado — +3% de dano por passageiro (inimigo possuído) em campo, até +60%. | +4% por passageiro. | +5% por passageiro.
 - Especial: Lotação — Quatro fuscas lotados cruzam a tela atropelando e possuindo inimigos.
 
-## Armas (habilidades ativas)
+## Armas
 
 ### Cobra Python
 - Nível 1: Dispara cobrinhas que avançam serpenteando na direção da mira.
@@ -137,7 +151,7 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Receita: Cobra Python + Gemini
 - Descrição: Uma serpente feita de céu estrelado cruza a tela inteira na direção da mira, atravessa tudo e cada mordida estoura em estrelas.
 
-## Itens (habilidades passivas)
+## Itens
 
 ### Caderno de Resumos
 - Nível 1: +10% de dano por nível.

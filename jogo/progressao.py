@@ -73,6 +73,17 @@ class Progressao:
                 opcoes.append(Opcao(item.NOME, item.descricao_proxima(), item.ICONE, f"nível {item.nivel + 1}",
                                     "melhoria", lambda j, jogo, i=item: j.subir_nivel_item(i),
                                     item.SO_AO_SUBIR_DE_NIVEL, Progressao._peso(type(item)), type(item)))
+        for habilidade in jogador.habilidades:
+            if not habilidade.no_maximo:
+                rotulo = "NÍVEL MÁXIMO!" if habilidade.nivel + 1 == habilidade.NIVEL_MAXIMO else f"nível {habilidade.nivel + 1}"
+                opcoes.append(Opcao(habilidade.NOME, habilidade.descricao_proxima(), habilidade.ICONE, rotulo,
+                                    "melhoria", lambda j, jogo, h=habilidade: j.subir_nivel_habilidade(h),
+                                    peso=habilidade.PESO, origem=type(habilidade)))
+        for habilidade in jogador.habilidades_da_classe:
+            if habilidade not in jogador.habilidades:
+                opcoes.append(Opcao(habilidade.NOME, habilidade.DESCRICAO, habilidade.ICONE, "HABILIDADE", "nova",
+                                    lambda j, jogo, h=habilidade: j.adicionar_habilidade(h),
+                                    peso=habilidade.PESO, origem=type(habilidade)))
         if len(jogador.itens) < jogador.MAX_ITENS:
             tem = {type(i) for i in jogador.itens}
             for classe in Progressao.ITENS:

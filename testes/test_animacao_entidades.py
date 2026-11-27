@@ -41,7 +41,7 @@ def arte_falsa(tmp_path, monkeypatch):
 
 
 def jogo_falso(direcao=(0, 0)):
-    return SimpleNamespace(entrada=SimpleNamespace(direcao=pygame.Vector2(direcao), mira=None),
+    return SimpleNamespace(entrada=SimpleNamespace(direcao=pygame.Vector2(direcao), mira=None, segurando_especial=False),
                            arena=pygame.Rect(0, 0, 3000, 3000), adicionar=lambda e: None,
                            resolver_obstaculos=lambda posicao, raio: posicao,
                            passo_do_chao=lambda posicao: 1.0, rng=random.Random(1),
@@ -118,7 +118,8 @@ def test_ajudantes_projeteis_e_coletaveis_animam(tmp_path, monkeypatch):
     dono = SimpleNamespace(posicao=pygame.Vector2(0, 0), multiplicador_dano=1.0)
     arma = SimpleNamespace(valor=lambda nome: {"velocidade": 3, "raio": 50, "dano": 5}[nome])
     jogo = SimpleNamespace(inimigos_proximos=lambda p, r: [], jogador=SimpleNamespace(
-        posicao=pygame.Vector2(900, 900), alcance_coleta=10, raio=10), arena=pygame.Rect(0, 0, 2000, 2000))
+        posicao=pygame.Vector2(900, 900), alcance_coleta=10, raio=10, multiplicador=lambda nome: 1.0),
+        arena=pygame.Rect(0, 0, 2000, 2000))
     for entidade in (CachorroCaramelo(dono, 0, arma), CobraProjetil((5, 5), (100, 0), 1), Nota((0, 0)),
                      MascoteFlutuante(dono, "sprites/x.png", 20, (0, 0), pasta="robo")):
         primeiro = entidade.animador.quadro_atual

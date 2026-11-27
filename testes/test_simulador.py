@@ -103,7 +103,7 @@ def test_uma_partida_curta_devolve_a_linha_com_o_que_a_tabela_precisa():
     for campo in ("classe", "semente", "niveis_nos_chefes", "chefes_caidos", "mini_chefes", "resultado",
                   "moedas", "tempo", "pior_quadro_ms", "pico_inimigos"):
         assert hasattr(resultado, campo)
-    assert resultado.tempo >= 59 and resultado.eliminacoes > 10
+    assert resultado.tempo >= 59 and resultado.eliminacoes >= 5     # o Otaku começa sem o crítico (vem nas cartas)
     linha = simulador.linha_da_partida(resultado)
     assert resultado.classe in linha and "nível" in linha
     tabela = simulador.tabela_por_classe([resultado, resultado])

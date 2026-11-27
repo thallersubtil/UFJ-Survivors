@@ -49,7 +49,8 @@ def test_pendrive_guarda_um_especial_a_mais():
 
 
 def test_especial_com_duas_cargas_usa_duas_vezes_seguidas(jogo_limpo):
-    jogo = jogo_limpo(Programador)
+    from jogo.jogador.classes import MestreDeRPG
+    jogo = jogo_limpo(MestreDeRPG)          # a Virada de Noite do Programador só enche de novo com a garrafa vazia
     heroi = jogo.jogador
     heroi.adicionar_item(Pendrive())
     heroi.especial.atualizar(heroi.especial.RECARGA + 1)

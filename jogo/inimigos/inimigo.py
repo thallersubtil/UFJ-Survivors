@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 import pygame
 
-from jogo.coletaveis.coletaveis import Bau, Ima, Moeda
+from jogo.coletaveis.coletaveis import Bau, CopoDeCafe, Ima, Moeda
 from jogo.config import DISTANCIA_REPOSICIONAR, Cor
 from jogo.nucleo.animacao import Animador
 from jogo.efeitos import TextoFlutuante
@@ -34,6 +34,7 @@ class Inimigo(SerVivo, ABC):
     CONTA_NO_PLACAR = True     # se a morte vale eliminação, combo e itens (objeto quebrável: não)
     ALVO_DA_MIRA = True        # se a mira e as armas que procuram alvo escolhem este (objeto quebrável: não)
     CHANCE_MOEDA = 0.05
+    CHANCE_CAFE = 0.03         # copo de café: doses para a Virada de Noite, ou um empurrão no especial
     MOEDAS_GIGANTE = 15
 
     GANHO_VELOCIDADE = 0.10   # por ponto de dificuldade: a prova vai ficando mais corrida
@@ -64,6 +65,11 @@ class Inimigo(SerVivo, ABC):
         self.assustado = 0.0
         self.lento = 0.0
         self.travado = 0.0
+        self.fator_lento = self.FATOR_LENTO    # quanto anda enquanto está lento (o atraso mais forte vale)
+        self.marca = 0.0             # Caneta Vermelha: segundos marcado com o X
+        self.vulnerabilidade = 0.0   # dano a mais que leva enquanto está marcado
+        self.fraqueza = 0.0          # Calourada: segundos batendo mais fraco
+        self.fator_fraqueza = 1.0
         self.animador = Animador(Recursos.animacoes_ou_imagem(self.PASTA_SPRITE, self.IMAGEM, self.ALTURA))
 
     @classmethod
@@ -142,7 +148,9 @@ class Inimigo(SerVivo, ABC):
             self.tocar_jogador(jogo)
         if self.lento > 0:            # Quadro Branco: anda só uma fração do que andaria
             self.lento -= dt
-            self.posicao = antes + (self.posicao - antes) * self.FATOR_LENTO
+            self.posicao = antes + (self.posicao - antes) * self.fator_lento
+        self.marca = max(0.0, self.marca - dt)
+        self.fraqueza = max(0.0, self.fraqueza - dt)
         if self.empurrao.length_squared() > 1:
             self.posicao += self.empurrao * dt
             self.empurrao *= max(0.0, 1 - 8 * dt)
@@ -170,7 +178,8 @@ class Inimigo(SerVivo, ABC):
     @property
     def dano_de_contato(self):
         """O encostão dói mais conforme a prova avança (a mesma escala que dá vida e velocidade ao inimigo)."""
-        return self.DANO * (1 + max(0.0, self.escala - 1) * self.GANHO_DANO) * self.furia
+        fraco = self.fator_fraqueza if self.fraqueza > 0 else 1.0
+        return self.DANO * (1 + max(0.0, self.escala - 1) * self.GANHO_DANO) * self.furia * fraco
 
     def enfurecer(self, furia):
         """O fim do semestre passou: o dano de contato multiplica por `furia` e a velocidade também, até
@@ -188,12 +197,34 @@ class Inimigo(SerVivo, ABC):
         self.remover()
 
     def assustar(self, duracao):
-        """Trote Reverso: por um tempo, foge do aluno em vez de atacar."""
+        """Greve: por um tempo, foge do aluno em vez de atacar."""
         self.assustado = max(self.assustado, duracao)
 
-    def atrasar(self, duracao):
-        """Quadro Branco: por um tempo, anda mais devagar (quem tem tenacidade total nem sente)."""
+    def atrasar(self, duracao, fator=None):
+        """Quadro Branco e Horário de Atendimento: por um tempo, anda só `fator` do que andaria (FATOR_LENTO, se
+        não disser). Com dois atrasos, vale o mais forte; quem tem tenacidade total nem sente."""
+        fator = self.FATOR_LENTO if fator is None else fator
+        self.fator_lento = min(self.fator_lento, fator) if self.lento > 0 else fator
         self.lento = max(self.lento, duracao * (1 - self.TENACIDADE))
+
+    def marcar_com_x(self, duracao, dano_extra):
+        """Caneta Vermelha: marcado com um X, leva `dano_extra` a mais de dano por um tempo."""
+        self.marca = max(self.marca, duracao)
+        self.vulnerabilidade = max(self.vulnerabilidade, dano_extra)
+
+    @property
+    def marcado(self):
+        return self.marca > 0
+
+    @property
+    def fator_de_dano_recebido(self):
+        """Quanto o dano que ele leva é multiplicado (marcado pela Caneta Vermelha leva mais)."""
+        return 1 + self.vulnerabilidade if self.marcado else 1.0
+
+    def enfraquecer(self, duracao, fator):
+        """Calourada: por um tempo, o encostão dele dói só `fator` do normal."""
+        self.fraqueza = max(self.fraqueza, duracao)
+        self.fator_fraqueza = fator
 
     def travar(self, duracao):
         """Tela Azul: por um tempo, fica parado no lugar (quem tem tenacidade total nem sente)."""
@@ -248,6 +279,8 @@ class Inimigo(SerVivo, ABC):
             jogo.adicionar(Moeda(self.posicao - (12, 0), self.MOEDAS_GIGANTE))
         elif jogo.rng.random() < jogo.jogador.chance(self.CHANCE_MOEDA):
             jogo.adicionar(Moeda(self.posicao - (10, 0)))
+        elif self.CONTA_NO_PLACAR and jogo.rng.random() < self.CHANCE_CAFE:
+            jogo.adicionar(CopoDeCafe(self.posicao + (10, 0)))
         if self.solta_bau:
             jogo.adicionar(Bau(self.posicao))
 
@@ -263,6 +296,15 @@ class Inimigo(SerVivo, ABC):
         self.desenhar_corpo(tela, camera)
         if self.possuido > 0:
             self._desenhar_possessao(tela, camera)
+        if self.marcado:
+            self._desenhar_marca(tela, camera)
+
+    def _desenhar_marca(self, tela, camera):
+        """O X vermelho da Caneta Vermelha em cima da cabeça."""
+        p = camera.para_tela(self.posicao)
+        x, y, lado = round(p.x), round(p.y - self.altura_sprite / 2 - 12), 7
+        for inicio, fim in (((x - lado, y - lado), (x + lado, y + lado)), ((x + lado, y - lado), (x - lado, y + lado))):
+            pygame.draw.line(tela, (230, 30, 40), inicio, fim, 4)
 
     def desenhar_corpo(self, tela, camera):
         """Desenha o sprite. Inimigos com visual especial sobrescrevem só isto."""

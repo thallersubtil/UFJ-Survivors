@@ -63,7 +63,7 @@ def test_banir_tira_a_carta_pelo_resto_da_partida():
 def test_sem_nada_para_oferecer_aparecem_as_cartas_de_vida_e_de_moedas():
     """As cartas de atributo (dano, recarga, vida máxima) saíram: quem baniu tudo escolhe entre vida e moedas."""
     heroi = Programador((0, 0))
-    for classe in ITENS + Progressao.ARMAS:
+    for classe in ITENS + Progressao.ARMAS + tuple(type(h) for h in heroi.habilidades_da_classe):
         heroi.banir(classe)
     opcoes = Progressao.gerar_opcoes(heroi, random.Random(1))
     assert len(opcoes) == 2 and {o.tipo for o in opcoes} == {"maximo"}

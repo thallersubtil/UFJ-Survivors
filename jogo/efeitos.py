@@ -121,24 +121,29 @@ class AuraSSJ(Efeito):
 
     camada = 1
 
-    def __init__(self, dono, duracao):
+    CORES = {1: ((255, 210, 60), (255, 236, 120)), 2: ((255, 190, 40), (255, 250, 170)),
+             3: ((255, 150, 30), (255, 255, 220))}
+
+    def __init__(self, dono, duracao, nivel=1):
         super().__init__(dono.posicao, duracao)
         self.dono = dono
+        self.nivel = nivel           # SSJ, SSJ2, SSJ3: a aura cresce e clareia
 
     def ao_atualizar(self, dt, jogo):
         self.posicao = self.dono.posicao - pygame.Vector2(0, 0.5)
 
     def desenhar(self, tela, camera):
         c = camera.para_tela(self.dono.posicao)
-        largura, altura = 70, 96
+        largura, altura = 70 + 14 * (self.nivel - 1), 96 + 18 * (self.nivel - 1)
+        corpo, chamas = self.CORES.get(self.nivel, self.CORES[3])
         sup = pygame.Surface((largura + 20, altura + 30), pygame.SRCALPHA)
         base = pygame.Vector2(sup.get_width() / 2, sup.get_height() - 6)
         brilho = 0.85 + 0.15 * math.sin(self.tempo * 25)
-        pygame.draw.ellipse(sup, (255, 210, 60, int(70 * brilho)), (10, 20, largura, altura))
+        pygame.draw.ellipse(sup, (*corpo, int(70 * brilho)), (10, 20, largura, altura))
         for i in range(7):
             x = 14 + i * (largura - 8) / 6
             topo = 8 + 10 * (1 + math.sin(self.tempo * 18 + i * 1.7))
-            pygame.draw.polygon(sup, (255, 236, 120, int(110 * brilho)),
+            pygame.draw.polygon(sup, (*chamas, int(110 * brilho)),
                                 [(x - 7, base.y - 20), (x, topo), (x + 7, base.y - 20)])
         tela.blit(sup, sup.get_rect(midbottom=(round(c.x), round(c.y + 34))))
 

@@ -29,7 +29,7 @@ class CenaPartida(Cena):
 
     def tratar_evento(self, evento):
         if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 3:
-            self.jogo.jogador.rolar()
+            self.jogo.jogador.rolar(self.jogo)
             return
         if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
             modo = self.app.alternar_mira()
@@ -44,13 +44,14 @@ class CenaPartida(Cena):
         elif evento.key == pygame.K_SPACE:
             self.jogo.jogador.usar_especial(self.jogo)
         elif evento.key in (pygame.K_LSHIFT, pygame.K_RSHIFT):
-            self.jogo.jogador.rolar()
+            self.jogo.jogador.rolar(self.jogo)
 
     def _ler_entrada(self):
         teclas = pygame.key.get_pressed()
         x = (teclas[pygame.K_d] or teclas[pygame.K_RIGHT]) - (teclas[pygame.K_a] or teclas[pygame.K_LEFT])
         y = (teclas[pygame.K_s] or teclas[pygame.K_DOWN]) - (teclas[pygame.K_w] or teclas[pygame.K_UP])
         self.jogo.entrada.direcao = pygame.Vector2(x, y)
+        self.jogo.entrada.segurando_especial = bool(teclas[pygame.K_SPACE])
         if self.app.modo_mira == "automatica":
             alvo = self.jogo.inimigo_mais_proximo(self.jogo.jogador.posicao, self.ALCANCE_MIRA_AUTOMATICA)
             self.jogo.entrada.mira = pygame.Vector2(alvo.posicao) if alvo is not None else None

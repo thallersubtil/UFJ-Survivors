@@ -1,5 +1,5 @@
-"""Sem munição e sem café: armas só pela recarga, o que substituiu o café, o Programador novo e as
-cartas de quem já levou tudo ao nível máximo."""
+"""As armas disparam só pela recarga; a munição do jogo é o café da garrafa da Virada de Noite (Programador).
+Também: o Programador e as cartas de quem já levou tudo ao nível máximo."""
 import random
 from types import SimpleNamespace
 
@@ -12,9 +12,9 @@ from jogo.armas.colabs import CarameloNoFusca, MetralhadoraDePrompts, SerpenteEs
 from jogo.inimigos.bug import Bug
 from jogo.inimigos.fabrica import FabricaDeInimigos
 from jogo.itens.itens import ITENS, GarrafaTermica
-from jogo.jogador.classes import MestreDeRPG, Programador
-from jogo.jogador.especiais import TelaAzul
-from jogo.jogador.passivas import LacoDeRepeticao
+from jogo.jogador.classes import Gamer, MestreDeRPG, Programador
+from jogo.jogador.especiais import TelaAzul, ViradaDeNoite
+from jogo.jogador.habilidades import Cafeinado, Compilar, LacoDeRepeticao
 from jogo.progressao import Progressao
 from jogo.projeteis.projeteis import ProjetilDaMateria
 
@@ -47,12 +47,13 @@ def jogo_falso(sorteio=0.99):
 
 # ---------------------------------------------------------------- armas só pela recarga
 
-def test_nao_existe_mais_municao_nem_cafe():
+def test_as_armas_nao_tem_municao_a_municao_e_a_garrafa_do_programador():
     arma = Estilingue()
     for nome in ("municao", "municao_maxima", "tem_cafe", "fracao_cafe", "encher"):
         assert not hasattr(arma, nome), nome
-    assert not hasattr(Programador((0, 0)), "mult_cafe")
-    assert not hasattr(Programador((0, 0)), "encher_cafe")
+    especial = Programador((0, 0)).especial
+    assert isinstance(especial, ViradaDeNoite) and especial.garrafa.municao == 0
+    assert not hasattr(MestreDeRPG((0, 0)).especial, "garrafa")
 
 
 def test_arma_de_disparo_atira_sempre_que_a_recarga_acaba():
@@ -122,40 +123,42 @@ def test_garrafa_termica_faz_toda_cura_render_mais():
     assert "café" not in (GarrafaTermica.DESCRICAO + "".join(GarrafaTermica.MELHORIAS)).lower()
 
 
-def test_nenhum_texto_do_jogo_fala_de_cafe_ou_municao():
+def test_cafe_e_municao_so_aparecem_no_programador():
+    """Só o Programador fala de café (Virada de Noite, Cafeinado); armas, itens, loja e as outras classes não."""
     from jogo.jogador.classes import CLASSES
     from jogo.loja.lanches import LANCHES
     from jogo.loja.melhorias import MELHORIAS
     textos = []
     for classe in CLASSES:
+        if classe is Programador:
+            continue
         heroi = classe((0, 0))
-        textos += [classe.DESCRICAO, heroi.passiva.NOME, heroi.passiva.DESCRICAO, heroi.especial.NOME,
-                   heroi.especial.DESCRICAO]
+        textos += [classe.DESCRICAO, heroi.especial.NOME, heroi.especial.DESCRICAO]
+        textos += [t for h in heroi.habilidades_da_classe for t in (h.NOME, h.DESCRICAO, *h.MELHORIAS)]
     for classe in Progressao.ARMAS + tuple(ITENS) + tuple(LANCHES) + tuple(MELHORIAS) + \
             (CarameloNoFusca, SerpenteEstelar, MetralhadoraDePrompts):
         textos += [classe.NOME, classe.DESCRICAO, *getattr(classe, "MELHORIAS", ())]
     for texto in textos:
         assert "café" not in texto.lower() and "munição" not in texto.lower(), texto
+    assert "café" in (ViradaDeNoite.DESCRICAO + Programador.DESCRICAO).lower()
 
 
 # ---------------------------------------------------------------- Programador
 
-def test_programador_tem_passiva_e_especial_novos():
+def test_programador_tem_habilidades_e_especial_novos():
     heroi = Programador((0, 0))
-    assert isinstance(heroi.passiva, LacoDeRepeticao) and isinstance(heroi.especial, TelaAzul)
-    assert isinstance(heroi.armas[0], CobraPython)
-    assert heroi.passiva.NOME == "Laço de Repetição" and heroi.especial.NOME == "Tela Azul"
+    assert [type(h) for h in heroi.habilidades_da_classe] == [LacoDeRepeticao, Cafeinado, Compilar]
+    assert isinstance(heroi.especial, ViradaDeNoite) and isinstance(heroi.armas[0], CobraPython)
 
 
-def test_laco_de_repeticao_cresce_com_o_nivel_ate_o_teto():
+def test_laco_de_repeticao_cresce_com_a_carta():
     heroi = Programador((0, 0))
-    assert heroi.chance_repeticao == pytest.approx(LacoDeRepeticao.BASE)
-    heroi.nivel = 6
-    heroi.recalcular_atributos()
-    assert heroi.chance_repeticao == pytest.approx(LacoDeRepeticao.BASE + 5 * LacoDeRepeticao.POR_NIVEL)
-    heroi.nivel = 99
-    heroi.recalcular_atributos()
-    assert heroi.chance_repeticao == pytest.approx(LacoDeRepeticao.MAXIMO)
+    laco = heroi.habilidades_da_classe[0]
+    heroi.adicionar_habilidade(laco)
+    assert heroi.chance_repeticao == pytest.approx(LacoDeRepeticao.CHANCE[0])
+    heroi.subir_nivel_habilidade(laco)
+    heroi.subir_nivel_habilidade(laco)
+    assert heroi.chance_repeticao == pytest.approx(LacoDeRepeticao.CHANCE[2])
     assert MestreDeRPG((0, 0)).chance_repeticao == 0
 
 
@@ -167,7 +170,7 @@ def test_disparo_repetido_sai_logo_em_seguida():
     assert arma.disparos == 2 and arma.espera == pytest.approx(1.0)           # não repetiu: recarga normal
 
 
-def test_sem_a_passiva_o_disparo_nem_sorteia():
+def test_sem_o_laco_de_repeticao_o_disparo_nem_sorteia():
     def explodir():
         raise AssertionError("não deveria sortear")
     arma = Estilingue()
@@ -182,7 +185,9 @@ def test_programador_atira_mais_que_outra_classe_com_a_mesma_arma(jogo_limpo):
         heroi = jogo.jogador
         heroi.imortal = True
         heroi.armas = [Estilingue()]
-        heroi.nivel = 20
+        for habilidade in heroi.habilidades_da_classe[:1]:          # Laço de Repetição (Programador) no máximo
+            heroi.adicionar_habilidade(habilidade)
+            habilidade.nivel = habilidade.NIVEL_MAXIMO
         heroi.recalcular_atributos()
         for _ in range(60 * 60):
             jogo.atualizar(1 / 60)
@@ -191,7 +196,7 @@ def test_programador_atira_mais_que_outra_classe_com_a_mesma_arma(jogo_limpo):
 
 
 def test_tela_azul_trava_os_inimigos_e_apaga_os_projeteis_deles(jogo_limpo):
-    jogo = jogo_limpo()
+    jogo = jogo_limpo(Gamer)
     heroi = jogo.jogador
     heroi.imortal = True
     heroi.armas = []
@@ -224,6 +229,9 @@ def aluno_com_tudo_no_maximo(jogo):
         item = classe()
         item.nivel = item.NIVEL_MAXIMO
         heroi.itens.append(item)
+    heroi.habilidades = list(heroi.habilidades_da_classe)
+    for habilidade in heroi.habilidades:
+        habilidade.nivel = habilidade.NIVEL_MAXIMO
     heroi.recalcular_atributos()
     return heroi
 

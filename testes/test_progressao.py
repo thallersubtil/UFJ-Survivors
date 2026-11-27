@@ -109,6 +109,9 @@ def test_sem_nada_para_oferecer_aparecem_as_cartas_de_vida_e_de_moedas(jogo_limp
         item = classe()
         item.nivel = item.NIVEL_MAXIMO
         j.itens.append(item)
+    j.habilidades = list(j.habilidades_da_classe)
+    for habilidade in j.habilidades:
+        habilidade.nivel = habilidade.NIVEL_MAXIMO
     opcoes = Progressao.gerar_opcoes(j, random.Random(2))
     assert [o.titulo for o in opcoes] == ["Lanche da Cantina", "Bolsa de Monitoria"]
     assert {o.tipo for o in opcoes} == {"maximo"}
@@ -152,6 +155,8 @@ def test_no_limite_so_aparecem_melhorias():
         j.adicionar_arma(classe())
     for classe in ITENS[:4]:
         j.adicionar_item(classe())
+    for habilidade in j.habilidades_da_classe:          # as habilidades não ocupam vaga, mas são só três
+        j.adicionar_habilidade(habilidade)
     candidatas = Progressao.candidatas(j)
     assert candidatas and all(o.tipo == "melhoria" for o in candidatas)
 
