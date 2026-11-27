@@ -6,7 +6,7 @@ from jogo.inimigos.acoes_do_chefe import RaiosPelosOlhos
 from jogo.inimigos.fabrica import FabricaDeInimigos
 from jogo.inimigos.lacaios_do_campus import LacaioDoCampus
 from jogo.inimigos.materias.arquitetura import ArquiteturaDeComputadores
-from jogo.inimigos.materias.calculo import CalculoI
+from jogo.inimigos.materias.calculo import CalculoI, CalculoII
 from jogo.inimigos.materias.estrutura_de_dados import EstruturaDeDadosEmC
 from jogo.inimigos.materias.poo import ProgramacaoOrientadaAObjetos
 from jogo.inimigos.materias.transformacao_digital import TransformacaoDigital
@@ -17,7 +17,7 @@ from jogo.projeteis.projeteis import ProjetilDaMateria
 from jogo.projeteis.tematicos import (Bumerangue, Carimbada, FrascoDeAcido, GolpeNoChao, Marca, PanelaoDeSopa, Poca,
                                       ProjetilTematico, arte_existe)
 
-MATERIAS = (CalculoI, ArquiteturaDeComputadores, EstruturaDeDadosEmC, TransformacaoDigital,
+MATERIAS = (CalculoI, CalculoII, ArquiteturaDeComputadores, EstruturaDeDadosEmC, TransformacaoDigital,
             ProgramacaoOrientadaAObjetos)
 
 

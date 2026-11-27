@@ -13,6 +13,7 @@ class Chefe(Inimigo, ABC):
     INTERVALO_ATAQUE = 2.6
     INTERVALO_FURIOSO = 1.6
     DISTANCIA_PREFERIDA = 260
+    PREPARO_SEM_ARTE = 0.35      # segundos parado antes do golpe quando não há a tira "atacar"
     ALTURA_DO_OLHO = 14          # pixels abaixo do alto da cabeça, no sprite de perfil
     RECUO_DO_OLHO = 3            # pixels para trás da frente do rosto
     _olhos_medidos = {}          # quadro do sprite -> onde fica o olho nele (a partir do centro, olhando à direita)
@@ -23,6 +24,7 @@ class Chefe(Inimigo, ABC):
         self._espera_ataque = 2.0
         self._indice = 0
         self.acao_atual = None
+        self.preparando = 0.0        # segundos de preparo até o golpe sair (a animação "atacar")
 
     @property
     def furioso(self):
@@ -72,19 +74,36 @@ class Chefe(Inimigo, ABC):
         """Começa os raios pelos olhos: mira, trava e dispara."""
         self.executar(RaiosPelosOlhos(self, dano, vezes))
 
+    @property
+    def duracao_do_preparo(self):
+        """Quanto dura a animação "atacar" (ou o preparo padrão, sem essa arte)."""
+        animacao = self.animador.animacoes.get("atacar")
+        return animacao.duracao if animacao is not None else self.PREPARO_SEM_ARTE
+
+    def escolher_animacao(self):
+        """Prepara o golpe com "atacar" (parado, sem essa arte); no resto do tempo, anda."""
+        if self.preparando > 0:
+            return "atacar" if "atacar" in self.animador.animacoes else "parado"
+        return "andar"
+
     def mover(self, dt, jogo):
         if self.acao_atual is not None:
             if self.acao_atual(dt, jogo):
                 self.acao_atual = None
             return
+        if self.preparando > 0:                 # parado, preparando: o golpe sai quando o preparo acaba
+            self.preparando -= dt
+            if self.preparando <= 0:
+                lista = self.ataques()
+                lista[self._indice % len(lista)](jogo)
+                self._indice += 1
+                self._espera_ataque = self.intervalo_ataque
+            return
         if self.posicao.distance_to(jogo.jogador.posicao) > self.DISTANCIA_PREFERIDA:
             self.ir_em_direcao(jogo.jogador.posicao, dt)
         self._espera_ataque -= dt
         if self._espera_ataque <= 0:
-            lista = self.ataques()
-            lista[self._indice % len(lista)](jogo)
-            self._indice += 1
-            self._espera_ataque = self.intervalo_ataque
+            self.preparando = self.duracao_do_preparo
 
     def ao_chegar_o_chefe(self, jogo):
         """Outro chefe chegou: este continua a luta."""

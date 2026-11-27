@@ -46,10 +46,15 @@ def test_nome_do_chefe_e_o_nome_da_materia(jogo_limpo):
     assert any("Cálculo I" in texto for texto, _ in jogo.anuncios)
 
 
-def test_calculo_tem_uma_fase_e_derrota_vence(jogo_limpo):
+def test_calculo_tem_duas_fases_e_a_segunda_e_calculo_ii(jogo_limpo):
     jogo = jogo_limpo()
     chefe = colocar_chefe(jogo, "chefe_calculo")
-    assert chefe.total_de_fases == 1 and not chefe.tem_proxima_materia
+    assert chefe.total_de_fases == 2 and chefe.nome == "Cálculo I"
+    jogo.causar_dano(chefe, chefe.vida * 2)
+    chefe.mover(1 / 60, jogo)
+    assert chefe.ativo and chefe.nome == "Cálculo II" and not chefe.tem_proxima_materia
+    assert any("Cálculo II possuiu" in texto for texto, _ in jogo.anuncios)
+    chefe.troca = 0
     assert jogo.causar_dano(chefe, 10 ** 7)
     assert chefe not in jogo.chefes and jogo.baus_pendentes == 1      # o chefe caiu: baú e cura
 
@@ -111,3 +116,31 @@ def test_projetil_da_materia_desenha_o_simbolo():
     a = ProjetilDaMateria.imagem_do_simbolo("dx", (255, 170, 60), 12)
     b = ProjetilDaMateria.imagem_do_simbolo("dx", (255, 170, 60), 12)
     assert a is b and a.get_width() >= 24
+
+
+def test_chefe_prepara_o_golpe_antes_de_atacar(jogo_limpo):
+    """O ataque não sai no mesmo quadro: o professor para, toca "atacar" (ou fica parado, sem essa arte) e só
+    depois golpeia."""
+    jogo = jogo_limpo()
+    jogo.jogador.imortal = True
+    chefe = colocar_chefe(jogo, "chefe_calculo")
+    chefe.posicao = jogo.jogador.posicao + (200, 0)           # dentro da distância preferida: não anda
+    chefe._espera_ataque = 0.01
+    chefe.mover(1 / 30, jogo)
+    assert chefe.preparando > 0 and chefe._indice == 0
+    esperado = "atacar" if "atacar" in chefe.animador.animacoes else "parado"
+    assert chefe.escolher_animacao() == esperado
+    parado = pygame.Vector2(chefe.posicao)
+    while chefe.preparando > 0:
+        chefe.mover(1 / 30, jogo)
+    assert chefe._indice == 1 and chefe.posicao == parado
+    assert chefe.escolher_animacao() == "andar"
+
+
+def test_animacao_atacar_vem_da_tira_quando_existe(jogo_limpo, tmp_path, monkeypatch):
+    from jogo.nucleo.animacao import Animacao
+    jogo = jogo_limpo()
+    chefe = colocar_chefe(jogo, "chefe_calculo")
+    quadro = pygame.Surface((10, 10))
+    chefe.animador.animacoes["atacar"] = Animacao([quadro] * 3, fps=6, repetir=False)
+    assert chefe.duracao_do_preparo == pytest.approx(0.5)

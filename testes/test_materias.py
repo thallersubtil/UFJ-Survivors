@@ -50,7 +50,7 @@ def test_professora_tem_transformacao_digital_e_depois_poo(jogo_limpo):
 
 
 def test_segunda_fase_e_mais_dificil_que_a_primeira():
-    for nome in ("chefe_arquitetura_ed", "chefe_td_poo"):
+    for nome in ("chefe_calculo", "chefe_arquitetura_ed", "chefe_td_poo"):
         primeira, segunda = FabricaDeInimigos.criar(nome, (0, 0)).materias
         assert segunda.VIDA > primeira.VIDA
         assert segunda.INTERVALO_ATAQUE < primeira.INTERVALO_ATAQUE
@@ -152,3 +152,31 @@ def test_chefe_nao_machuca_por_contato_durante_a_troca(jogo_limpo):
     vida = jogo.jogador.vida
     chefe.tocar_jogador(jogo)
     assert jogo.jogador.vida == vida
+
+
+def test_calculo_ii_tem_series_integral_dupla_convergencia_e_derivada_segunda(jogo_limpo):
+    from jogo.inimigos.materias.calculo import CalculoII
+    jogo = jogo_limpo()
+    jogo.jogador.imortal = True
+    chefe = colocar_chefe(jogo, "chefe_calculo")
+    calculo_ii = CalculoII()
+    assert [a.__name__ for a in calculo_ii.ataques()] == ["serie_de_taylor", "integral_dupla", "convergencia",
+                                                          "derivada_segunda", "prova_substitutiva"]
+    calculo_ii.serie_de_taylor(chefe, jogo)
+    for _ in range(60):
+        chefe.mover(1 / 30, jogo)
+    serie = simbolos(jogo)
+    assert serie.count("Σ") >= 3 + 5 + 7
+    calculo_ii.integral_dupla(chefe, jogo)
+    for _ in range(60):
+        chefe.mover(1 / 30, jogo)
+    assert simbolos(jogo).count("∫") >= 2 * 10
+    antes = len(simbolos(jogo))
+    calculo_ii.convergencia(chefe, jogo)
+    cercando = [e for e in novos(jogo) if isinstance(e, ProjetilDaMateria) and e.simbolo == "lim"][-12:]
+    assert len(simbolos(jogo)) >= antes + 12
+    for projetil in cercando:                 # nascem em volta do aluno e vêm na direção dele
+        rumo = jogo.jogador.posicao - projetil.posicao
+        assert rumo.length() > 300 and projetil.velocidade.normalize().dot(rumo.normalize()) > 0.99
+    calculo_ii.derivada_segunda(chefe, jogo)
+    assert isinstance(chefe.acao_atual, Investida) and chefe.acao_atual.vezes >= 3

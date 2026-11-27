@@ -4,11 +4,11 @@ Sobreviva às provas do semestre na UFJ. Jogo 2D em Pygame no estilo "survivors"
 
 | Hora | Chefe | Fases da luta |
 |---|---|---|
-| 5:00 | Professor de Cálculo | Cálculo I |
+| 5:00 | Professor de Cálculo | Cálculo I, depois Cálculo II |
 | 10:00 | Professor de Arquitetura e ED | Arquitetura de Computadores, depois Estrutura de Dados em C |
 | 15:00 | Professora de TD e POO | Transformação Digital, depois Programação Orientada a Objetos |
 
-No chefe de duas matérias, quando a vida da primeira zera, a segunda (mais difícil) possui o professor e a luta continua com a vida cheia.
+Em cada chefe, quando a vida da primeira matéria zera, a segunda (mais difícil) possui o professor e a luta continua com a vida cheia.
 
 **Grupo:** Filipe Duarte de Freitas Oliveira e Thaller Subtil de Carvalho.
 
@@ -144,7 +144,7 @@ Para simular uma partida inteira sem janela (útil para balancear):
 | Requisito | Arquivo | Classe / método |
 |---|---|---|
 | Classe abstrata com `atualizar()` e `desenhar()` | `jogo/nucleo/entidade.py` | `Entidade` |
-| 3+ inimigos herdando de uma base | `jogo/inimigos/` | `Inimigo` e `Bug`, `CalculadoraBrava`, `MouseDeBolinha`, `Caixinha`, `PiCambaleante`, `Ponteiro`, `PilhaAA`, `PenteDeRAM`; chefes: `Chefe` > `ChefePossuido` > `ProfessorDeCalculo`, `ProfessorDeArquiteturaEED`, `ProfessoraDeTDEPOO`; matérias: `Materia` > `CalculoI`, `ArquiteturaDeComputadores`, `EstruturaDeDadosEmC`, `TransformacaoDigital`, `ProgramacaoOrientadaAObjetos` |
+| 3+ inimigos herdando de uma base | `jogo/inimigos/` | `Inimigo` e `Bug`, `CalculadoraBrava`, `MouseDeBolinha`, `Caixinha`, `PiCambaleante`, `Ponteiro`, `PilhaAA`, `PenteDeRAM`; chefes: `Chefe` > `ChefePossuido` > `ProfessorDeCalculo`, `ProfessorDeArquiteturaEED`, `ProfessoraDeTDEPOO`; matérias: `Materia` > `CalculoI`, `CalculoII`, `ArquiteturaDeComputadores`, `EstruturaDeDadosEmC`, `TransformacaoDigital`, `ProgramacaoOrientadaAObjetos` |
 | Polimorfismo num único laço, sem `if` por tipo | `jogo/jogo.py` | `Jogo.atualizar()` |
 | Encapsulamento com `@property` e validação | `jogo/nucleo/ser_vivo.py`, `jogo/placar.py`, `jogo/armas/arma.py` | `SerVivo.vida`, `Placar.pontos`, `ArmaDeDisparo.espera` (segundos até o próximo disparo) |
 | Composição | `jogo/jogo.py`, `jogo/jogador/jogador.py` | `Jogo` contém `Jogador`, `Fase` (o `Semestre`, com o calendário das três provas), `Placar`; `Jogador` contém `Arma`, `Item`, `Passiva`, `Especial`; `ChefePossuido` contém suas `Materia` |

@@ -45,7 +45,7 @@ class ProjetilTematico(ProjetilDaMateria):
              "portaria": 360, "esquadro": 240, "ventoinha": 600, "engrenagem": 300, "selo": 240}
     ALTURAS = {"bandeja": 40, "prato_feito": 40, "frigideira": 34, "laser": 16, "seringa": 20, "adaga": 22,
                "caneta": 16, "escova": 18, "giz": 14, "espelhinho": 18, "broca": 22, "lim": 34, "dx": 34,
-               "integral": 42, "null": 40, "new": 40, "self": 40, "cassetete": 14, "osso": 20, "concha": 22,
+               "integral": 42, "grafico": 34, "null": 40, "new": 40, "self": 40, "cassetete": 14, "osso": 20, "concha": 22,
                "colher_de_pau": 20, "pasta_de_dente": 24, "rosa_negra": 28, "milho": 26, "chama_dourada": 30,
                "ponteiro": 28}
     BALANCO = 10                 # graus para cada lado, para quem vai em pé

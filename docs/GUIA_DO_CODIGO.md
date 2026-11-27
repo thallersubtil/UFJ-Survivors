@@ -51,7 +51,7 @@ Entidade (abstrata: atualizar, desenhar)            jogo/nucleo/entidade.py
 │     │  PiCambaleante, Ponteiro, PilhaAA, PenteDeRAM      (um arquivo cada)
 │     └─ Chefe (abstrata: ataques)                  jogo/inimigos/chefe.py
 │        └─ ChefePossuido (abstrata: CONTÉM matérias) jogo/inimigos/chefe_possuido.py
-│           ├─ ProfessorDeCalculo          Cálculo I
+│           ├─ ProfessorDeCalculo          Cálculo I, depois Cálculo II
 │           ├─ ProfessorDeArquiteturaEED   Arquitetura de Computadores -> Estrutura de Dados em C
 │           └─ ProfessoraDeTDEPOO          Transformação Digital -> POO
 ├─ Projetil (abstrata: verificar_colisao)           jogo/projeteis/projeteis.py
@@ -85,7 +85,7 @@ BonusTemporario               efeitos com tempo (combo 67, Super Saiyajin)
 
 ```
 Fase (abstrata: criar_eventos)  -> Semestre (o calendário: três ProvaMarcada)   jogo/fase.py
-Materia (abstrata: ataques)     -> CalculoI, ArquiteturaDeComputadores, EstruturaDeDadosEmC,
+Materia (abstrata: ataques)     -> CalculoI, CalculoII, ArquiteturaDeComputadores, EstruturaDeDadosEmC,
                                    TransformacaoDigital, ProgramacaoOrientadaAObjetos   jogo/inimigos/materias/
 AcaoDoChefe (abstrata)          -> Investida, Rajada   jogo/inimigos/acoes_do_chefe.py
 Mapa (abstrata)                 -> MapaUFJ, Cenario   jogo/mapa.py, jogo/cenario.py
@@ -127,7 +127,7 @@ Uma fase só, `Semestre(Fase)`, com a linha do tempo inteira. O calendário (`CA
 
 | Hora | Chefe | Lacaios que entram perto dele |
 |---|---|---|
-| 5:00 | Cálculo I | bug, calculadora, pi, caixinha, mouse |
+| 5:00 | Cálculo I, depois Cálculo II | bug, calculadora, pi, caixinha, mouse |
 | 10:00 | Arquitetura de Computadores, depois Estrutura de Dados em C | pente de RAM, ponteiro, pilha |
 | 15:00 | Transformação Digital, depois POO | (todos os anteriores) |
 
