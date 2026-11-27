@@ -257,3 +257,13 @@ def test_bigorna_nao_afia_colab(jogo_limpo):
     jogo.jogador.armas = [colab]
     Bigorna(jogo.jogador.posicao).ao_coletar(jogo)
     assert colab.carimbos == 0
+
+
+def test_cada_carta_tem_icone_proprio():
+    """Arma, colab, item e habilidade não repetem ícone: na carta e no HUD, ícone igual confunde."""
+    from collections import Counter
+    from jogo.jogador.classes import CLASSES
+    habilidades = [type(h) for classe in CLASSES for h in classe((0, 0)).habilidades_da_classe]
+    cartas = list(Progressao.ARMAS) + list(Colab.RECEITAS) + list(ITENS) + habilidades
+    repetidos = {icone: n for icone, n in Counter(c.ICONE for c in cartas).items() if n > 1}
+    assert not repetidos

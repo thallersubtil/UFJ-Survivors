@@ -6,7 +6,7 @@ from jogo.nucleo.recursos import Recursos
 
 class ReguaDeUmMetro(ArmaDeDisparo):
     NOME = "Régua de 1 Metro"
-    ICONE = "icones/caderno.png"
+    ICONE = "icones/regua.png"
     DESCRICAO = "Uma régua de madeira que varre um arco na frente do aluno, na direção da mira."
     ATRIBUTOS = {
         "dano": (18, 24, 31, 50),

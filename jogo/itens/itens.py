@@ -267,7 +267,7 @@ class KitDePrimeirosSocorros(Item):
 
     NOME = "Kit de Primeiros Socorros"
     DESCRICAO = "A cada 30 s, o próximo inimigo eliminado deixa cair uma poção de vida."
-    ICONE = "legado/itens/potion_hp.png"
+    ICONE = "icones/kit_primeiros_socorros.png"
     MELHORIAS = ("A poção vem a cada 24 s.", "A poção vem a cada 18 s.", "A poção vem a cada 12 s.")
     INTERVALOS = (30.0, 24.0, 18.0, 12.0)     # segundos entre uma poção e outra, por nível
 
@@ -301,7 +301,7 @@ class AtestadoMedico(Item):
     estava em volta (chefes e mini-chefes aguentam)."""
     NOME = "Atestado Médico"
     DESCRICAO = "Uma vez por partida: em vez de cair, volta com 50% da vida e derruba os inimigos em volta."
-    ICONE = "icones/caderno.png"
+    ICONE = "icones/atestado.png"
     NIVEL_MAXIMO = 1
     MELHORIAS = ()
     VIDA = 0.50
@@ -329,7 +329,7 @@ class AtestadoMedico(Item):
 class NoiteSemDormir(Item):
     NOME = "Noite sem Dormir"
     DESCRICAO = "+7,5% de dano e armas 2,5% mais rápidas por nível, mas leva 30% a mais de dano."
-    ICONE = "icones/energetico.png"
+    ICONE = "icones/noite_sem_dormir.png"
     MELHORIAS = ("+7,5% de dano e -2,5% de recarga.",) * 3
     DANO_RECEBIDO = 1.30
 
@@ -344,7 +344,7 @@ class NoiteSemDormir(Item):
 class PreTreinoDuvidoso(Item):
     NOME = "Pré-treino Duvidoso"
     DESCRICAO = "+10% de dano por nível, mas a vida escorre 5% por segundo até sobrar 1."
-    ICONE = "icones/energetico.png"
+    ICONE = "icones/pre_treino.png"
     MELHORIAS = ("+10% de dano.",) * 3
     ESCORRE = 0.05                   # fração da vida máxima por segundo
 
@@ -359,7 +359,7 @@ class PreTreinoDuvidoso(Item):
 class ParcelarNoCartao(Item):
     NOME = "Parcelar no Cartão"
     DESCRICAO = "Cada golpe entra só 30% na hora; o resto vem parcelado em 3 s. A parcela que mataria vence a dívida toda."
-    ICONE = "icones/moeda.png"
+    ICONE = "icones/parcelar.png"
     MELHORIAS = ("Parcelado em 4 s.", "Parcelado em 5 s.", "Parcelado em 6 s.")
     NA_HORA = 0.30
     PARCELAS = (3.0, 4.0, 5.0, 6.0)  # segundos em que o resto do golpe é cobrado
@@ -414,7 +414,7 @@ class ParcelarNoCartao(Item):
 class MensalidadeDaAtletica(Item):
     NOME = "Mensalidade da Atlética"
     DESCRICAO = "Custa 3 moedas por segundo; enquanto tiver moedas: +7,5% de dano por nível e -10% de dano recebido."
-    ICONE = "icones/atletica.png"
+    ICONE = "icones/mensalidade.png"
     MELHORIAS = ("+7,5% de dano enquanto paga.",) * 3
     CUSTO = 3                        # moedas por segundo
     PROTECAO = 0.90

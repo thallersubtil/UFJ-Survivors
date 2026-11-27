@@ -9,7 +9,7 @@ from jogo.nucleo.recursos import Recursos
 
 class DadoDeVinteLados(ArmaDeDisparo):
     NOME = "Dado de 20 Lados"
-    ICONE = "icones/rolagem_de_iniciativa.png"
+    ICONE = "icones/dado_20.png"
     DESCRICAO = "Joga um d20 no inimigo mais perto: o dano é o número que sai. 20 é crítico triplo; 1 erra."
     ATRIBUTOS = {
         "dano": (1.0, 1.2, 1.4, 2.3),          # dano por ponto do dado

@@ -149,7 +149,7 @@ class FakeNews(ArmaContinua, Colab):
     """O ChatGPT inventa a notícia e a Corrente de WhatsApp espalha: quem acredita passa a lutar do seu lado."""
 
     NOME = "Fake News"
-    ICONE = "sprites/chatgpt.png"
+    ICONE = "icones/fake_news.png"
     DESCRICAO = ("O ChatGPT inventa e a corrente espalha: a cada 0,8 s uma notícia falsa pula por 12 inimigos, "
                  "e 30% de quem ela acerta acredita e luta do seu lado por 4 s.")
     INGREDIENTES = (CorrenteDeWhatsApp, MascoteChatGPT)

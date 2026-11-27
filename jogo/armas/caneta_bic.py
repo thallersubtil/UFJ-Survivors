@@ -6,7 +6,7 @@ from jogo.nucleo.recursos import Recursos
 
 class CanetaBic(ArmaDeDisparo):
     NOME = "Caneta Bic"
-    ICONE = "icones/caneta_vermelha.png"
+    ICONE = "icones/caneta_bic.png"
     DESCRICAO = "Estocadas rápidas de caneta na direção da mira. Curta, mas não para."
     ATRIBUTOS = {
         "dano": (7, 9, 12, 20),

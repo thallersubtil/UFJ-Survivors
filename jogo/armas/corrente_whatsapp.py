@@ -6,7 +6,7 @@ from jogo.nucleo.recursos import Recursos
 
 class CorrenteDeWhatsApp(ArmaDeDisparo):
     NOME = "Corrente de WhatsApp"
-    ICONE = "icones/wifi.png"
+    ICONE = "icones/corrente_whatsapp.png"
     DESCRICAO = "\"Encaminhe para 10 amigos\": acerta o inimigo mais perto e pula para os vizinhos, sem repetir."
     ATRIBUTOS = {
         "dano": (14, 18, 23, 37),
