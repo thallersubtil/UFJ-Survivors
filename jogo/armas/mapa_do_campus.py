@@ -6,7 +6,7 @@ from jogo.nucleo.recursos import Recursos
 
 class MapaDoCampus(ArmaDeDisparo):
     NOME = "Mapa do Campus"
-    ICONE = "legado/itens/item_watch_s.png"
+    ICONE = "icones/mapa_do_campus.png"
     DESCRICAO = "\"Você está aqui!\": alfinetes caem do céu sobre inimigos perto de você, com aviso no chão."
     EXCLUSIVA = True
     ATRIBUTOS = {

@@ -250,7 +250,7 @@ class PlantaoDeDuvidas(Habilidade):
 class Gabarito(Habilidade):
     """O Monitor tem o gabarito: sabe onde o inimigo erra e marca com um X."""
     NOME = "Gabarito"
-    ICONE = "legado/itens/item_dice.png"
+    ICONE = "icones/gabarito.png"
     CHANCE = (0.10, 0.15, 0.20)
     DANO_EXTRA = (0.25, 0.33, 0.50)
     DURACAO_DA_MARCA = 5.0

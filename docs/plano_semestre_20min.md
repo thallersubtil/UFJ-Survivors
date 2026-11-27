@@ -95,7 +95,7 @@ Especificação escrita pela sessão revisora (Windows, com o HoloCure decompila
 - Comuns (11): Caramelo, Cobra Python, Quadro Branco, Apostila, Mascote do ChatGPT, Mascote do Claude, Gemini, Pequi Explosivo, Wi-Fi Eduroam, Régua de 1 Metro e Corrente de WhatsApp. A Caneta Bic saiu (virou a base da Caneta de Correção).
 - Colabs: ficam Serpente Estelar, Metralhadora de Prompts e Fake News; sai o Carrossel de Fuscas (o Fusca é exclusivo; a arte foi para `nova_arte/legado/caramelo_no_fusca`); entram Aula Expositiva (Apostila + Quadro Branco), Caramelo 5G (Caramelo + Wi-Fi) e Catapulta do Cerrado (Régua + Pequi).
 - A habilidade Caneta Vermelha do Monitor virou Gabarito (mesmo efeito).
-- Arte pendente, pela `nova_arte/`: ícones do Lightstick, do Teclado, do Mapa, do Gabarito (prancheta) e das 3 colabs novas; golpes e formas supremas. Até lá, ícones emprestados de `legado/itens` e golpes desenhados por código.
+- Ícones do Lightstick, do Teclado, do Mapa, do Gabarito (o Monitor com a prancheta) e das 3 colabs novas aprovados pelo Thaller e no jogo. Os golpes e as formas supremas continuam desenhados por código; sprite próprio só se o Thaller pedir.
 
 ## M5. Balanceamento e loja (sessão "Chefes em horário fixo")
 
