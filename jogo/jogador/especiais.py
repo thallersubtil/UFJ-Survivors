@@ -61,7 +61,7 @@ class SuperSaiyajin(Especial):
 class TelaAzul(Especial):
     NOME = "Tela Azul"
     DESCRICAO = "O jogo dos inimigos trava: os da tela ficam parados por 4 s e os projéteis deles somem."
-    ICONE = "sprites/bug.png"
+    ICONE = "icones/tela_azul.png"
     RECARGA = 50.0
     DURACAO = 4.0
     RAIO = 800                     # cobre a tela inteira em volta do aluno
@@ -116,7 +116,7 @@ class RevisaoParaProva(Especial):
 class Calourada(Especial):
     NOME = "Calourada"
     DESCRICAO = "Festa! 40% dos inimigos em volta viram seus aliados por 8 s; os outros batem 30% mais fraco."
-    ICONE = "icones/atletica.png"
+    ICONE = "icones/calourada.png"
     RECARGA = 50.0
     RAIO = 650
     CHANCE = 0.40
@@ -176,7 +176,7 @@ class ViradaDeNoite(Especial):
 
     NOME = "Virada de Noite"
     DESCRICAO = "Enche a garrafa com 100 doses de café; segurando Espaço, cada dose é um tiro de código na mira."
-    ICONE = "icones/garrafa.png"
+    ICONE = "icones/virada_de_noite.png"
     RECARGA = 45.0
     TIROS_POR_SEGUNDO = 10
     DANO = 9

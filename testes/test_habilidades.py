@@ -326,3 +326,12 @@ def test_camera_lenta_nao_atrasa_o_relogio_do_semestre(jogo_limpo):
         jogo.atualizar(1 / 30)
     assert jogo.placar.tempo - antes_placar == pytest.approx(1.0)
     assert jogo.fase.tempo - antes_fase == pytest.approx(1.0)
+
+
+def test_cada_habilidade_e_especial_tem_o_proprio_icone():
+    from jogo.jogador.especiais import Calourada, TelaAzul, ViradaDeNoite
+    from jogo.nucleo.recursos import Recursos
+    classes = list(HABILIDADES) + [TelaAzul, Calourada, ViradaDeNoite]
+    icones = [c.ICONE for c in classes]
+    assert all((Recursos.pasta / icone).is_file() for icone in icones)
+    assert len(set(icones)) == len(icones)               # nenhum ícone repetido entre elas

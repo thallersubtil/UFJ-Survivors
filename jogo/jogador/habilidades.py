@@ -1,7 +1,7 @@
 """As 21 habilidades das classes (3 por classe). Aparecem nas cartas de nível e têm 3 níveis.
 
-Números de partida: o balanceamento (marco M5 do plano do semestre) ajusta. Os ícones são provisórios, tirados
-dos que já existem, até a arte própria de cada uma ser aprovada.
+Números de partida: o balanceamento (marco M5 do plano do semestre) ajusta. Cada uma tem o próprio ícone em
+assets/icones/ (gerado em 27/11/2026 e aprovado pelo Thaller).
 """
 
 from jogo.config import Cor
@@ -44,7 +44,7 @@ class HabilidadeComRelogio(Habilidade):
 
 class InstintoOtaku(Habilidade):
     NOME = "Instinto Otaku"
-    ICONE = "icones/ssj.png"
+    ICONE = "icones/instinto_otaku.png"
     CHANCE = (0.08, 0.16, 0.25)
     DESCRICAO = "8% de chance de acerto crítico (dano em dobro)."
     MELHORIAS = ("16% de chance de crítico.", "25% de chance de crítico.")
@@ -56,7 +56,7 @@ class InstintoOtaku(Habilidade):
 class ArmaduraDeRoteiro(Habilidade):
     """O protagonista não morre no meio do episódio."""
     NOME = "Armadura de Roteiro"
-    ICONE = "icones/mochila.png"
+    ICONE = "icones/armadura_de_roteiro.png"
     INVENCIVEL = (2.0, 3.0, 4.0)
     RECARGA = (90.0, 75.0, 60.0)
     DESCRICAO = "O golpe que te derrubaria deixa 1 de vida e 2 s de invencibilidade. Volta em 90 s."
@@ -83,7 +83,7 @@ class ArmaduraDeRoteiro(Habilidade):
 
 class PoderDaAmizade(HabilidadeComRelogio):
     NOME = "Poder da Amizade"
-    ICONE = "icones/atletica.png"
+    ICONE = "icones/poder_da_amizade.png"
     POR_AMIGO = (0.05, 0.07, 0.10)
     MAXIMO = 0.50
     DESCRICAO = "+5% de dano por amigo em campo (Caramelo, Fusca, mascotes, possuídos), até +50%."
@@ -103,7 +103,7 @@ class PoderDaAmizade(HabilidadeComRelogio):
 
 class LacoDeRepeticao(Habilidade):
     NOME = "Laço de Repetição"
-    ICONE = "sprites/cobra.png"
+    ICONE = "icones/laco_de_repeticao.png"
     CHANCE = (0.10, 0.18, 0.28)
     DESCRICAO = "Cada disparo tem 10% de chance de repetir na hora."
     MELHORIAS = ("18% de chance de repetir.", "28% de chance de repetir.")
@@ -114,7 +114,7 @@ class LacoDeRepeticao(Habilidade):
 
 class Cafeinado(Habilidade):
     NOME = "Cafeinado"
-    ICONE = "icones/garrafa.png"
+    ICONE = "icones/cafeinado.png"
     DOSES = (20, 40, 60)
     RECARGA_POR_NIVEL = 0.016        # por nível do aluno
     RECARGA_MAXIMA = 0.40
@@ -129,7 +129,7 @@ class Cafeinado(Habilidade):
 class Compilar(Habilidade):
     """Gimmick do Programador: escreve código andando e, parado, compila tudo de uma vez."""
     NOME = "Compilar"
-    ICONE = "icones/pendrive.png"
+    ICONE = "icones/compilar.png"
     LINHAS_POR_SEGUNDO = 10
     MAXIMO_DE_LINHAS = 200
     MINIMO_PARA_COMPILAR = 10
@@ -173,7 +173,7 @@ class Compilar(Habilidade):
 
 class RolagemDeIniciativa(Habilidade):
     NOME = "Rolagem de Iniciativa"
-    ICONE = "icones/zoltraak.png"
+    ICONE = "icones/rolagem_de_iniciativa.png"
     RECARGA = (0.15, 0.30, 0.45)
     DESCRICAO = "O especial recarrega 15% mais rápido."
     MELHORIAS = ("30% mais rápido.", "45% mais rápido.")
@@ -184,7 +184,7 @@ class RolagemDeIniciativa(Habilidade):
 
 class FichaDePersonagem(Habilidade):
     NOME = "Ficha de Personagem"
-    ICONE = "icones/caderno.png"
+    ICONE = "icones/ficha_de_personagem.png"
     INTERVALO = 15.0
     BONUS = (0.30, 0.40, 0.50)
     ATRIBUTOS = (("FOR", "dano"), ("DES", "velocidade"), ("CON", "cura"), ("INT", "recarga"), ("SAB", "coleta"),
@@ -216,7 +216,7 @@ class FichaDePersonagem(Habilidade):
 class TesteDeResistencia(Habilidade):
     __test__ = False             # o nome começa com "Teste", mas não é um teste do pytest
     NOME = "Teste de Resistência"
-    ICONE = "icones/oculos.png"
+    ICONE = "icones/teste_de_resistencia.png"
     DIFICULDADE = (18, 16, 14)       # tirando isto ou mais no d20, o golpe não entra
     DESCRICAO = "Ao levar um golpe, rola um d20: com 18 ou mais, o golpe não entra."
     MELHORIAS = ("Salva com 16 ou mais.", "Salva com 14 ou mais.")
@@ -236,7 +236,7 @@ class TesteDeResistencia(Habilidade):
 
 class PlantaoDeDuvidas(Habilidade):
     NOME = "Plantão de Dúvidas"
-    ICONE = "icones/marmita.png"
+    ICONE = "icones/plantao_de_duvidas.png"
     REGENERACAO = (0.4, 0.8, 1.2)    # vida por segundo
     COLETA = (1.2, 1.4, 1.6)
     DESCRICAO = "Recupera 0,4 de vida por segundo e puxa as notas 20% mais de longe."
@@ -249,7 +249,7 @@ class PlantaoDeDuvidas(Habilidade):
 
 class CanetaVermelha(Habilidade):
     NOME = "Caneta Vermelha"
-    ICONE = "icones/apostila.png"
+    ICONE = "icones/caneta_vermelha.png"
     CHANCE = (0.10, 0.15, 0.20)
     DANO_EXTRA = (0.25, 0.33, 0.50)
     DURACAO_DA_MARCA = 5.0
@@ -273,7 +273,7 @@ class CanetaVermelha(Habilidade):
 class HorarioDeAtendimento(Habilidade):
     """Gimmick do Monitor: parado, abre o horário de atendimento."""
     NOME = "Horário de Atendimento"
-    ICONE = "icones/quadro_branco.png"
+    ICONE = "icones/horario_de_atendimento.png"
     PARADO = 1.0
     RAIO = 230
     LENTIDAO = (0.20, 0.30, 0.40)
@@ -316,7 +316,7 @@ class HorarioDeAtendimento(Habilidade):
 
 class Reflexo(Habilidade):
     NOME = "Reflexo"
-    ICONE = "icones/rolamento.png"
+    ICONE = "icones/reflexo.png"
     RECARGA = (0.15, 0.30, 0.45)
     DESCRICAO = "O rolamento recarrega 15% mais rápido."
     MELHORIAS = ("30% mais rápido.", "45% mais rápido.")
@@ -328,7 +328,7 @@ class Reflexo(Habilidade):
 class FramePerfect(Habilidade):
     """Gimmick do Gamer: rolar no último instante."""
     NOME = "Frame Perfect"
-    ICONE = "icones/controle.png"
+    ICONE = "icones/frame_perfect.png"
     PERIGO = 90                      # px: um golpe a esta distância está "chegando"
     CAMERA_LENTA = 1.0
     DANO = (0.30, 0.45, 0.60)
@@ -355,7 +355,7 @@ class FramePerfect(Habilidade):
 
 class Combo(Habilidade):
     NOME = "Combo"
-    ICONE = "icones/tenis.png"
+    ICONE = "icones/combo.png"
     ACERTOS = 50
     BONUS = (0.20, 0.30, 0.40)
     DURACAO = 10.0
@@ -393,7 +393,7 @@ class Combo(Habilidade):
 
 class SedeDeAprender(Habilidade):
     NOME = "Sede de Aprender"
-    ICONE = "icones/caderno.png"
+    ICONE = "icones/sede_de_aprender.png"
     EXPERIENCIA = (0.15, 0.30, 0.45)
     DESCRICAO = "+15% de experiência."
     MELHORIAS = ("+30% de experiência.", "+45% de experiência.")
@@ -404,7 +404,7 @@ class SedeDeAprender(Habilidade):
 
 class VeteranoCamarada(Habilidade):
     NOME = "Veterano Camarada"
-    ICONE = "icones/atletica.png"
+    ICONE = "icones/veterano_camarada.png"
     FORCA = (0.50, 0.75, 1.00)
     DESCRICAO = "Um veterano anda com você e usa a sua arma inicial com 50% da força."
     MELHORIAS = ("O veterano bate com 75% da força.", "O veterano bate com 100% da força.")
@@ -426,7 +426,7 @@ class VeteranoCamarada(Habilidade):
 
 class PerdidoNoCampus(HabilidadeComRelogio):
     NOME = "Perdido no Campus"
-    ICONE = "icones/tenis.png"
+    ICONE = "icones/perdido_no_campus.png"
     RAIO = 260
     POR_INIMIGO = (0.03, 0.04, 0.05)
     MAXIMO = 0.80
@@ -453,7 +453,7 @@ class PerdidoNoCampus(HabilidadeComRelogio):
 
 class CaronaSolidaria(Habilidade):
     NOME = "Carona Solidária"
-    ICONE = "icones/moeda.png"
+    ICONE = "icones/carona_solidaria.png"
     CHANCE = (0.12, 0.24, 0.36)
     DESCRICAO = "Inimigo que morre possuído (atropelado) tem 12% de chance de deixar uma moeda."
     MELHORIAS = ("24% de chance de moeda.", "36% de chance de moeda.")
@@ -464,7 +464,7 @@ class CaronaSolidaria(Habilidade):
 
 class Buzina(Habilidade):
     NOME = "Buzina"
-    ICONE = "icones/wifi.png"
+    ICONE = "icones/buzina.png"
     INTERVALO = 10.0
     RAIO = 260
     DANO_BASE = 20
@@ -497,7 +497,7 @@ class Buzina(Habilidade):
 class CarroLotado(HabilidadeComRelogio):
     """Gimmick do Cara da Carona: quanto mais gente no carro, mais forte."""
     NOME = "Carro Lotado"
-    ICONE = "sprites/fusca.png"
+    ICONE = "icones/carro_lotado.png"
     POR_PASSAGEIRO = (0.03, 0.04, 0.05)
     MAXIMO = 0.60
     DESCRICAO = "+3% de dano por passageiro (inimigo possuído) em campo, até +60%."
