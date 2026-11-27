@@ -358,7 +358,7 @@ class PreTreinoDuvidoso(Item):
 
 class ParcelarNoCartao(Item):
     NOME = "Parcelar no Cartão"
-    DESCRICAO = "Cada golpe entra só 30% na hora; o resto vem parcelado em 3 s."
+    DESCRICAO = "Cada golpe entra só 30% na hora; o resto vem parcelado em 3 s. A parcela que mataria vence a dívida toda."
     ICONE = "icones/moeda.png"
     MELHORIAS = ("Parcelado em 4 s.", "Parcelado em 5 s.", "Parcelado em 6 s.")
     NA_HORA = 0.30
@@ -367,12 +367,13 @@ class ParcelarNoCartao(Item):
     def __init__(self):
         super().__init__()
         self.dividas = []            # [quanto falta, quanto cobra por segundo]
+        self.cobrando = False        # a dívida venceu e está passando pelos outros itens: não parcela de novo
 
     def aplicar(self, jogador):
         """Nada fixo: o efeito está nos golpes."""
 
     def ao_ser_atingido(self, dano, jogador, jogo):
-        if dano <= 0:
+        if dano <= 0 or self.cobrando:
             return dano
         resto = dano * (1 - self.NA_HORA)
         self.dividas.append([resto, resto / self.PARCELAS[self.nivel - 1]])
@@ -386,11 +387,28 @@ class ParcelarNoCartao(Item):
         if jogador.imortal:
             self.dividas = []
             return
-        for divida in self.dividas:
-            parcela = min(divida[0], divida[1] * dt)
+        if jogador.invencivel > 0 or not self.dividas:   # invencível não paga: a cobrança espera
+            return
+        parcelas = [min(divida[0], divida[1] * dt) for divida in self.dividas]
+        if jogador.vida - sum(parcelas) <= 0:
+            self._vencer(jogador, jogo)
+            return
+        for divida, parcela in zip(self.dividas, parcelas):
             divida[0] -= parcela
-            jogador.vida = jogador.vida - parcela
+        jogador.vida = jogador.vida - sum(parcelas)
         self.dividas = [d for d in self.dividas if d[0] > 1e-6]
+
+    def _vencer(self, jogador, jogo):
+        """A parcela mataria: a dívida inteira vence de uma vez e entra como um golpe, pelos outros itens e
+        habilidades (o Atestado Médico e a Armadura de Roteiro decidem se o aluno cai)."""
+        divida, self.dividas = self.em_aberto, []
+        self.cobrando = True
+        try:
+            dano = jogador.filtrar_dano(divida, jogo)
+        finally:
+            self.cobrando = False
+        if dano > 0:
+            jogador.vida = jogador.vida - dano
 
 
 class MensalidadeDaAtletica(Item):

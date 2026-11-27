@@ -124,6 +124,63 @@ def test_parcelar_no_cartao_cobra_o_resto_aos_poucos(jogo_limpo):
     assert cartao.em_aberto == 0 and heroi.vida == pytest.approx(heroi.vida_maxima - 20, abs=0.5)
 
 
+def rodar(jogo, segundos):
+    for _ in range(round(30 * segundos)):
+        jogo.atualizar(1 / 30)
+
+
+@pytest.mark.parametrize("cartao_primeiro", [True, False])
+def test_parcela_que_mataria_passa_pelo_atestado_em_qualquer_ordem(jogo_limpo, cartao_primeiro):
+    jogo = jogo_limpo(MestreDeRPG)
+    heroi = jogo.jogador
+    heroi.armas = []
+    cartao, atestado = ParcelarNoCartao(), AtestadoMedico()
+    for item in ((cartao, atestado) if cartao_primeiro else (atestado, cartao)):
+        heroi.adicionar_item(item)
+    jogo.ferir_jogador(heroi.vida * 2)           # na hora entra só 60% da vida; o resto mataria em parcelas
+    rodar(jogo, 6)
+    assert heroi.esta_vivo
+    assert atestado not in heroi.itens and cartao.em_aberto == 0
+
+
+def test_parcela_que_mataria_passa_pela_armadura_de_roteiro(jogo_limpo):
+    from jogo.jogador.classes import Otaku
+    from jogo.jogador.habilidades import ArmaduraDeRoteiro
+    jogo = jogo_limpo(Otaku)
+    heroi = jogo.jogador
+    heroi.armas = []
+    heroi.adicionar_item(ParcelarNoCartao())         # itens vêm antes das habilidades nos reagentes
+    heroi.adicionar_habilidade(next(h for h in heroi.habilidades_da_classe if isinstance(h, ArmaduraDeRoteiro)))
+    jogo.ferir_jogador(heroi.vida * 2)
+    rodar(jogo, 6)
+    assert heroi.esta_vivo and heroi.itens[0].em_aberto == 0
+
+
+def test_parcela_nao_cobra_durante_a_invencibilidade(jogo_limpo):
+    jogo = jogo_limpo(MestreDeRPG)
+    heroi = jogo.jogador
+    heroi.armas = []
+    cartao = ParcelarNoCartao()
+    heroi.adicionar_item(cartao)
+    jogo.ferir_jogador(20)
+    vida = heroi.vida
+    heroi.invencivel = 10
+    rodar(jogo, 2)
+    assert cartao.em_aberto == pytest.approx(14) and heroi.vida == pytest.approx(vida)
+
+
+def test_marmita_reforca_a_propria_arma_inicial_e_nao_a_colab_que_ela_vira():
+    j = MestreDeRPG((0, 0))
+    assert j.armas == [j.arma_inicial]               # a mesma instância, sem criar uma arma a mais
+    outra = type(j.arma_inicial)()                    # outra do mesmo tipo (veterano, carta) não é a inicial
+    j.armas.append(outra)
+    j.adicionar_item(no_nivel(MarmitaDoRU(), 4))
+    assert j.arma_inicial.reforco > 1 and outra.reforco == 1.0
+    j.armas.remove(j.arma_inicial)                    # virou colab: o reforço sai junto
+    j.recalcular_atributos()
+    assert all(a.reforco == 1.0 for a in j.armas)
+
+
 def test_mensalidade_cobra_moedas_e_da_bonus_enquanto_paga(jogo_limpo):
     jogo = jogo_limpo(MestreDeRPG)
     heroi = jogo.jogador

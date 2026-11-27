@@ -275,7 +275,7 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Nível 4: +10% de dano.
 
 ### Parcelar no Cartão
-- Nível 1: Cada golpe entra só 30% na hora; o resto vem parcelado em 3 s.
+- Nível 1: Cada golpe entra só 30% na hora; o resto vem parcelado em 3 s. A parcela que mataria vence a dívida toda.
 - Nível 2: Parcelado em 4 s.
 - Nível 3: Parcelado em 5 s.
 - Nível 4: Parcelado em 6 s.

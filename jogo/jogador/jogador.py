@@ -44,8 +44,8 @@ class Jogador(SerVivo, ABC):
 
     def __init__(self, posicao):
         super().__init__(posicao, self.RAIO, self.VIDA)
-        self.TIPO_DA_ARMA_INICIAL = type(self.criar_arma_inicial())   # a arma que a Marmita do RU reforça
         self.armas = []
+        self.arma_inicial = self.criar_arma_inicial()     # a mesma que entra em armas; a Marmita do RU reforça ela
         self.itens = []
         self.bonus = []
         self.armas_em_colab = set()
@@ -67,10 +67,8 @@ class Jogador(SerVivo, ABC):
         self.experiencia = 0
         self.habilidades = []                              # as que o aluno já pegou nas cartas
         self.habilidades_da_classe = self.criar_habilidades()   # as três que as cartas podem oferecer
-        self.recalcular_atributos()
         self.especial = self.criar_especial()
-        self.especial.cargas_maximas = self.cargas_especial
-        self.adicionar_arma(self.criar_arma_inicial())
+        self.adicionar_arma(self.arma_inicial)
         self.recalcular_atributos()
 
     @abstractmethod
@@ -119,11 +117,10 @@ class Jogador(SerVivo, ABC):
             melhoria.aplicar(self)
         self.vida_maxima = (self.VIDA + self.vida_maxima_extra) * self.mult_vida_maxima
         reforco = 1 + self.reforco_por_vida * self.vida_maxima
-        for arma in getattr(self, "armas", ()):
-            arma.reforco = reforco if type(arma) is self.TIPO_DA_ARMA_INICIAL else 1.0
-        if getattr(self, "especial", None) is not None:
-            self.especial.cargas_maximas = self.cargas_especial
-            self.especial.reforco = reforco
+        for arma in self.armas:
+            arma.reforco = reforco if arma is self.arma_inicial else 1.0
+        self.especial.cargas_maximas = self.cargas_especial
+        self.especial.reforco = reforco
         if self.vida_maxima > maxima_antes:
             super().curar(self.vida_maxima - maxima_antes)   # a vida ganha entra inteira, sem bônus de cura
 

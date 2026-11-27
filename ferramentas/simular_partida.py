@@ -96,7 +96,7 @@ def custo_da_loja(loja):
 def escolher_carta(opcoes, heroi):
     """Prioridade simples: colab, arma inicial, outras armas (melhorar antes de pegar nova), o que não for
     arma nem item (habilidades), itens. Nas cartas de nível máximo: vida se estiver mal, senão moedas."""
-    inicial = type(heroi.criar_arma_inicial())
+    inicial = type(heroi.arma_inicial)
 
     def prioridade(opcao):
         origem = opcao.origem
