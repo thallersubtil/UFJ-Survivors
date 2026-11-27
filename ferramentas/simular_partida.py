@@ -33,7 +33,9 @@ import pygame  # noqa: E402
 from jogo.armas.arma import Arma  # noqa: E402
 from jogo.coletaveis.coletaveis import PocaoDeVida  # noqa: E402
 from jogo.itens.item import Item  # noqa: E402
-from jogo.itens.itens import ITENS  # noqa: E402
+from jogo.itens.itens import (ITENS, MensalidadeDaAtletica, NoiteSemDormir, ParcelarNoCartao,  # noqa: E402
+                              PreTreinoDuvidoso)
+from jogo.inimigos.mini_chefes import MiniChefe  # noqa: E402
 from jogo.jogador.classes import CLASSES  # noqa: E402
 from jogo.jogo import Jogo  # noqa: E402
 from jogo.loja.melhorias import MELHORIAS  # noqa: E402
@@ -93,9 +95,14 @@ def custo_da_loja(loja):
 
 # ---------------------------------------------------------------- cartas
 
+# Itens com preço alto (vida, dano recebido, moedas): o robô só pega quando não há outra carta.
+ITENS_DE_RISCO = (PreTreinoDuvidoso, NoiteSemDormir, ParcelarNoCartao, MensalidadeDaAtletica)
+
+
 def escolher_carta(opcoes, heroi):
     """Prioridade simples: colab, arma inicial, outras armas (melhorar antes de pegar nova), o que não for
-    arma nem item (habilidades), itens. Nas cartas de nível máximo: vida se estiver mal, senão moedas."""
+    arma nem item (habilidades), itens, e por último os itens de risco (um jogador razoável só pega se não houver
+    outra coisa). Nas cartas de nível máximo: vida se estiver mal, senão moedas."""
     inicial = type(heroi.arma_inicial)
 
     def prioridade(opcao):
@@ -106,12 +113,14 @@ def escolher_carta(opcoes, heroi):
             return 1
         if isinstance(origem, type) and issubclass(origem, Arma):
             return 2 if opcao.tipo == "melhoria" else 3
+        if origem in ITENS_DE_RISCO:
+            return 8
         if isinstance(origem, type) and issubclass(origem, Item):
             return 6 if opcao.tipo == "melhoria" else 7
         if opcao.tipo == "maximo":
             cura = "vida" in opcao.descricao.lower()
             precisa = heroi.vida < heroi.vida_maxima * 0.6
-            return 8 if cura == precisa else 9
+            return 9 if cura == precisa else 10
         return 4                                    # habilidades e o que vier de novo
 
     return min(opcoes, key=prioridade)
@@ -255,9 +264,21 @@ class Robo:
             nota = self._nota_perto()
             if nota is not None and not jogo.inimigos_proximos(onde, self.PERTO_DEMAIS):
                 desejo = nota.posicao - onde
+            if circulo is None:
+                desejo = self._normal(desejo) + self._sair_dos_circulos() * 3.0
         desejo = self._normal(desejo) * 1.0 + self._afastar_dos_perto() * 2.0
         desejo = self._destravar(desejo, dt)
         return self._normal(desejo)
+
+    def _sair_dos_circulos(self):
+        """Quem não vai caçar agora não fica parado num círculo (invocaria sem querer): sai pelo lado mais perto.
+        Vale também para o círculo secreto, que ainda não está no mapa."""
+        onde = self.jogo.jogador.posicao
+        for circulo in self.jogo.grupos["invocacao"]:
+            de_la = onde - circulo.posicao
+            if circulo.ativo and de_la.length() < circulo.raio + 30:
+                return self._normal(de_la if de_la.length_squared() > 1 else pygame.Vector2(1, 0))
+        return pygame.Vector2()
 
     def _rodear(self, centro, distancia):
         """Anda em volta de `centro`, chegando ou se afastando até ficar a `distancia` dele."""
@@ -345,6 +366,22 @@ class Robo:
 # ---------------------------------------------------------------- uma partida
 
 @dataclass
+class Luta:
+    """Uma luta contra mini-chefe: quando ele apareceu, nível e fração da vida do aluno nessa hora, e como acabou."""
+    nome: str
+    inicio: float
+    nivel: int
+    vida: float
+    fim: float = None
+    venceu: bool = False
+    vida_do_mini_chefe: float = 1.0      # fração da vida que ele ainda tinha quando a luta acabou
+
+    @property
+    def duracao(self):
+        return (self.fim if self.fim is not None else self.inicio) - self.inicio
+
+
+@dataclass
 class Resultado:
     classe: str
     semente: int
@@ -361,6 +398,7 @@ class Resultado:
     pior_quadro_ms: float = 0.0
     quadro_medio_ms: float = 0.0
     pico_inimigos: int = 0
+    lutas: list = field(default_factory=list)               # uma Luta por mini-chefe invocado
 
     @property
     def honras(self):
@@ -383,6 +421,7 @@ def jogar(classe, semente, loja="nada", cacar=True, minutos=21.0, imortal=False,
     robo = Robo(jogo, cacar=cacar)
     r = Resultado(classe.NOME, semente, loja, cacar)
     vistos, soma, quadros = set(), 0.0, 0
+    lutas = {}                                              # mini-chefe -> Luta, enquanto ele está em campo
     while not jogo.terminou and jogo.placar.tempo < minutos * 60:
         robo.agir(DT)
         antes = time.thread_time()
@@ -396,6 +435,7 @@ def jogar(classe, semente, loja="nada", cacar=True, minutos=21.0, imortal=False,
             if chefe not in vistos:
                 vistos.add(chefe)
                 r.niveis_nos_chefes.append(jogo.jogador.nivel)
+        _acompanhar_lutas(jogo, lutas, r)
         while len(r.chefes_caidos) < jogo.chefes_derrotados:
             r.chefes_caidos.append(jogo.placar.tempo)
         while jogo.niveis_pendentes > 0:
@@ -409,6 +449,9 @@ def jogar(classe, semente, loja="nada", cacar=True, minutos=21.0, imortal=False,
                   f"/{jogo.jogador.vida_maxima:.0f}  inimigos {len(jogo.inimigos):>3}  "
                   f"eliminações {jogo.placar.eliminacoes:>5}  mini-chefes {jogo.mini_chefes_derrotados}  "
                   f"chefes {jogo.chefes_derrotados}  dificuldade {jogo.fase.escala_dificuldade:.1f}", flush=True)
+    for inimigo, luta in lutas.items():
+        luta.fim = jogo.placar.tempo                        # a partida acabou com ele de pé
+        luta.vida_do_mini_chefe = max(0.0, inimigo.vida / inimigo.vida_maxima)
     r.mini_chefes = jogo.mini_chefes_derrotados
     r.resultado = "HONRAS" if jogo.honras else "FIM" if jogo.venceu else "REPROVADO"
     r.moedas = jogo.moedas_ganhas()
@@ -417,6 +460,20 @@ def jogar(classe, semente, loja="nada", cacar=True, minutos=21.0, imortal=False,
     r.nivel_final = jogo.jogador.nivel
     r.quadro_medio_ms = soma / max(1, quadros) * 1000
     return r
+
+
+def _acompanhar_lutas(jogo, lutas, r):
+    """Abre uma Luta quando um mini-chefe aparece e fecha quando ele sai de campo (vencido se a vida zerou)."""
+    heroi = jogo.jogador
+    for inimigo in jogo.inimigos:
+        if isinstance(inimigo, MiniChefe) and inimigo not in lutas and inimigo.ativo:
+            luta = Luta(inimigo.NOME, jogo.placar.tempo, heroi.nivel, heroi.vida / heroi.vida_maxima)
+            lutas[inimigo] = luta
+            r.lutas.append(luta)
+    for inimigo in [i for i in lutas if not i.ativo]:
+        luta = lutas.pop(inimigo)
+        luta.fim, luta.venceu = jogo.placar.tempo, inimigo.vida <= 0
+        luta.vida_do_mini_chefe = max(0.0, inimigo.vida / inimigo.vida_maxima)
 
 
 def _relogio(segundos):
@@ -429,7 +486,17 @@ def linha_da_partida(r):
     caidos = " / ".join(_relogio(t) for t in r.chefes_caidos) or "-"
     return (f"{r.classe:<15} semente {r.semente:>2}  nível nos chefes {niveis:<10}  chefes caíram {caidos:<21}  "
             f"mini-chefes {r.mini_chefes:>2}  {r.resultado:<9} em {_relogio(r.tempo)}  moedas {r.moedas:>5}  "
-            f"(nível final {r.nivel_final}, pior quadro {r.pior_quadro_ms:.0f} ms, pico {r.pico_inimigos})")
+            f"{_primeira_luta(r)}  (nível final {r.nivel_final}, pior quadro {r.pior_quadro_ms:.0f} ms, "
+            f"pico {r.pico_inimigos})")
+
+
+def _primeira_luta(r):
+    if not r.lutas:
+        return "nenhum mini-chefe"
+    luta = r.lutas[0]
+    desfecho = "venceu" if luta.venceu else "perdeu"
+    return (f"1º mini-chefe no nível {luta.nivel} às {_relogio(luta.inicio)} com {luta.vida:.0%} da vida: "
+            f"{desfecho} em {luta.duracao:.0f} s, ele com {luta.vida_do_mini_chefe:.0%}")
 
 
 def _porcento(parte, todo):
@@ -441,6 +508,11 @@ def _media_do_nivel(resultados, indice):
     return f"{statistics.mean(niveis):>5.1f}" if niveis else "    -"
 
 
+def _nivel_da_primeira_luta(resultados):
+    niveis = [r.lutas[0].nivel for r in resultados if r.lutas]
+    return f"{statistics.mean(niveis):.1f}" if niveis else "-"
+
+
 def tabela_por_classe(resultados):
     """Tabela-resumo: por classe e no total, quanto vence cada chefe, fim do semestre (os três chefes), honras
     (os três e vivo aos 20:00), tempo, níveis e moedas."""
@@ -450,7 +522,7 @@ def tabela_por_classe(resultados):
     grupos["TOTAL"] = list(resultados)
     cabecalho = (f"{'classe':<15} {'partidas':>8} {'1º chefe':>8} {'2º chefe':>8} {'fim sem.':>8} {'honras':>7} "
                  f"{'tempo med.':>10} {'nível 1º':>8} {'nível 2º':>8} {'nível 3º':>8} {'mini-chefes':>11} "
-                 f"{'moedas med.':>11}")
+                 f"{'moedas med.':>11} {'nível 1º mini':>13} {'vence 1º mini':>13}")
     linhas = [cabecalho, "-" * len(cabecalho)]
     for nome, lista in grupos.items():
         n = len(lista)
@@ -462,7 +534,8 @@ def tabela_por_classe(resultados):
             f"{_relogio(statistics.median(r.tempo for r in lista)):>10} "
             f"{_media_do_nivel(lista, 0):>8} {_media_do_nivel(lista, 1):>8} {_media_do_nivel(lista, 2):>8} "
             f"{statistics.mean(r.mini_chefes for r in lista):>11.1f} "
-            f"{statistics.median(r.moedas for r in lista):>11.0f}")
+            f"{statistics.median(r.moedas for r in lista):>11.0f} {_nivel_da_primeira_luta(lista):>13} "
+            f"{_porcento(sum(bool(r.lutas) and r.lutas[0].venceu for r in lista), n):>13}")
     return "\n".join(linhas)
 
 

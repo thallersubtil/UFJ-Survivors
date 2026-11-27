@@ -154,3 +154,80 @@ def test_tabela_separa_fim_do_semestre_de_honras():
     assert "fim sem." in tabela.splitlines()[0]
     total = tabela.splitlines()[-1].split()
     assert total[0] == "TOTAL" and total[4:6] == ["67%", "33%"]     # fim do semestre 2 de 3, honras 1 de 3
+
+
+def test_itens_de_risco_ficam_por_ultimo_nas_cartas():
+    from jogo.itens.itens import (ITENS, MensalidadeDaAtletica, NoiteSemDormir, ParcelarNoCartao,
+                                  PreTreinoDuvidoso)
+    heroi = Programador((0, 0))
+    comum = next(classe for classe in ITENS if classe not in simulador.ITENS_DE_RISCO)
+    for risco in (PreTreinoDuvidoso, NoiteSemDormir, ParcelarNoCartao, MensalidadeDaAtletica):
+        assert risco in simulador.ITENS_DE_RISCO
+        arriscado, seguro = carta("nova", risco), carta("nova", comum)
+        assert simulador.escolher_carta([arriscado, seguro], heroi) is seguro
+        assert simulador.escolher_carta([carta("melhoria", risco), seguro], heroi) is seguro
+        assert simulador.escolher_carta([arriscado], heroi) is arriscado
+
+
+def test_lutas_contra_mini_chefe_ficam_registradas_com_nivel_vida_e_desfecho():
+    vencida = simulador.Luta("Vigilante", inicio=200, nivel=6, vida=0.9, fim=240, venceu=True)
+    perdida = simulador.Luta("Reitor", inicio=500, nivel=9, vida=1.0, fim=510)
+    assert vencida.duracao == 40 and perdida.duracao == 10 and not perdida.venceu
+    com = simulador.Resultado("Otaku", 1, "nada", True, resultado="REPROVADO", tempo=510, lutas=[vencida, perdida])
+    sem = simulador.Resultado("Otaku", 2, "nada", True, resultado="REPROVADO", tempo=100)
+    assert "1º mini-chefe no nível 6" in simulador.linha_da_partida(com)
+    cabecalho, _, *_, total = simulador.tabela_por_classe([com, sem]).splitlines()
+    assert "nível 1º mini" in cabecalho and "vence 1º mini" in cabecalho
+    assert total.split()[-2:] == ["6.0", "50%"]           # nível médio da 1ª luta e quantos venceram a 1ª
+
+
+def test_a_partida_registra_a_luta_quando_o_mini_chefe_aparece_e_quando_ele_cai():
+    from jogo.inimigos.mini_chefes import Vigilante
+    jogo = jogo_de_teste()
+    heroi = jogo.jogador
+    heroi.nivel, heroi.vida = 6, heroi.vida_maxima * 0.5
+    r, lutas = simulador.Resultado("Otaku", 1, "nada", True), {}
+    vigilante = Vigilante(heroi.posicao + (300, 0))
+    jogo.adicionar(vigilante)
+    jogo._incorporar_novas()
+    simulador._acompanhar_lutas(jogo, lutas, r)
+    simulador._acompanhar_lutas(jogo, lutas, r)          # o mesmo mini-chefe não abre duas lutas
+    assert len(r.lutas) == 1 and r.lutas[0].nivel == 6 and r.lutas[0].vida == 0.5 and r.lutas[0].fim is None
+    jogo.placar.tempo += 30
+    jogo.causar_dano(vigilante, vigilante.vida * 2)
+    simulador._acompanhar_lutas(jogo, lutas, r)
+    assert r.lutas[0].venceu and r.lutas[0].duracao == 30 and not lutas and r.lutas[0].vida_do_mini_chefe == 0
+
+
+def test_quem_nao_vai_cacar_sai_do_circulo_em_vez_de_invocar_sem_querer():
+    jogo = jogo_de_teste(Programador)
+    jogo.jogador.imortal = True
+    jogo.jogador.posicao = jogo.mapa.empurrar(pygame.Vector2(jogo.arena.center), 100)   # sem inimigos, ele vai ao centro
+    jogo.fase.alvo_com = lambda jogo: 0                  # e ninguém nasce para tirá-lo de lá
+    circulo = LocalDeInvocacao(pygame.Vector2(jogo.jogador.posicao), "tia_da_cantina")
+    jogo.adicionar(circulo)
+    jogo._incorporar_novas()
+    robo = simulador.Robo(jogo, cacar=False)
+    for _ in range(30 * 4):
+        robo.agir(1 / 30)
+        jogo.atualizar(1 / 30)
+    assert circulo.ativo and jogo.jogador.posicao.distance_to(circulo.posicao) > circulo.raio
+
+
+def test_a_mesma_semente_da_a_mesma_partida_em_processos_diferentes():
+    """A ordem de um set de objetos ou textos muda de um processo para outro (PYTHONHASHSEED): nada da lógica
+    do jogo pode depender dela, senão a mesma semente não repete a partida."""
+    import os
+    import subprocess
+    raiz = Path(__file__).resolve().parent.parent
+    codigo = ("import sys; sys.path[:0] = ['ferramentas', '.']; import simular_partida as s; "
+              "from jogo.jogador.classes import CLASSES; "
+              "r = s.jogar(CLASSES[1], 1, 'nada', True, 1.5); "
+              "print(round(r.tempo, 3), r.eliminacoes, r.nivel_final, r.moedas, len(r.lutas))")
+    saidas = set()
+    for semente_do_hash in ("1", "2", "3"):
+        ambiente = dict(os.environ, PYTHONHASHSEED=semente_do_hash, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy")
+        saida = subprocess.run([sys.executable, "-c", codigo], cwd=raiz, env=ambiente, capture_output=True,
+                               text=True, timeout=300, check=True).stdout.strip().splitlines()[-1]
+        saidas.add(saida)
+    assert len(saidas) == 1, saidas

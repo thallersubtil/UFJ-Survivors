@@ -114,19 +114,46 @@ def test_todos_os_mini_chefes_ficam_disponiveis_desde_o_inicio():
     assert len(jogo.grupos["invocacao"]) == len(MINI_CHEFES)
 
 
-def test_mini_chefe_fica_mais_forte_com_o_tempo_de_partida(jogo_limpo):
-    def invocado_aos(segundos):
+def test_mini_chefe_fica_mais_forte_pela_ordem_da_cacada_e_nao_pelo_relogio(jogo_limpo):
+    def invocado(segundos, ja_derrotados):
         jogo = jogo_limpo()
         jogo.jogador.imortal = True
         jogo.placar.tempo = segundos
+        jogo.mini_chefes_derrotados = ja_derrotados
         local = LocalDeInvocacao(jogo.jogador.posicao, "vigilante")
         jogo.adicionar(local)
         jogo._incorporar_novas()
         return local.invocar(jogo)
 
-    cedo, tarde = invocado_aos(0), invocado_aos(Jogo.TEMPO_DO_MINI_CHEFE * 3)
-    assert cedo.vida_maxima == cedo.VIDA and tarde.vida_maxima == pytest.approx(cedo.VIDA * 4)
-    assert tarde.fator_de_dano > cedo.fator_de_dano == 1
+    cedo, tarde = invocado(2 * 60, 0), invocado(12 * 60, 0)
+    assert cedo.vida_maxima == tarde.vida_maxima == cedo.VIDA            # o 1º vem na vida base a qualquer hora
+    assert cedo.fator_de_dano == tarde.fator_de_dano == 1
+    terceiro = invocado(2 * 60, 2)
+    assert terceiro.vida_maxima == pytest.approx(cedo.VIDA * (1 + 2 * Jogo.FORCA_POR_MINI_CHEFE))
+    assert terceiro.fator_de_dano > cedo.fator_de_dano
+
+
+def test_invocar_abre_espaco_em_volta_do_aluno_como_a_chegada_de_um_chefe(jogo_limpo):
+    from jogo.inimigos.bug import Bug
+    from jogo.inimigos.mini_chefes import MiniChefe
+    jogo = jogo_limpo()
+    jogo.jogador.imortal = True
+    aqui = jogo.jogador.posicao
+    perto, longe = Bug(aqui + (200, 0)), Bug(aqui + (MiniChefe.GUARDA + 400, 0))
+    gigante = FabricaDeInimigos.criar_gigante("calculadora", aqui + (0, 250))
+    possuido = Bug(aqui + (-200, 0))
+    possuido.possuir(5)
+    outro_mini = FabricaDeInimigos.criar("tia_da_cantina", aqui + (0, -300))
+    local = LocalDeInvocacao(aqui, "vigilante")
+    for e in (perto, longe, gigante, possuido, outro_mini, local):
+        jogo.adicionar(e)
+    jogo._incorporar_novas()
+    mini = local.invocar(jogo)
+    assert not perto.ativo                                         # o lacaio comum perto do aluno sai
+    assert longe.ativo and gigante.ativo and possuido.ativo and outro_mini.ativo
+    jogo._incorporar_novas()
+    novos = [e for e in jogo.inimigos if e.ativo and e not in (mini, longe, gigante, possuido, outro_mini)]
+    assert len(novos) == mini.LACAIOS_NA_CHEGADA                   # os lacaios dele chegam depois da limpeza
 
 
 def test_mini_chefe_invocado_entra_pela_borda_da_tela(jogo_limpo):
@@ -202,6 +229,25 @@ def test_circulo_fica_perto_do_predio_do_mini_chefe(jogo_limpo):
     if esperado is not None:
         assert local.posicao.distance_to(esperado) < 1 and not jogo.mapa.bloqueado(local.posicao, 60)
     assert jogo.fase.abrir_invocacao(jogo, "tia_da_cantina") is None      # não repete enquanto o primeiro existe
+
+
+def test_nenhum_circulo_fica_perto_de_onde_o_aluno_nasce(jogo_limpo, monkeypatch):
+    from jogo.inimigos.mini_chefes import MINI_CHEFES
+    for semente in range(1, 6):
+        jogo = jogo_limpo()
+        jogo.rng.seed(semente)
+        jogo.fase.abrir_invocacoes(jogo)
+        jogo._incorporar_novas()
+        assert len(jogo.grupos["invocacao"]) == len(MINI_CHEFES)
+        for circulo in jogo.grupos["invocacao"]:
+            assert circulo.posicao.distance_to(jogo.mapa.inicio) >= jogo.fase.LONGE_DO_INICIO, circulo.CHAVE
+    # um mini-chefe cujo ponto fixo cai em cima do início é empurrado para longe, para fora dos prédios
+    jogo = jogo_limpo()
+    classe = FabricaDeInimigos.classe("agroboy")
+    monkeypatch.setattr(classe, "PONTO", tuple(jogo.mapa.inicio + (40, 0)))
+    local = jogo.fase.abrir_invocacao(jogo, "agroboy")
+    assert local.posicao.distance_to(jogo.mapa.inicio) >= jogo.fase.LONGE_DO_INICIO
+    assert not jogo.mapa.bloqueado(local.posicao, 60)
 
 
 def test_culto_secreto_so_entra_no_mapa_quando_o_aluno_chega_perto(jogo_limpo):

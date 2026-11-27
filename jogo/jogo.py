@@ -136,16 +136,23 @@ class Jogo:
         return self.grupos["inimigo"]
 
     @property
+    def alivio_de_nascimento(self):
+        """Fração do alvo de inimigos que a fase deixa nascer agora: a de quem mais alivia entre os vivos (1 se
+        ninguém alivia). Cada inimigo diz o seu (`ALIVIO_NO_CAMPO`): chefes e mini-chefes, menos que 1."""
+        return min((e.ALIVIO_NO_CAMPO for e in self.inimigos if e.ativo), default=1.0)
+
+    @property
     def campo_cheio(self):
         """Se já há inimigos demais em campo: quem chama reforço (os chefes) espera esvaziar."""
         return len(self.inimigos) >= MAX_INIMIGOS
 
-    TEMPO_DO_MINI_CHEFE = 180     # a cada tantos segundos de partida o mini-chefe ganha mais uma vez a vida base
+    FORCA_POR_MINI_CHEFE = 0.5    # cada mini-chefe já derrotado deixa o próximo com mais esta fração da vida base
 
     @property
     def escala_dos_mini_chefes(self):
-        """Quanto mais tarde na partida o aluno invoca, mais forte o mini-chefe vem (vida, dano e lacaios)."""
-        return 1 + self.placar.tempo / self.TEMPO_DO_MINI_CHEFE
+        """Os mini-chefes ficam mais fortes pela ordem da caçada, não pelo relógio: o primeiro vem na força
+        base a qualquer hora, e cada um derrotado deixa o próximo mais forte (vida, dano e lacaios)."""
+        return 1 + self.mini_chefes_derrotados * self.FORCA_POR_MINI_CHEFE
 
     def marcadores(self):
         """O que aparece no mini-mapa: círculos de invocação à espera e mini-chefes já invocados e vivos."""
@@ -416,11 +423,16 @@ class Jogo:
         """O chefe vivo que encerra a `prova` (uma ProvaMarcada), ou None."""
         return next((c for c in self.chefes if self._prova_de.get(c) == prova), None)
 
-    def iniciar_chefe(self, chefe, prova=None):
-        """Põe em campo o chefe que encerra `prova`. Os lacaios comuns saem para abrir espaço; chefes
-        vivos e mini-chefes ficam (cada um decide em `ao_chegar_o_chefe`)."""
+    def abrir_espaco(self, centro=None, raio=None):
+        """Um chefe ou mini-chefe vai entrar: os lacaios comuns saem (no campo todo, ou só a até `raio` de
+        `centro`); gigantes, possuídos, chefes e mini-chefes ficam (cada um decide em `ao_chegar_o_chefe`)."""
         for inimigo in self.inimigos:
-            inimigo.ao_chegar_o_chefe(self)
+            if raio is None or inimigo.posicao.distance_to(centro) <= raio:
+                inimigo.ao_chegar_o_chefe(self)
+
+    def iniciar_chefe(self, chefe, prova=None):
+        """Põe em campo o chefe que encerra `prova`, abrindo espaço no campo todo."""
+        self.abrir_espaco()
         if prova is not None:
             self._prova_de[chefe] = prova
         self.chefes.append(chefe)

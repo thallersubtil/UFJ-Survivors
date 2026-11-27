@@ -33,12 +33,18 @@ class LacaioEmZiguezague(LacaioDoCampus):
     AMPLITUDE = 110
     FREQUENCIA = 5.0
 
+    def __init__(self, posicao, escala=1.0):
+        super().__init__(posicao, escala)
+        # cada um balança num compasso próprio; vem de onde nasceu (não do endereço na memória), para a mesma
+        # semente repetir a mesma partida
+        self.fase_do_balanco = (self.posicao.x * 0.37 + self.posicao.y * 0.61) % (2 * math.pi)
+
     def mover(self, dt, jogo):
         rumo = jogo.jogador.posicao - self.posicao
         if rumo.length_squared() < 1:
             return
         rumo.normalize_ip()
-        lado = pygame.Vector2(-rumo.y, rumo.x) * math.sin(self.tempo * self.FREQUENCIA + id(self) % 7)
+        lado = pygame.Vector2(-rumo.y, rumo.x) * math.sin(self.tempo * self.FREQUENCIA + self.fase_do_balanco)
         self.posicao += (rumo * self.velocidade + lado * self.AMPLITUDE) * dt
         self.olhando_esquerda = rumo.x < 0
 

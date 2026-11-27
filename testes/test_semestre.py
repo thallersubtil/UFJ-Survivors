@@ -190,8 +190,30 @@ def test_com_chefe_em_campo_nascem_menos_inimigos():
     pular_para(jogo, 5 * 60)
     jogo.fase.tempo = 400
     cheio = jogo.fase.alvo_de_inimigos()
-    assert jogo.fase.alvo_com(jogo) == int(cheio * jogo.fase.ALIVIO_COM_CHEFE)
+    assert jogo.fase.alvo_com(jogo) == int(cheio * jogo.chefe.ALIVIO_NO_CAMPO) < cheio
     derrubar(jogo, jogo.chefe)
+    assert jogo.fase.alvo_com(jogo) == cheio
+
+
+def test_na_luta_com_mini_chefe_tambem_nascem_menos_inimigos():
+    from jogo.invocacao import LocalDeInvocacao
+    jogo = partida()
+    for e in jogo.inimigos:
+        e.remover()
+    jogo._limpar()
+    jogo.fase.tempo = 150
+    cheio = jogo.fase.alvo_de_inimigos()
+    assert jogo.fase.alvo_com(jogo) == cheio and jogo.alivio_de_nascimento == 1
+    jogo.adicionar(Bug(jogo.jogador.posicao + (300, 0)))            # lacaio comum não alivia nada
+    local = LocalDeInvocacao(jogo.jogador.posicao, "vigilante")
+    jogo.adicionar(local)
+    jogo._incorporar_novas()
+    assert jogo.fase.alvo_com(jogo) == cheio
+    mini = local.invocar(jogo)
+    jogo._incorporar_novas()
+    assert jogo.fase.alvo_com(jogo) == int(cheio * mini.ALIVIO_NO_CAMPO) < cheio
+    jogo.causar_dano(mini, mini.vida * 2)
+    jogo._limpar()
     assert jogo.fase.alvo_com(jogo) == cheio
 
 

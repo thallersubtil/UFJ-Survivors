@@ -29,7 +29,6 @@ class Fase(ABC):
     ALVO_INICIAL = 10             # inimigos em campo no primeiro segundo
     ALVO_POR_SEGUNDO = 0.5        # quantos a mais a cada segundo de partida...
     ALVO_ACELERACAO = 1.5         # ...e mais isto vezes (minutos de partida)²: o começo é calmo, o fim enche a tela
-    ALIVIO_COM_CHEFE = 0.6        # com chefe em campo o alvo cai para esta fração (a luta já ocupa o aluno)
     PASSO_DIFICULDADE = 180       # segundos para a dificuldade subir 1 ponto
 
     def __init__(self):
@@ -82,9 +81,8 @@ class Fase(ABC):
         return min(MAX_INIMIGOS, int(alvo))
 
     def alvo_com(self, jogo):
-        """O alvo deste instante, aliviado enquanto houver chefe em campo."""
-        alvo = self.alvo_de_inimigos()
-        return int(alvo * self.ALIVIO_COM_CHEFE) if jogo.chefe is not None else alvo
+        """O alvo deste instante, aliviado enquanto houver chefe ou mini-chefe vivo em campo."""
+        return int(self.alvo_de_inimigos() * jogo.alivio_de_nascimento)
 
     def intervalo_de_nascimento(self):
         """Segundos entre um grupo e o próximo: quanto mais tarde na partida, mais rápido eles chegam."""
@@ -222,12 +220,30 @@ class Fase(ABC):
             posicao.x = max(jogo.arena.left + 120, min(posicao.x, jogo.arena.right - 120))
             posicao.y = max(jogo.arena.top + 120, min(posicao.y, jogo.arena.bottom - 120))
             posicao = jogo.mapa.empurrar(posicao, 100)
+        posicao = self._longe_do_inicio(jogo, posicao)
         local = LocalDeInvocacao(posicao, nome)
         local.revelado = jogo.mini_chefe_conhecido(nome)
         jogo.adicionar(local)
         if anunciar and not classe.SECRETO:
             jogo.anunciar(f"{local.NOME} apareceu {classe.ONDE}!  [M] mapa", 4)
         return local
+
+    LONGE_DO_INICIO = 900          # nenhum círculo a menos disto de onde o aluno nasce (não se invoca sem querer)
+
+    def _longe_do_inicio(self, jogo, posicao):
+        """Afasta do ponto de partida o círculo que caiu perto dele, na mesma direção, sem entrar em prédio."""
+        de_la = pygame.Vector2(posicao) - jogo.mapa.inicio
+        if de_la.length() >= self.LONGE_DO_INICIO:
+            return pygame.Vector2(posicao)
+        if de_la.length_squared() < 1:
+            de_la = pygame.Vector2(1, 0)
+        distancia = self.LONGE_DO_INICIO + 20
+        for _ in range(12):
+            ponto = jogo.mapa.empurrar(jogo.mapa.inicio + de_la.normalize() * distancia, 100)
+            if ponto.distance_to(jogo.mapa.inicio) >= self.LONGE_DO_INICIO and jogo.arena.collidepoint(ponto):
+                return ponto
+            de_la.rotate_ip(30)
+        return ponto
 
     ABERTURA_DAS_INVOCACOES = 2.0   # segundos de partida até os círculos dos mini-chefes aparecerem
 
