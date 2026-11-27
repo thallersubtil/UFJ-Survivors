@@ -59,7 +59,7 @@ jogo/jogador/          Jogador (abstrata), classes.py (as 7 classes), Passiva e 
 jogo/loja/             Centro Acadêmico: Progresso (moedas e compras salvas), Melhoria (abstrata) e as melhorias
                        permanentes, JogoDeAposta (abstrata) e os jogos do cassino
 jogo/inimigos/         Inimigo (abstrata), FabricaDeInimigos, um arquivo por lacaio, Chefe, ChefePossuido e os três chefes,
-                       MiniChefe (abstrata) e os 11 mini-chefes do mapa (mini_chefes.py), LacaioDoCampus e os lacaios deles
+                       MiniChefe (abstrata) e os 12 mini-chefes do mapa (mini_chefes.py), LacaioDoCampus e os lacaios deles
                        (lacaios_do_campus.py)
 jogo/inimigos/quebraveis.py  ObjetoQuebravel (um Inimigo que não anda nem fere) e os três objetos; o Jogo os espalha uma vez só, no começo, longe do aluno e uns dos outros
 jogo/inimigos/materias/  Materia (abstrata) e as cinco matérias: os ataques de cada chefe
@@ -107,6 +107,8 @@ docs/                  entregas, diagrama, registro de uso de IA, guia do códig
 2. Salve em `arte_bruta/disgaea/` (fora do git) e acrescente uma linha em `RECEITA` de `ferramentas/montar_sprites.py` (folha, pasta, animação, quadros, altura na tela; extras como `gigante`, `linha`, `faixa` estão documentados no topo do arquivo).
 3. Rode `.venv/bin/python ferramentas/montar_sprites.py`. As folhas brutas estão com o Thaller.
 Se a pasta não existir, o jogo usa a imagem estática `IMAGEM` ou um círculo colorido; nada quebra.
+
+**Animação especial de mini-chefe** (arremesso, golpe, segunda fase): gere a folha com a folha de andar dele como referência (quadros em grade, com vão entre eles), acrescente a animação em `EXTRAS` de `ferramentas/montar_mini_chefes.py` (corte, âncora e escala estão explicados ali) e rode a ferramenta: todas as tiras dele saem com os pés na mesma linha. No código, `MiniChefe` já oferece `encenar(animacao, duracao, parado)` para tocar a animação, `agendar(atraso, acao)` para o golpe sair no quadro certo, `mostrar(animacao, quadro)` para quem controla o quadro pelo próprio ataque e a segunda fase por constantes (`SEGUNDA_FASE_ABAIXO_DE`, `FALA_DA_SEGUNDA_FASE`, `ANDAR_DA_SEGUNDA_FASE`...). Todos os 12 mini-chefes já têm; testes em `testes/test_animacoes_especiais.py`. Os professores (chefes das provas) têm a tira `atacar-4`, que `Chefe` toca sozinho a cada ataque (`TEMPO_DO_ATAQUE`); a folha vai em `PROFESSORES` da mesma ferramenta.
 
 **Classe nova**: uma classe em `jogo/jogador/classes.py` que herda de `Jogador`, com `NOME`, `DESCRICAO`, `VIDA`, `VELOCIDADE`, `PASTA_SPRITE` e os três métodos `criar_arma_inicial()`, `criar_passiva()` e `criar_especial()`; acrescente-a em `CLASSES`. A passiva herda de `Passiva` (`jogo/jogador/passivas.py`) e soma o efeito em `aplicar(jogador)` usando `jogador.nivel`, como os itens.
 

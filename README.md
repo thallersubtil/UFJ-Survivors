@@ -65,17 +65,18 @@ py -3.12 -m venv .venv
 
   | Mini-chefe | Onde | Como ataca | Lacaios |
   |---|---|---|---|
-  | Tia da Cantina (enorme) | RU | conchadas em leque e sopa em anel | coxinhas |
-  | Lobo-Guará (mascote) | Eng. Florestal | dois botes seguidos e uivo | lobinhos |
-  | Gótica Trevosa | Convivência | some e reaparece colada no aluno, anel de corações | morcegos |
-  | Grão-Mestre do Culto (**secreto**) | mata do canto sudeste | espiral de três braços sem parar | cultistas em círculo |
-  | Vigilante (fantasiado de morcego) | Centro de Aulas II | mira com a lanterna e arranca | morcegos |
-  | Bibliotecária (caderno "Multa Note") | Biblioteca | multas de atraso que tiram 8 moedas cada | livros atrasados |
-  | Agroboy | lavoura das Agrárias | maços de dinheiro e a caminhonete; solta 150 moedas | bois |
-  | Loira da Odontologia | Lab. Saúde | HB20 brancos atravessando a tela | dentes |
-  | Técnico do Laboratório (mutante) | Laboratórios | seringas, regenera e entra em fúria | cobaias |
-  | Reitor (muito alto) | Reitoria | ofícios em anel e portarias | carimbos |
-  | ET de Varginha | Centro de Aulas Secreto 51 | feixes de abdução no chão | gatos alienígenas e mini OVNIs |
+  | Tia da Cantina (enorme) | RU | bandejas em leque e o panelão erguido e jogado; com metade da vida gira com a concha gigante atrás do aluno | coxinhas |
+  | Lobo-Guará (mascote) | Eng. Florestal | dois botes seguidos e uivo; na lua cheia (metade da vida) some debaixo da terra e sai mordendo debaixo do aluno | lobinhos |
+  | Gótica Trevosa | Convivência | vira morcegos e reaparece colada no aluno, anel de corações; com metade da vida, a boneca de vodu (só rolando na hora da agulhada escapa) | morcegos |
+  | Grão-Mestre do Culto (**secreto**) | mata do canto sudeste | espiral de três braços sem parar e o ritual; ascendido (metade da vida), cinco braços e colunas de fogo no aluno | cultistas em círculo |
+  | Vigilante (fantasiado de morcego) | Centro de Aulas II | mira com a lanterna e arranca; com metade da vida o bat-gancho puxa o aluno para uma voadora | morcegos |
+  | Bibliotecária (caderno "Multa Note") | Biblioteca | anota no caderno e saem as multas, que tiram 8 moedas cada; com metade da vida, o "SHHH!" emperra as armas de quem está perto | livros atrasados |
+  | Agroboy | lavoura das Agrárias | faz chover dinheiro e chama a caminhonete; com metade da vida, rodeio no touro: laça o aluno e o touro arranca; solta 150 moedas | bois |
+  | Loira da Odontologia | Lab. Saúde | joga o cabelo e chama a turma, aperta a chave dos HB20 brancos; com metade da vida, atravessa o aluno com a broca | loirinhas |
+  | Técnico do Laboratório (mutante) | Laboratórios | seringas e frascos de ácido, regenera; em fúria (40% da vida) três seringas e soco no chão | cobaias |
+  | Reitor (o Reitor de verdade, gigante: cinco alunos de altura) | Reitoria | ergue e bate o carimbo (ofícios em anel), emblemas da UFJ e portarias; a cada carimbo, uma promessa para o ano que vem (CEIA, datacenter...); com metade da vida, apresenta o projeto e as placas do CEIA caem do céu | carimbos |
+  | ET de Varginha | Centro de Aulas Secreto 51 | telepatia e feixes de abdução no chão; com metade da vida, o disco voador (três feixes e um raio que puxa) | gatos alienígenas e mini OVNIs |
+  | Leão do PROERD (enorme e sério) | Auditório | cartilhas e certificados, placa de DIGA NÃO e rugido que paralisa de medo; com metade da vida tira o bastão de beisebol (golpe que mira, avança e bate forte) e come os malandros para recuperar vida | malandros do fundão, que fogem dele, e cães farejadores, que seguem o rastro do aluno |
 
   O Centro de Aulas Secreto 51 é um prédio inventado, num descampado a nordeste (`ferramentas/acrescentar_predio_secreto.py`). O culto não é anunciado e só entra no mapa quando o aluno passa perto. A tecla **M** abre o mini-mapa do campus com o aluno e o rosto de cada mini-chefe no lugar dele; clicar num rosto marca o mini-chefe, e só os marcados ganham seta na borda da tela.
 - **Biomas do mapa:** gramado, mata, lavoura, terra batida e o descampado do Centro de Aulas Secreto 51 têm cada um a própria decoração de chão (`MapaUFJ.BIOMAS`). A lavoura fica em talhões retangulares em três áreas agrícolas (`MapaUFJ.LAVOURAS`), plantados com soja, milho e trigo em fileiras de pés em pé (o aluno passa por trás e pela frente), com corredores de terra, espantalhos e fardos, e sem árvores. As árvores ficam só nas manchas de verde-escuro, longe de ruas e calçadas; postes e bancos, à beira das ruas; e há faixa de pedestre onde um caminho cruza a rua. Andar na plantação e no mato fechado é mais lento (milho 60%, trigo 72%, soja 80%, mata 88% da velocidade); o rolamento não é afetado.

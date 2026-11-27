@@ -37,7 +37,7 @@ Especificação escrita pela sessão revisora (Windows, com o HoloCure decompila
 - Monitor Possuído com hora marcada sai da linha do tempo (vira mini-chefe de círculo ou é removido; a escolha vai na mensagem do marco).
 - Treino: continua escolhendo o professor; "direto no chefe" começa 3 s antes da hora dele.
 - Boletim: uma nota por chefe derrotado. Ranking: desempate por mais chefes, depois menos tempo.
-- HUD: relógio em contagem regressiva até 20:00, contador "Mini-chefes: 3/11" e, na pausa, o "Calendário de provas".
+- HUD: relógio em contagem regressiva até 20:00, contador "Mini-chefes: 3/12" e, na pausa, o "Calendário de provas".
 - Correções da revisão do rascunho:
   - a mira (`inimigo_mais_proximo`) ignora objetos quebráveis, por atributo polimórfico; eles continuam acertáveis por colisão e área. Teste: caixa mais perto que um inimigo, a mira vai no inimigo;
   - pior quadro da lógica no simulador abaixo de 33 ms (o rascunho tinha 125 ms): achar a causa e mandar o número;

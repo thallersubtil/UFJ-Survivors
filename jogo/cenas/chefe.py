@@ -6,13 +6,14 @@ import pygame
 from jogo.cenas.cena import Cena
 from jogo.cenas.widgets import TECLAS_CONFIRMAR, escurecer
 from jogo.nucleo.recursos import Recursos
-from jogo.ui.pixel import Paleta as P, ease_back, ease_out, janela, texto
+from jogo.ui.pixel import Paleta as P, ease_back, ease_out, fonte, janela, quebrar, texto
 
 
 class CenaChefe(Cena):
     """Fica por cima da partida (que não anda enquanto isso) e sai sozinha; Enter, Espaço ou clique pulam."""
 
     DURACAO = 3.0
+    MARGEM_DO_GRITO = 30         # espaço livre à direita da fala, antes da borda da tela
     TEMPO_MINIMO = 0.5           # antes disso não dá para pular (evita pular sem ver, no calor da luta)
 
     def __init__(self, app, chefe):
@@ -93,7 +94,9 @@ class CenaChefe(Cena):
                 texto(tela, linha, (faixa.x + 34, faixa.y + 26 + i * 50), P.BRANCO if i else P.OURO, 46)
         grito = getattr(self.chefe, "GRITO", "")
         if grito and self.tempo >= 1.2:                         # a fala dele, em itálico de mentira: entre aspas
-            texto(tela, f"“{grito}”", (faixa.x + 34, faixa.bottom + 18), cor, 23)
+            cabe = largura - faixa.x - 34 - self.MARGEM_DO_GRITO      # fala comprida (o Reitor) quebra em linhas
+            for i, linha in enumerate(quebrar(f"“{grito}”", fonte(23), cabe)):
+                texto(tela, linha, (faixa.x + 34, faixa.bottom + 18 + i * 30), cor, 23)
         if self.tempo >= self.TEMPO_MINIMO and int(self.tempo * 3) % 2:
             texto(tela, "Enter: lutar", (largura - 30, altura - 44), P.CINZA, 23, ancora="topright")
 

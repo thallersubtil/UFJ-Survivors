@@ -5,12 +5,18 @@ Cada folha em nova_arte/_bruto/sem_pixel/ataques/<folha>.png (fora do git) traz 
 maior em LADO pixels (o jogo reduz para a altura de cada projétil). Os pedaços soltos do desenho (vapor,
 gotas, faíscas) vão para o objeto da casa da grade em que estão.
 
+O emblema da UFJ (logo_ufj.png, os ataques do Reitor) é desenhado aqui mesmo, a partir das medidas do logo
+oficial: dois "U" que se cruzam, as quatro hastes e os dois arcos, em azul, com borda branca e contorno escuro.
+
 Também saem daqui a poça de sopa (a poça de ácido pintada de laranja) e as loirinhas (a tira da Loira da
 Odontologia em tamanho de lacaio).
 
-Uso: .venv/bin/python ferramentas/montar_ataques.py
+Uso: .venv/bin/python ferramentas/montar_ataques.py [folha ...]
+Sem nomes, monta tudo; com nomes (ex.: proerd, logo_ufj), só o que foi pedido, sem a poça de sopa nem as
+loirinhas.
 """
 import os
+import sys
 from pathlib import Path
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
@@ -22,6 +28,9 @@ DESTINO = RAIZ / "assets" / "ataques"
 COLUNAS, LINHAS = 3, 2
 LADO = 128
 ALTURA_DA_LOIRINHA = 56
+
+# objetos soltos, um por arquivo: arquivo em BRUTO -> nome em assets/ataques/ (as promessas do Reitor: o CEIA)
+SOLTOS = {"ceia_icone.png": "ceia_icone", "ceia_logo.png": "ceia_logo"}
 
 # folha: os seis nomes, na ordem de leitura (linha de cima da esquerda para a direita, depois a de baixo)
 FOLHAS = {
@@ -41,6 +50,7 @@ FOLHAS = {
     "estrutura_de_dados": ("ponteiro", "null", "colchetes", "lista", "segfault", "pilha"),
     "transformacao_digital": ("email", "nuvem", "celular", "wifi", "reuniao", "grafico"),
     "poo": ("new", "chaves", "self", "engrenagem", "cadeado", "classe"),
+    "proerd": ("cartilha", "certificado", "placa_diga_nao", "diga_nao", "rugido", "medalha"),
 }
 
 
@@ -88,11 +98,49 @@ def repintar(imagem, matiz):
     return nova
 
 
-def montar():
+AZUL_UFJ = (21, 69, 132, 255)
+
+
+def desenhar_logo_ufj(lado=LADO):
+    """O emblema da UFJ como adesivo do jogo. As medidas são as do logo oficial numa tela de 1400 px."""
+    from PIL import Image, ImageDraw, ImageFilter
+    tela = Image.new("RGBA", (1400, 1400), (0, 0, 0, 0))
+    d = ImageDraw.Draw(tela)
+    for esquerda in (268, 518):                              # os dois "U": fundo em meia elipse e duas hastes
+        d.arc((esquerda, 225, esquerda + 600, 1045), 0, 180, fill=AZUL_UFJ, width=60)
+    for x, topo in ((268, 318), (518, 270), (808, 270), (1058, 318)):
+        d.rectangle((x, topo, x + 60, 640), fill=AZUL_UFJ)
+
+    def faixa(x0, x1, y_meio, y_borda, espessura):
+        cima = [(x, y_meio + (y_borda - y_meio) * ((x - (x0 + x1) / 2) / ((x1 - x0) / 2)) ** 2)
+                for x in range(x0, x1 + 1, 10)]
+        d.polygon(cima + [(x, y + espessura) for x, y in reversed(cima)], fill=AZUL_UFJ)
+
+    faixa(578, 808, 333, 338, 50)                            # o arco de cima, entre as hastes de dentro
+    faixa(328, 1058, 466, 524, 52)                           # o arco do meio, de uma haste de fora à outra
+    desenho = tela.crop(tela.getbbox())
+    alfa = desenho.getchannel("A")
+    margem = 40
+    base = Image.new("L", (desenho.width + 2 * margem, desenho.height + 2 * margem), 0)
+    base.paste(alfa, (margem, margem))
+    branco = base.filter(ImageFilter.MaxFilter(25))
+    escuro = branco.filter(ImageFilter.MaxFilter(13))
+    adesivo = Image.new("RGBA", base.size, (0, 0, 0, 0))
+    adesivo.paste((30, 26, 40, 255), (0, 0), escuro)
+    adesivo.paste((255, 255, 255, 255), (0, 0), branco)
+    adesivo.paste(desenho, (margem, margem), desenho)
+    adesivo = adesivo.crop(adesivo.getbbox())
+    fator = lado / max(adesivo.size)
+    return adesivo.resize((round(adesivo.width * fator), round(adesivo.height * fator)), Image.LANCZOS)
+
+
+def montar(pedidas=()):
     pygame.init()
     pygame.display.set_mode((1, 1))
     DESTINO.mkdir(parents=True, exist_ok=True)
     for folha, nomes in FOLHAS.items():
+        if pedidas and folha not in pedidas:
+            continue
         origem = BRUTO / f"{folha}.png"
         if not origem.exists():
             print("falta a folha", folha)
@@ -103,6 +151,19 @@ def montar():
                 continue
             pygame.image.save(no_lado(objeto, LADO), str(DESTINO / f"{nome}.png"))
         print("ataques de", folha)
+    for arquivo, nome in SOLTOS.items():
+        if (not pedidas or nome in pedidas) and (BRUTO / arquivo).exists():
+            imagem = pygame.image.load(str(BRUTO / arquivo)).convert_alpha()
+            caixa = pygame.mask.from_surface(imagem, 40).get_bounding_rects()
+            caixa = caixa[0].unionall(caixa[1:])
+            pygame.image.save(no_lado(imagem.subsurface(caixa).copy(), LADO * 2 if nome == "ceia_logo" else LADO),
+                              str(DESTINO / f"{nome}.png"))
+            print(nome)
+    if not pedidas or "logo_ufj" in pedidas:
+        desenhar_logo_ufj().save(DESTINO / "logo_ufj.png")
+        print("logo da UFJ")
+    if pedidas:
+        return
     acido = DESTINO / "poca_de_acido.png"
     if acido.exists():
         pygame.image.save(repintar(pygame.image.load(str(acido)).convert_alpha(), 24),
@@ -119,4 +180,4 @@ def montar():
 
 
 if __name__ == "__main__":
-    montar()
+    montar(tuple(sys.argv[1:]))

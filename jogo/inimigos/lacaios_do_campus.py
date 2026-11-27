@@ -3,9 +3,11 @@
 Cada jeito de andar é uma classe base pequena; o lacaio só escolhe o jeito e preenche os números.
 """
 import math
+from collections import deque
 
 import pygame
 
+from jogo.efeitos import TextoFlutuante
 from jogo.inimigos.fabrica import FabricaDeInimigos
 from jogo.inimigos.inimigo import Inimigo
 from jogo.projeteis.tematicos import ProjetilTematico
@@ -240,3 +242,67 @@ class GatoAlienigena(LacaioEmZiguezague):
     VELOCIDADE = 190
     AMPLITUDE = 150
     FREQUENCIA = 7.0
+
+
+@FabricaDeInimigos.registrar("malandro")
+class Malandro(LacaioDoCampus):
+    """Aluno malandro do fundão, de olho vermelho e saco de salgadinho na mão. Morre de medo do Leão do PROERD:
+    se o leão chega perto, ele foge dele; fora isso, vem para cima do aluno."""
+    NOME = "Malandro"
+    PASTA_SPRITE = "malandro"
+    ALTURA = 48
+    RAIO = 15
+    VIDA = 14
+    VELOCIDADE = 170
+    DANO = 6
+    MEDO = 170                   # a que distância do leão ele sai correndo
+    GRITO = "SUJOU!"
+    COR_DO_GRITO = (255, 205, 50)
+    INTERVALO_DO_GRITO = 4.0     # segundos até poder gritar de novo
+
+    def __init__(self, posicao, escala=1.0):
+        super().__init__(posicao, escala)
+        self.temido = None       # quem ele teme (o leão que o chamou)
+        self._espera_grito = 0.0
+
+    @property
+    def com_medo(self):
+        return (self.temido is not None and self.temido.ativo
+                and self.posicao.distance_to(self.temido.posicao) < self.MEDO)
+
+    def mover(self, dt, jogo):
+        self._espera_grito -= dt
+        if not self.com_medo:
+            super().mover(dt, jogo)
+            return
+        if self._espera_grito <= 0:
+            self._espera_grito = self.INTERVALO_DO_GRITO
+            jogo.adicionar(TextoFlutuante(self.GRITO, self.posicao - (0, 34), self.COR_DO_GRITO, 14))
+        longe = self.posicao + (self.posicao - self.temido.posicao)
+        self.ir_em_direcao(longe, dt, self.velocidade * 1.3)
+
+
+@FabricaDeInimigos.registrar("cao_farejador")
+class CaoFarejador(LacaioDoCampus):
+    """Cão farejador do Leão do PROERD: não vê o aluno, segue o cheiro. Vai aonde ele estava ATRASO segundos
+    antes, então quem fica parado é pego e quem corre fazendo curva despista."""
+    NOME = "Cão Farejador"
+    PASTA_SPRITE = "cao_farejador"
+    ALTURA = 44
+    RAIO = 17
+    VIDA = 22
+    VELOCIDADE = 230
+    DANO = 8
+    ATRASO = 0.6                 # segundos de atraso do rastro que ele segue
+
+    def __init__(self, posicao, escala=1.0):
+        super().__init__(posicao, escala)
+        self.rastro = deque()    # (instante, onde o aluno estava)
+        self.alvo = pygame.Vector2(posicao)
+
+    def mover(self, dt, jogo):
+        self.rastro.append((self.tempo, pygame.Vector2(jogo.jogador.posicao)))
+        while len(self.rastro) > 1 and self.rastro[1][0] <= self.tempo - self.ATRASO:
+            self.rastro.popleft()
+        self.alvo = self.rastro[0][1]
+        self.ir_em_direcao(self.alvo, dt)
