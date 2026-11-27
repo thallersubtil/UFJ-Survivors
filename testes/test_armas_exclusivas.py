@@ -94,6 +94,13 @@ def test_nenhuma_carta_nem_bau_oferece_arma_exclusiva(classe):
     assert novas_armas and not any(getattr(o, "EXCLUSIVA", False) for o in novas_armas)
 
 
+def test_exclusiva_nao_vira_carta_nem_se_alguem_puser_na_lista(monkeypatch):
+    """A regra está em `candidatas`, não só na lista de armas comuns."""
+    monkeypatch.setattr(Progressao, "ARMAS", Progressao.ARMAS + (Lightstick,))
+    heroi = Programador((0, 0))
+    assert not any(o.origem is Lightstick for o in Progressao.candidatas(heroi))
+
+
 def test_nenhuma_colab_usa_arma_exclusiva():
     for receita in Colab.RECEITAS:
         assert not any(ingrediente.EXCLUSIVA for ingrediente in receita.INGREDIENTES), receita.NOME

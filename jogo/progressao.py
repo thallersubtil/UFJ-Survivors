@@ -65,7 +65,7 @@ class Progressao:
         if len(jogador.armas) < jogador.MAX_ARMAS:
             tem = {type(a) for a in jogador.armas} | jogador.armas_em_colab
             for classe in Progressao.ARMAS:
-                if classe not in tem and classe.liberada(jogador.desbloqueios):
+                if classe not in tem and not classe.EXCLUSIVA and classe.liberada(jogador.desbloqueios):
                     opcoes.append(Opcao(classe.NOME, classe.DESCRICAO, classe.ICONE, "NOVA", "nova",
                                         lambda j, jogo, c=classe: j.adicionar_arma(c()),
                                         peso=Progressao._peso(classe), origem=classe))
