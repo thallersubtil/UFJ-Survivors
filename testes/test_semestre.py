@@ -96,6 +96,20 @@ def test_na_chegada_do_chefe_saem_so_os_lacaios_comuns():
     assert primeiro.ativo and mini.ativo
 
 
+def test_gigantes_e_possuidos_ficam_na_chegada_do_chefe():
+    jogo = partida()
+    gigante = FabricaDeInimigos.criar_gigante("calculadora", jogo.jogador.posicao + (300, 0))
+    passageiro = Bug(jogo.jogador.posicao + (330, 0))
+    passageiro.possuir(10)
+    comum = Bug(jogo.jogador.posicao + (360, 0))
+    for e in (gigante, passageiro, comum):
+        jogo.adicionar(e)
+    jogo._incorporar_novas()
+    assert gigante.solta_bau and passageiro.possuido > 0
+    pular_para(jogo, 5 * 60)
+    assert gigante.ativo and passageiro.ativo and not comum.ativo
+
+
 def test_derrotar_um_chefe_aprova_a_prova_dele():
     jogo = partida()
     pular_para(jogo, 5 * 60)

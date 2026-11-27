@@ -50,7 +50,8 @@ Especificação escrita pela sessão revisora (Windows, com o HoloCure decompila
 - Experiência dos comuns: curva (XP_BASE/XP_LINEAR/XP_QUADRATICO) e valor das notas para quem não caça chegar ~ao nível 7 / 10 / 13 nos três chefes.
 - Fase 2 dos mini-chefes aos 50% de vida, na base `MiniChefe` (método modelo): grito ou balão próprio, flash e aura; ataques 30% mais frequentes; um ataque novo por subclasse num gancho (ex.: `ataque_da_fase_2(jogo)`). Sem if por tipo.
 - Cálculo ganha a segunda matéria (ex.: `CalculoII`, com integrais e séries). Vidas das matérias revistas no M5.
-- Animação "atacar" (2 a 4 quadros) para chefes e mini-chefes no Animador, tocada antes do golpe; sem arte, cai no "parado". Parte do código do Leão do PROERD (`escolher_animacao`, `_mostrar`) quando ele estiver num commit; a arte fica com a sessão dos chefes.
+- Animação "atacar" (2 a 4 quadros) para chefes e mini-chefes no Animador, tocada antes do golpe; sem arte, cai no "parado". A arte fica com a sessão dos chefes.
+- Base: o M2 parte do branch `mini-chefe/leao-do-proerd` (revisado antes, merge em commit próprio e creditado), que já tem na `MiniChefe` `mostrar`, `encenar`, `agendar`/`cumprir_agenda`, `escolher_animacao` e a segunda fase por constantes. A fase 2 precisa ainda de um ataque próprio por subclasse, por sobrescrita (`ataque_da_fase_2(jogo)` na base, se ainda não houver). Com o Leão, os mini-chefes passam a 12: ajustar README e este plano.
 
 ## M3. Classes: 3 habilidades nas cartas, gimmick e especial
 
@@ -98,7 +99,9 @@ Especificação escrita pela sessão revisora (Windows, com o HoloCure decompila
   - classe mais forte contra a mais fraca: no máximo 25 pontos percentuais de vitória.
 - Economia: partida sem loja que morre no 2º chefe, 250 a 450 moedas; com honras, 900 a 1.300; encher a loja leva de 15 a 25 partidas.
 - Medir se a cura (quebráveis, Kit, cartas de nível máximo) basta para as metas sem loja antes de mexer em vida.
-- `MAX_INIMIGOS` 450 só fica se o pior quadro ficar abaixo de 33 ms com o pico real.
+- `MAX_INIMIGOS` 450 só fica se o pior quadro ficar abaixo de 33 ms com o pico real. Hoje formações, gigantes e chamadas dos chefes passam do teto (pico de 479 antes das 20:00): decidir se o teto vale para todos antes dos 20:00.
+- Reta final: às 15:00 a dificuldade está em 6 e chega a 9,1 às 15:59, 27,9 às 17:59 e 70 às 18:59, com o 3º chefe chegando às 15:00. Se "loja cheia vence os três em >= 85%" não fechar, suavizar primeiro 15:00 a 18:00 (fator menor, ou a reta final começando quando o 3º chefe cai, com teto às 16:30). Não mexer na vida do chefe.
+- Bigorna: saem 11 por partida (uma por mini-chefe) contra 12 carimbos possíveis (4 armas x 3). Conferir se isso não deixa carimbar tudo sempre.
 
 ## Arte para gerar (no estilo atual)
 

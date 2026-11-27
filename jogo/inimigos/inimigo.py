@@ -180,8 +180,11 @@ class Inimigo(SerVivo, ABC):
         self.furia = nova
 
     def ao_chegar_o_chefe(self, jogo):
-        """Um chefe principal entrou em campo: o lacaio comum sai para abrir espaço para a luta.
-        Chefes e mini-chefes sobrescrevem para ficar."""
+        """Um chefe principal entrou em campo: o lacaio comum sai para abrir espaço para a luta. Fica quem
+        ainda deve um baú (os gigantes) e quem luta do lado do aluno (possuído pelo Fusca); chefes e
+        mini-chefes sobrescrevem para ficar."""
+        if self.solta_bau or self.possuido > 0:
+            return
         self.remover()
 
     def assustar(self, duracao):
