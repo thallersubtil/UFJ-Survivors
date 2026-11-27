@@ -32,9 +32,11 @@ def invocar(jogo, nome, distancia=300):
 
 
 def atacar(jogo, chefe, vezes):
+    """Ataca e deixa passar o tempo da animação: a bandeja sai da mão no quadro do arremesso."""
     for _ in range(vezes):
         chefe.ataques += 1
         chefe.atacar(jogo)
+        chefe.cumprir_agenda(5.0, jogo)
 
 
 def artes_lancadas(jogo):
@@ -212,7 +214,7 @@ def test_reitor_carimba_indeferido_onde_o_aluno_esta(jogo_limpo):
     jogo = jogo_limpo()
     reitor = invocar(jogo, "reitor")
     atacar(jogo, reitor, 2)
-    assert {"oficio", "portaria", "caneta"} <= artes_lancadas(jogo)
+    assert {"oficio", "portaria", "logo_ufj"} <= artes_lancadas(jogo)
     carimbada, = novas(jogo, Carimbada)
     assert carimbada.posicao == jogo.jogador.posicao and arte_existe(Carimbada.ARTE_DA_MARCA)
     vida = jogo.jogador.vida

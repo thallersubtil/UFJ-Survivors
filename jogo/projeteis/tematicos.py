@@ -42,7 +42,7 @@ class ProjetilTematico(ProjetilDaMateria):
     GIRAM = {"bandeja": 420, "prato_feito": 300, "frigideira": 380, "dente": 300, "salto": 360, "dinheiro": 260,
              "chapeu": 500, "bota": 420, "livro": 320, "multa": 200, "osso": 520, "lobeira": 300,
              "tubo_de_ensaio": 460, "batarangue": 760, "cassetete": 560, "cone": 300, "oficio": 220,
-             "portaria": 360, "esquadro": 240, "ventoinha": 600, "engrenagem": 300, "selo": 240}
+             "portaria": 360, "esquadro": 240, "logo_ufj": 280, "ceia_icone": 200, "ventoinha": 600, "engrenagem": 300, "selo": 240}
     ALTURAS = {"bandeja": 40, "prato_feito": 40, "frigideira": 34, "laser": 16, "seringa": 20, "adaga": 22,
                "caneta": 16, "escova": 18, "giz": 14, "espelhinho": 18, "broca": 22, "lim": 34, "dx": 34,
                "integral": 42, "null": 40, "new": 40, "self": 40, "cassetete": 14, "osso": 20, "concha": 22,

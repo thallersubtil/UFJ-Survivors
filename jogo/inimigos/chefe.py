@@ -14,6 +14,7 @@ class Chefe(Inimigo, ABC):
     INTERVALO_ATAQUE = 2.6
     INTERVALO_FURIOSO = 1.6
     DISTANCIA_PREFERIDA = 260
+    TEMPO_DO_ATAQUE = 0.6        # segundos da animação "atacar" a cada ataque (se a pasta tiver a tira)
     ALTURA_DO_OLHO = 14          # pixels abaixo do alto da cabeça, no sprite de perfil
     RECUO_DO_OLHO = 3            # pixels para trás da frente do rosto
     _olhos_medidos = {}          # quadro do sprite -> onde fica o olho nele (a partir do centro, olhando à direita)
@@ -24,6 +25,7 @@ class Chefe(Inimigo, ABC):
         self._espera_ataque = 2.0
         self._indice = 0
         self.acao_atual = None
+        self._atacando = 0.0     # segundos que faltam da animação de ataque
 
     @property
     def furioso(self):
@@ -86,6 +88,23 @@ class Chefe(Inimigo, ABC):
             lista[self._indice % len(lista)](jogo)
             self._indice += 1
             self._espera_ataque = self.intervalo_ataque
+            self._atacando = self.TEMPO_DO_ATAQUE
+
+    def atualizar(self, dt, jogo):
+        super().atualizar(dt, jogo)
+        if self._atacando > 0:                   # o quadro do ataque segue o tempo do ataque, não um relógio
+            self._atacando = max(0.0, self._atacando - dt)
+            animacao = self.animador.animacoes.get("atacar")
+            if animacao is not None and self._atacando > 0:
+                indice = min(len(animacao.quadros) - 1,
+                             int((1 - self._atacando / self.TEMPO_DO_ATAQUE) * len(animacao.quadros)))
+                self.animador.tempo = (indice + 0.5) / animacao.fps
+
+    def escolher_animacao(self):
+        """Lançando um ataque, toca a tira "atacar" (quem não tem a tira continua andando)."""
+        if self._atacando > 0 and "atacar" in self.animador.animacoes:
+            return "atacar"
+        return super().escolher_animacao()
 
     def possuir(self, duracao):
         """Chefes não são possuídos pelo Fusca."""

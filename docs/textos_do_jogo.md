@@ -270,79 +270,101 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 ### Tia da Cantina
 - Onde: perto do RU
 - Fala ao ser invocado: Sem ficha não almoça, meu filho!
-- Ataque: Enorme. Serve conchadas em leque e, de três em três ataques, vira o panelão: sopa para todo lado.
+- Ataque: Enorme. Arremessa bandejas, pratos e frigideiras em leque (a bandeja sai da mão no quadro do arremesso) e, de três em três ataques, ergue o panelão parada ("SOPA QUENTE!") e joga onde o aluno estiver: sopa para todo lado.
+- Segunda fase (metade da vida, "Acabou a merenda!", anúncio "A Tia da Cantina pegou a concha gigante!"): anda com a concha gigante e, de três em três ataques, sai girando atrás do aluno ("Fila andando!"), mais rápida, dando conchadas ("CONCHADA!") e espirrando conchas para os lados.
 - Lacaios: Coxinha — Salgado da cantina com raiva. Vem em fornada.
 - Vida base: 1700 | Moedas ao cair: 30
 
 ### Vigilante
 - Onde: no Centro de Aulas II
 - Fala ao ser invocado: Eu sou a vigilância. Cadê a carteirinha?
-- Ataque: O segurança que se veste de morcego: aponta a lanterna e arranca em linha reta. Anda com morcegos.
+- Ataque: O segurança que se veste de morcego: aponta a lanterna (animação de mira) e arranca em linha reta, de capa esvoaçando. Anda com morcegos.
+- Segunda fase (metade da vida, "Ninguém foge da vigilância!", anúncio "O Vigilante sacou o bat-gancho!"): dispara o bat-gancho ("Bat-gancho!"); se fisgar ("Te peguei!"), puxa o aluno até ele e acerta uma voadora ("VOADORA!"). Quem sai da linha do gancho ou rola na hora escapa ("Escapou...").
 - Lacaios: Morcego — Voa em ziguezague. Acompanha o Vigilante e a Gótica.
 - Vida base: 1300 | Moedas ao cair: 30
 
 ### Bibliotecária
 - Onde: na Biblioteca
 - Fala ao ser invocado: Nome completo para o cadastro, por favor.
-- Ataque: Anota o nome do aluno no caderno preto e distribui multas de atraso: cada uma que acerta leva moedas.
+- Ataque: Anota o nome do aluno no caderno preto ("Vou anotar o seu nome...") e, quando fecha o caderno, saem as multas de atraso ("MULTA POR ATRASO!"): cada uma que acerta leva moedas. De três em três ataques arremessa um livro de capa dura.
+- Segunda fase (metade da vida, "SILÊNCIO NA BIBLIOTECA!", anúncio "A Bibliotecária pediu silêncio: perto dela as armas emperram!"): o "SHHH!" em volta dela deixa as armas de quem ficou perto 2,5 vezes mais lentas por 3 s.
 - Lacaios: Livro Atrasado — Livro que passou do prazo e voa em cima de quem pegou emprestado.
 - Vida base: 1500 | Moedas ao cair: 30
 
 ### Técnico do Laboratório
 - Onde: nos Laboratórios
 - Fala ao ser invocado: TÉCNICO VAI AONDE QUER!
-- Ataque: Resultado dos próprios experimentos: enorme, verde, vai aonde quer. Arremessa seringas, regenera o tempo todo e entra em fúria com pouca vida.
+- Ataque: Resultado dos próprios experimentos: enorme, verde, vai aonde quer. Arremessa seringas (a seringa sai no quadro do arremesso) e frascos de ácido ("Experimento!") e regenera o tempo todo.
+- Segunda fase, a fúria (40% da vida, "FÚRIA!", anúncio "O Técnico do Laboratório entrou em fúria!"; não passa nem quando ele regenera): mais rápido, três seringas por vez e, de três em três ataques, ergue os punhos e soca o chão em volta dele ("ESMAGOU!").
 - Lacaios: Cobaia — Rato de laboratório que tomou o que não devia. Rápido e frágil.
 - Vida base: 2100 | Moedas ao cair: 30
 
 ### Reitor
 - Onde: na Reitoria
-- Fala ao ser invocado: Isso não consta no regimento!
-- Ataque: Muito, muito alto. Cada pisada espalha ofícios em anel; no meio, despacha uma portaria no aluno.
+- Fala ao ser invocado: Ano que vem chega o CEIA ein... Estamos conversando... Vai sair ein...
+- Promessas (uma a cada carimbo, em rodízio): Ano que vem vamos ter datacenter ein... / Estamos conversando... / Vai sair ein... / O CEIA tá quase...
+- Ataque: Muito, muito alto. Ergue o carimbo e carimba onde o aluno está ("INDEFERIDO!"); quando o carimbo bate, saem ofícios em anel e uma promessa para o ano que vem. À distância joga emblemas da UFJ e portarias.
+- Segunda fase (metade da vida, "Agora vai! O CEIA tá chegando!", anúncio "O Reitor apresentou o projeto: o CEIA está chegando!"): desenrola a planta do prédio novo e as placas do CEIA caem do céu em volta do aluno ("CHEGOU O CEIA!"), com cabeças do CEIA e emblemas da UFJ voando ("Chegou! Quer dizer... quase.").
 - Lacaios: Carimbo — Carimbo da burocracia: vem aos pulos para carimbar o aluno.
 - Vida base: 2000 | Moedas ao cair: 30
 
 ### Lobo-Guará
 - Onde: na Engenharia Florestal
 - Fala ao ser invocado: Auuuuuuu! Aqui é UFJ!
-- Ataque: O mascote da UFJ. Rápido: dá dois botes seguidos e uiva para chamar a ninhada.
+- Ataque: O mascote da UFJ. Rápido: agacha e dá dois botes seguidos; de três em três ataques uiva parado ("AUUUUU!") para chamar a ninhada e só depois dá o bote.
+- Segunda fase (metade da vida, "AUUUUU! Lua cheia!", anúncio "Lua cheia: o Lobo-Guará vai para debaixo da terra!"): cava e some; um montinho de terra corre atrás do aluno (debaixo da terra ele não leva golpe nem encosta); o chão racha debaixo do aluno e ele sai mordendo ("MORDIDA!"), espalhando ossos.
 - Lacaios: Lobinho — Filhote de lobo-guará. Corre muito.
 - Vida base: 1400 | Moedas ao cair: 30
 
 ### Loira da Odontologia
 - Onde: nos Laboratórios da Saúde
 - Fala ao ser invocado: Cuidado com o meu HB20, tá?
-- Ataque: Não desce do salto: manda os HB20 brancos passarem por cima do aluno, dois ou três de cada vez.
+- Ataque: Não desce do salto: joga o cabelo e chama a turma ("Meninas, vem cá!"), e aperta a chave para os HB20 brancos passarem por cima do aluno ("BI BI!"), dois ou três de cada vez.
+- Segunda fase (metade da vida, "Agora é com a broca!", anúncio "A Loira da Odontologia pegou a broca!"): mira e atravessa o aluno com a broca gigante ("Abre a boca!", "BROCADA!").
 - Lacaios: Dente — Dente com cárie: lento, mas aguenta muita pancada.
 - Vida base: 1300 | Moedas ao cair: 30
 
 ### Agroboy
 - Onde: na lavoura das Agrárias
 - Fala ao ser invocado: O agro não para! Sabe com quem tá falando?
-- Ataque: O super-herói da Agronomia: joga maços de dinheiro e chama a caminhonete. Derrotado, chove moeda.
+- Ataque: O super-herói da Agronomia: faz chover maços de dinheiro e chama a caminhonete ("OLHA A RAM!"). Derrotado, chove moeda.
+- Segunda fase (metade da vida, "Segura peão!", anúncio "O Agroboy montou no touro: é rodeio!"): monta no touro, anda mais rápido e o encostão dói mais; laça o aluno ("Laçou!"), puxa e o touro arranca em cima dele ("IIIIRRA!").
 - Lacaios: Boi — Boi do Agroboy: abaixa a cabeça e arranca em linha reta.
 - Vida base: 1800 | Moedas ao cair: 150
 
 ### Grão-Mestre do Culto
 - Onde: em algum canto do campus
 - Fala ao ser invocado: Você viu demais.
-- Ataque: Secreto: escondido na mata do canto do campus. Solta uma espiral de três braços que não para, e de tempos em tempos os cultistas fecham um círculo em volta do aluno.
+- Ataque: Secreto: escondido na mata do canto do campus. Solta uma espiral de três braços que não para, e de tempos em tempos faz o ritual, parado, e os cultistas fecham um círculo em volta do aluno.
+- Segunda fase (metade da vida, "Eu vejo TUDO.", anúncio "O Grão-Mestre ascendeu!"): flutua, a espiral ganha cinco braços e, de tempos em tempos, o olho que tudo vê marca o aluno para uma coluna de fogo dourado ("QUEIMADO!").
 - Lacaios: Cultista — Roda em volta do aluno, fechando o círculo aos poucos.
 - Vida base: 2600 | Moedas ao cair: 90
 
 ### Gótica Trevosa
 - Onde: no Centro de Convivência
 - Fala ao ser invocado: Você não é como os outros... fica comigo PRA SEMPRE.
-- Ataque: Some numa nuvem de morcegos, reaparece colada no aluno e solta um anel de corações pretos.
+- Ataque: Vira uma nuvem de morcegos, reaparece colada no aluno ("Achei você <3") e solta um anel de corações pretos.
+- Segunda fase (metade da vida, "Olha o que eu costurei pra você <3", anúncio "A Gótica Trevosa pegou a boneca de vodu: role na hora da agulhada!"): uma caveira aparece em cima do aluno e, quando ela enfia a agulha na boneca, ele leva o golpe onde estiver ("AGULHADA!"); só rolando na hora escapa.
 - Lacaios: Morcego — Voa em ziguezague. Acompanha o Vigilante e a Gótica.
 - Vida base: 1250 | Moedas ao cair: 30
 
 ### ET de Varginha
 - Onde: no Centro de Aulas Secreto 51
 - Fala ao ser invocado: Bip. Vim buscar o seu histórico escolar.
-- Ataque: Mora no Centro de Aulas Secreto 51. Abre feixes de abdução debaixo do aluno e anda com gatos verdes.
+- Ataque: Mora no Centro de Aulas Secreto 51. Faz telepatia e abre feixes de abdução debaixo do aluno; anda com gatos verdes.
+- Segunda fase (metade da vida, "Bip bip! Chamei a carona.", anúncio "O ET de Varginha entrou no disco voador!"): voa no disco, mais rápido, abre três feixes por vez, e o raio debaixo do disco puxa e machuca quem fica perto.
 - Lacaios: Gato Alienígena — Gato verde do ET de Varginha: corre em ziguezague, difícil de acertar.
 - Vida base: 1600 | Moedas ao cair: 30
+
+### Leão do PROERD
+- Onde: no Auditório
+- Fala ao ser invocado: Quem aqui ainda não fez a redação do PROERD?
+- Ataque: O mascote da palestra, só que enorme, musculoso e sem nenhum senso de humor. Arremessa cartilhas e certificados ("Leia a cartilha."), desce a placa de DIGA NÃO em cima do aluno e solta medalhas em anel ("DIGA NÃO!"), e de três em três ataques para e ruge ("ROOOAAAR!"): quem está perto fica paralisado de medo ("PARALISADO DE MEDO!") e anda mais devagar por 2,5 s.
+- Ao rugir, chama mais cães farejadores (até 6 ao mesmo tempo).
+- Segunda fase (com metade da vida, anúncio "O Leão do PROERD tirou o bastão!", fala "Acabou a palestra."): tira o bastão de beisebol. O golpe mira (meia-lua vermelha no chão), avança e bate forte em quem estiver na frente ("Aqui é na base do bastão!", "BASTÃO!"); também agarra o malandro mais perto e come ("NHAC!", o malandro grita "SOCORRO!"), recuperando 8% da vida; e continua rugindo.
+- Lacaios: Malandro — Aluno malandro do fundão, de olho vermelho e saco de salgadinho na mão. Morre de medo do Leão do PROERD: se o leão chega perto, ele foge gritando "SUJOU!"; fora isso, vem para cima do aluno.
+- Lacaios: Cão Farejador — não vê o aluno, segue o cheiro: vai aonde ele estava 0,6 s antes. Quem fica parado é pego; quem corre fazendo curva despista.
+- Vida base: 1900 | Moedas ao cair: 30
 
 ## Conquistas
 
