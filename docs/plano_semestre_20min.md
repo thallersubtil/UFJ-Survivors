@@ -120,7 +120,11 @@ Especificação escrita pela sessão revisora (Windows, com o HoloCure decompila
   - `Fase.PASSO_DIFICULDADE` 180 -> 400 e `Fase.ALVO_POR_SEGUNDO` 0,5 -> 0,3;
   - `FRACAO_DO_DANO` por família: lacaios 0,6, mini-chefes 0,7, professores 1; `MiniChefe.FRACAO_DA_VIDA` 0,5 (o piso);
   - `MiniChefe.ALIVIO_NO_CAMPO` 0,3.
-  - Meta da 1ª luta para o robô: 65% de quem luta (revisão: ele não foge, não escolhe a hora e mira mal); o Thaller joga 2 ou 3 partidas antes do merge para conferir o nível 5 a 7 de verdade.
+  - Meta da alavanca 2 passa de 80% para 65% de vitória na 1ª luta, entre quem lutou (Thaller: "Aceito 65%"). Motivo: o robô não foge, não escolhe a hora de invocar e mira mal. Condição: o Thaller joga 2 ou 3 partidas de verdade com a versão calibrada antes do merge na `main`. A rodada M1 deu 64%: alavanca 2 fechada.
+- Alavanca 3 (rodadas N a Q, 16 sementes por classe):
+  - Calouro com 60 de vida (o Programador fica como o mais frágil, com 50).
+  - Fusca Azul: cruza na altura do chefe ou mini-chefe da tela, senão do maior bolo (antes, numa altura qualquer); recarga 5 / 4,5 / 4 / 2,5 e dano 14 / 18 / 24 / 39 (Thaller: "Vamos bufar o ataque exclusivo do cara da carona").
+  - Com a loja vazia, metade das partidas da Carona morre antes do nível 6: fica para a curva (alavanca 4) ou a vida da classe, não mais número no Fusca.
   - Mapa do Campus mira onde o inimigo vai estar (`Inimigo.onde_estara`): errava um terço dos alfinetes por desenho.
   - Ficou de fora: armas preferindo chefe (desvio do HoloCure; +3 pontos na 1ª luta), formações menores no começo (não ajudou), o robô de corpo a corpo chegando mais perto (piorou).
   - Referência da loja cheia com esses números (rodada L3): vence o 1º mini-chefe em 87% de quem luta, o 1º chefe em 54%, os três em 36%, honras 16%.
