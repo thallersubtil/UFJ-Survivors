@@ -23,7 +23,7 @@ Comparação feita em 30/10/2026 com a engenharia reversa do HoloCure v0.7 (paco
 | Cartas de nível | 4 opções, sorteio ponderado (`weight`), reroll, eliminar, guardar | 3 opções sem peso, reroll (R) e pular (P) | Ver melhoria 4 |
 | Limites | 6 armas e 6 itens | 4 e 4 (colab libera vaga) | Escolha nossa, para partidas curtas |
 | Ondas | Pool ponderado trocado por eventos com hora marcada; nível do inimigo escolhido pela onda; avisos 1 s antes de paredes e cercos | `APRESENTACOES` (sorteio uniforme), `escala_dificuldade` contínua, formação por minuto | Ver melhorias 2 e 5 |
-| Mini-chefes | A cada ~2 min | 3 gigantes com hora marcada e 11 mini-chefes de círculo | Ok para o semestre de 20 min |
+| Mini-chefes | A cada ~2 min | 3 gigantes com hora marcada e 12 mini-chefes de círculo | Ok para o semestre de 20 min |
 | Hub | Holo House: pesca, fazenda, culinária, móveis | Centro Acadêmico: loja e cassino | Ver melhoria 7 |
 
 ## Onde ainda dá para melhorar (em ordem de valor)

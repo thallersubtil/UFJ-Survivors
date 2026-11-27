@@ -307,7 +307,7 @@ class MiniChefe(Inimigo):
     SIMBOLO = "!"                # o que aparece no projétil se faltar a arte dele
     RAIO = 30
     PONTOS = 500
-    EXPERIENCIA = 45
+    NIVEIS_DE_EXPERIENCIA = 2.5  # derrubado, vale tantos níveis do aluno (a conta é feita na hora, pelo nível dele)
     MOEDAS = 30
     INTERVALO_ATAQUE = 2.4
     GUARDA = 780                 # até onde ele segue o aluno, contado do posto
@@ -320,7 +320,8 @@ class MiniChefe(Inimigo):
     FALA_DA_SEGUNDA_FASE = ""
     ANUNCIO_DA_SEGUNDA_FASE = ""
     ANDAR_DA_SEGUNDA_FASE = "andar"          # a animação de andar depois de mudar de fase
-    INTERVALO_SEGUNDA_FASE = 0.0             # 0: o mesmo INTERVALO_ATAQUE
+    INTERVALO_SEGUNDA_FASE = 0.0             # 0: INTERVALO_ATAQUE * FATOR_DA_SEGUNDA_FASE
+    FATOR_DA_SEGUNDA_FASE = 0.7              # na segunda fase ataca 30% mais rápido
 
     def __init__(self, posicao, escala=1.0):
         super().__init__(posicao, escala)
@@ -330,6 +331,7 @@ class MiniChefe(Inimigo):
         self.ataques = 0
         self._espera_ataque = 1.2
         self.segunda_fase = False
+        self.experiencia_ao_morrer = 0           # calculada na hora da morte, pelo nível do aluno
         self._cena = None        # [animação, duração, tempo, parado]: a animação especial que está tocando
         self._agenda = []        # [segundos que faltam, ação]: o que acontece no meio de uma animação
 
@@ -397,9 +399,14 @@ class MiniChefe(Inimigo):
 
     @property
     def intervalo_de_ataque(self):
-        if self.segunda_fase and self.INTERVALO_SEGUNDA_FASE:
-            return self.INTERVALO_SEGUNDA_FASE
+        """Na segunda fase ataca mais rápido: o valor próprio da classe, se ela tiver, ou 30% a menos."""
+        if self.segunda_fase:
+            return self.INTERVALO_SEGUNDA_FASE or self.INTERVALO_ATAQUE * self.FATOR_DA_SEGUNDA_FASE
         return self.INTERVALO_ATAQUE
+
+    @property
+    def valor_em_experiencia(self):
+        return self.experiencia_ao_morrer
 
     # ---- segunda fase e animações especiais
     def entrar_na_segunda_fase(self, jogo):
@@ -495,6 +502,16 @@ class MiniChefe(Inimigo):
     def fator_de_dano(self):
         return 1 + max(0.0, self.escala - 1) * self.GANHO_DANO
 
+    def _desenhar_aura(self, tela, camera):
+        """Segunda fase: uma aura pulsando na cor dele por trás do corpo, como a da matéria nos professores."""
+        centro = camera.para_tela(self.posicao)
+        pulso = 0.5 + 0.5 * math.sin(self.tempo * 6)
+        raio = round(self.raio * (1.35 + 0.15 * pulso))
+        aura = pygame.Surface((raio * 2, raio * 2), pygame.SRCALPHA)
+        pygame.draw.circle(aura, (*self.COR, round(70 + 50 * pulso)), (raio, raio), raio)
+        pygame.draw.circle(aura, (*self.COR, 200), (raio, raio), raio, 3)
+        tela.blit(aura, aura.get_rect(center=(round(centro.x), round(centro.y))))
+
     def ao_chegar_o_chefe(self, jogo):
         """Um chefe principal chegou: o mini-chefe continua onde está."""
 
@@ -508,6 +525,9 @@ class MiniChefe(Inimigo):
         """Nem é empurrado."""
 
     def ao_morrer(self, jogo):
+        """Solta a experiência de 2 a 3 níveis do aluno (acompanha qualquer curva de experiência), o baú, as
+        moedas e a bigorna."""
+        self.experiencia_ao_morrer = jogo.jogador.experiencia_para_subir(self.NIVEIS_DE_EXPERIENCIA)
         super().ao_morrer(jogo)
         jogo.adicionar(Moeda(self.posicao - (18, 0), self.MOEDAS))
         jogo.adicionar(Bigorna(self.posicao + (30, 10)))
@@ -517,6 +537,8 @@ class MiniChefe(Inimigo):
         jogo.anunciar(f"{self.NOME}: fora de combate! Pegue o baú e a bigorna", 3)
 
     def desenhar_corpo(self, tela, camera):
+        if self.segunda_fase:
+            self._desenhar_aura(tela, camera)
         super().desenhar_corpo(tela, camera)
         centro = camera.para_tela(self.posicao)
         barra = pygame.Rect(0, 0, 84, 9)
@@ -653,7 +675,6 @@ class Vigilante(MiniChefe):
     SEGUNDA_FASE_ABAIXO_DE = 0.5
     FALA_DA_SEGUNDA_FASE = "Ninguém foge da vigilância!"
     ANUNCIO_DA_SEGUNDA_FASE = "O Vigilante sacou o bat-gancho!"
-    INTERVALO_SEGUNDA_FASE = 2.6
     TEMPO_DA_VOADORA = 0.55
     CHUTE_DA_VOADORA = 0.3       # quando o pé chega (3º dos 4 quadros)
     ALCANCE_DA_VOADORA = 115
@@ -941,7 +962,6 @@ class LoboGuara(MiniChefe):
     SEGUNDA_FASE_ABAIXO_DE = 0.5
     FALA_DA_SEGUNDA_FASE = "AUUUUU! Lua cheia!"
     ANUNCIO_DA_SEGUNDA_FASE = "Lua cheia: o Lobo-Guará vai para debaixo da terra!"
-    INTERVALO_SEGUNDA_FASE = 2.6
     TEMPO_CAVANDO = 0.6
     TEMPO_ESCONDIDO = 1.3
     VELOCIDADE_ESCONDIDO = 2.2   # fator da velocidade por baixo da terra
@@ -1391,7 +1411,7 @@ class ETDeVarginha(MiniChefe):
     FALA_DA_SEGUNDA_FASE = "Bip bip! Chamei a carona."
     ANUNCIO_DA_SEGUNDA_FASE = "O ET de Varginha entrou no disco voador!"
     ANDAR_DA_SEGUNDA_FASE = "andar_disco"
-    INTERVALO_SEGUNDA_FASE = 1.9
+    INTERVALO_SEGUNDA_FASE = 1.4             # o disco dispara o raio que puxa: golpe mais pesado, um pouco menos que 30%
     VELOCIDADE_NO_DISCO = 1.5
     FEIXES_NO_DISCO = 3
     ALCANCE_DO_RAIO = 150        # o raio debaixo do disco
@@ -1492,7 +1512,7 @@ class LeaoDoProerd(MiniChefe):
     FALA_DA_SEGUNDA_FASE = "Acabou a palestra."
     ANUNCIO_DA_SEGUNDA_FASE = "O Leão do PROERD tirou o bastão!"
     ANDAR_DA_SEGUNDA_FASE = "andar_bastao"
-    INTERVALO_SEGUNDA_FASE = 1.9
+    INTERVALO_SEGUNDA_FASE = 1.9             # a meia-lua do bastão pesa mais que a cartilha: só 20% mais rápido
     DANO_DO_BASTAO = 28
     ALCANCE_DO_BASTAO = 150
     ABERTURA_DO_BASTAO = 150                 # graus da meia-lua que o bastão varre

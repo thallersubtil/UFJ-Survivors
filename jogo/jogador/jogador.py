@@ -194,8 +194,21 @@ class Jogador(SerVivo, ABC):
     def experiencia_necessaria(self):
         """Cada nível custa bem mais que o anterior: sem as melhorias da loja não dá para levar tudo ao
         máximo (são 27 escolhas), então o jogador precisa decidir em que armas apostar."""
-        n = self.nivel - 1
-        return round(self.XP_BASE + self.XP_LINEAR * n + self.XP_QUADRATICO * n * n)
+        return self.experiencia_do_nivel(self.nivel)
+
+    @classmethod
+    def experiencia_do_nivel(cls, nivel):
+        """Quanto custa passar do `nivel` para o seguinte."""
+        n = nivel - 1
+        return round(cls.XP_BASE + cls.XP_LINEAR * n + cls.XP_QUADRATICO * n * n)
+
+    def experiencia_para_subir(self, niveis):
+        """Quanto falta para subir `niveis` níveis a partir de agora (aceita fração: 2,5 = dois níveis e meio)."""
+        falta = self.experiencia_necessaria - self.experiencia
+        inteiros, fracao = int(niveis), niveis - int(niveis)
+        for i in range(1, inteiros):
+            falta += self.experiencia_do_nivel(self.nivel + i)
+        return falta + fracao * self.experiencia_do_nivel(self.nivel + inteiros)
 
     def ganhar_experiencia(self, quantidade):
         """Soma experiência e retorna quantos níveis o herói subiu."""

@@ -668,3 +668,57 @@ def test_professor_toca_o_ataque_do_comeco_ao_fim_antes_do_golpe(jogo_limpo, nom
     for _ in range(5):
         chefe.atualizar(1 / 30, jogo)
     assert chefe.escolher_animacao() != "atacar"
+
+
+# ---- Fase 2 na base: ataques mais frequentes, aura e experiência proporcional (semestre de 20 min, M2)
+
+from jogo.inimigos.mini_chefes import MiniChefe  # noqa: E402
+
+
+def test_na_segunda_fase_o_mini_chefe_ataca_30_por_cento_mais_rapido():
+    from jogo.inimigos.mini_chefes import GoticaTrevosa
+    gotica = FabricaDeInimigos.criar("gotica_trevosa", (0, 0))
+    assert not GoticaTrevosa.INTERVALO_SEGUNDA_FASE          # sem valor próprio: vale o padrão da base
+    antes = gotica.intervalo_de_ataque
+    gotica.segunda_fase = True
+    assert gotica.intervalo_de_ataque == pytest.approx(antes * MiniChefe.FATOR_DA_SEGUNDA_FASE)
+    assert MiniChefe.FATOR_DA_SEGUNDA_FASE == pytest.approx(0.7)
+
+
+@pytest.mark.parametrize("nome", MINI_CHEFES)
+def test_nenhum_mini_chefe_fica_mais_lento_na_segunda_fase(nome):
+    mini = FabricaDeInimigos.criar(nome, (0, 0))
+    antes = mini.intervalo_de_ataque
+    mini.segunda_fase = True
+    assert mini.intervalo_de_ataque < antes
+
+
+def test_na_segunda_fase_aparece_a_aura_na_cor_do_mini_chefe(jogo_limpo):
+    from jogo.nucleo.camera import Camera
+    jogo = jogo_limpo()
+    vigilante = criar(jogo, "vigilante")
+    camera = Camera(1280, 720, jogo.arena)
+    camera.seguir(vigilante.posicao)
+    antes, depois = pygame.Surface((1280, 720)), pygame.Surface((1280, 720))
+    vigilante.desenhar_corpo(antes, camera)
+    vigilante.segunda_fase = True
+    vigilante.desenhar_corpo(depois, camera)
+    centro = camera.para_tela(vigilante.posicao)
+    canto = (round(centro.x - vigilante.raio * 1.2), round(centro.y + vigilante.raio * 0.2))
+    assert antes.get_at(canto) != depois.get_at(canto)
+
+
+@pytest.mark.parametrize("nivel", (1, 6, 14))
+def test_derrubar_um_mini_chefe_vale_de_2_a_3_niveis(jogo_limpo, nivel):
+    from jogo.coletaveis.coletaveis import Nota
+    jogo = jogo_limpo()
+    heroi = jogo.jogador
+    while heroi.nivel < nivel:
+        heroi.ganhar_experiencia(heroi.experiencia_necessaria - heroi.experiencia)
+    heroi.experiencia = heroi.experiencia_necessaria // 3
+    mini = criar(jogo, "reitor")
+    mini.ao_morrer(jogo)
+    jogo._incorporar_novas()
+    experiencia = sum(e.valor for e in jogo.entidades if isinstance(e, Nota))
+    subiu = heroi.ganhar_experiencia(experiencia)
+    assert 2 <= subiu <= 3
