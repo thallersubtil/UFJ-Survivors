@@ -176,7 +176,7 @@ class AulaExpositiva(ArmaContinua, Colab):
     """Apostila e Quadro Branco: um quadro branco gigante gira em volta do aluno soltando folhas em espiral."""
 
     NOME = "Aula Expositiva"
-    ICONE = "legado/itens/chest_f0.png"
+    ICONE = "icones/aula_expositiva.png"
     DESCRICAO = ("Um quadro branco gigante gira em volta de você e fere quem encosta, soltando folhas em espiral: "
                  "quem leva uma folha fica lento.")
     INGREDIENTES = (Apostila, QuadroBranco)
@@ -200,7 +200,7 @@ class Caramelo5G(ArmaContinua, Colab):
     """Caramelo e Wi-Fi: o Caramelo corre com o roteador na boca, deixando um rastro de sinal que fere."""
 
     NOME = "Caramelo 5G"
-    ICONE = "legado/itens/chest_f1.png"
+    ICONE = "icones/caramelo_5g.png"
     DESCRICAO = ("O Caramelo corre em volta de você com o roteador na boca e deixa um rastro de sinal que fere. "
                  "Quando o sinal cai, ele late e atordoa quem está perto.")
     INGREDIENTES = (Caramelo, WifiEduroam)
@@ -240,7 +240,7 @@ class CatapultaDoCerrado(ArmaContinua, Colab):
     """Régua e Pequi: a régua vira catapulta e lança pequis em arco por cima do bolo de inimigos."""
 
     NOME = "Catapulta do Cerrado"
-    ICONE = "legado/itens/chest_f2.png"
+    ICONE = "icones/catapulta_do_cerrado.png"
     DESCRICAO = ("A régua vira catapulta: três pequis voam em arco por cima de todo mundo e caem no maior bolo de "
                  "inimigos, estourando em espinhos.")
     INGREDIENTES = (ReguaDeUmMetro, PequiExplosivo)

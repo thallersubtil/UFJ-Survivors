@@ -6,7 +6,7 @@ from jogo.nucleo.recursos import Recursos
 
 class TecladoMecanico(ArmaDeDisparo):
     NOME = "Teclado Mecânico"
-    ICONE = "legado/itens/item_watch_l.png"
+    ICONE = "icones/teclado_mecanico.png"
     DESCRICAO = "Golpe em arco com o teclado na direção da mira; cada inimigo atingido solta teclas nos vizinhos."
     EXCLUSIVA = True
     ATRIBUTOS = {

@@ -8,7 +8,7 @@ from jogo.nucleo.recursos import Recursos
 
 class Lightstick(ArmaDeDisparo):
     NOME = "Lightstick"
-    ICONE = "legado/itens/potion_hp_s.png"
+    ICONE = "icones/lightstick.png"
     DESCRICAO = "Arremessa o lightstick, que gira, acerta quem estiver no caminho e volta para a mão."
     EXCLUSIVA = True
     ATRIBUTOS = {
