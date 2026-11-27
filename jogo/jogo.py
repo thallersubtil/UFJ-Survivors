@@ -176,14 +176,16 @@ class Jogo:
         self.lentidao = max(self.lentidao, duracao)
 
     def atualizar(self, dt):
+        """Avança a partida `dt` segundos. O relógio do semestre (placar, fase, aviso de perigo) anda sempre no
+        tempo real; a câmera lenta só desacelera quem está na arena."""
         if self.terminou:
             return
-        if self.lentidao > 0:
-            self.lentidao = max(0.0, self.lentidao - dt)
-            dt *= self.FATOR_DA_CAMERA_LENTA
         self.placar.tempo += dt
         self.perigo = max(0.0, self.perigo - dt)
         self.fase.atualizar(dt, self)
+        if self.lentidao > 0:
+            self.lentidao = max(0.0, self.lentidao - dt)
+            dt *= self.FATOR_DA_CAMERA_LENTA
         self._incorporar_novas()
         self.grade.reconstruir(self.inimigos + self.grupos["quebravel"])    # tudo o que as armas podem acertar
         for e in self.entidades:          # polimorfismo: um único laço, sem if por tipo

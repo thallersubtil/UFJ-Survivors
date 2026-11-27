@@ -302,3 +302,27 @@ def test_caneta_vermelha_marca_tambem_mini_chefe(jogo_limpo):
     tia = colocar(jogo, (300, 0), "tia_da_cantina")
     jogo.causar_dano(tia, 10)
     assert tia.marcado
+
+
+def test_poder_da_amizade_so_conta_amigos_de_verdade(jogo_limpo):
+    from jogo.armas.apostila import Apostila
+    from jogo.armas.wifi import WifiEduroam
+    jogo = jogo_limpo(Otaku)
+    heroi = jogo.jogador
+    heroi.armas = [Apostila(), WifiEduroam()]            # folhas e sinal são ajudantes, mas não são amigos
+    pegar(jogo, 2)
+    rodar(jogo, 3)
+    assert jogo.grupos["ajudante"] and not any(a.AMIGO for a in jogo.grupos["ajudante"])
+    assert not heroi.tem_bonus("amizade")
+
+
+def test_camera_lenta_nao_atrasa_o_relogio_do_semestre(jogo_limpo):
+    from jogo.fase import Semestre
+    jogo = jogo_limpo(Gamer)
+    jogo.fase = Semestre()
+    jogo.camera_lenta(1.0)
+    antes_placar, antes_fase = jogo.placar.tempo, jogo.fase.tempo
+    for _ in range(30):
+        jogo.atualizar(1 / 30)
+    assert jogo.placar.tempo - antes_placar == pytest.approx(1.0)
+    assert jogo.fase.tempo - antes_fase == pytest.approx(1.0)

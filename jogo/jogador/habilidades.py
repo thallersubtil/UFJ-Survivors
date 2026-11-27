@@ -93,7 +93,7 @@ class PoderDaAmizade(HabilidadeComRelogio):
         """Nada fixo: o bônus é conferido em campo."""
 
     def conferir(self, jogador, jogo):
-        amigos = len(jogo.grupos["ajudante"]) + passageiros(jogo)
+        amigos = sum(ajudante.AMIGO for ajudante in jogo.grupos["ajudante"]) + passageiros(jogo)
         bonus = min(self.MAXIMO, amigos * self.valor(self.POR_AMIGO))
         if bonus > 0:
             jogador.adicionar_bonus(BonusTemporario("amizade", "dano", 1 + bonus, self.INTERVALO_DE_CONFERENCIA + 0.2))
