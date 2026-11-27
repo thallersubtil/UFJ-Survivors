@@ -30,7 +30,7 @@ def jogo_limpo():
     def criar(classe=Programador):
         jogo = Jogo(classe, fase=FaseVazia(), semente=3)
         for e in jogo.entidades:
-            if e.grupo == "decoracao":
+            if e.grupo in ("decoracao", "quebravel"):     # o jogo limpo não tem enfeite nem objeto quebrável
                 e.remover()
         jogo._limpar()
         return jogo

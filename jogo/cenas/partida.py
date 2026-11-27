@@ -65,6 +65,7 @@ class CenaPartida(Cena):
             return
         self._ler_entrada()
         self.jogo.atualizar(dt)
+        self._guardar_mini_chefes_conhecidos()
         self.hud.atualizar(dt, self.jogo)
         if self.jogo.terminou:
             return
@@ -75,6 +76,15 @@ class CenaPartida(Cena):
             self.app.empilhar(CenaNivel(self.app, self.jogo))
         elif self.jogo.baus_pendentes > 0:
             self.app.empilhar(CenaBau(self.app, self.jogo))
+
+    def _guardar_mini_chefes_conhecidos(self):
+        """Mini-chefe invocado pela primeira vez vai na hora para o progresso: deixa de ser misterioso mesmo que
+        o aluno saia da partida pelo menu."""
+        progresso = getattr(self.app, "progresso", None)
+        if progresso is None:
+            return
+        for chave in self.jogo.mini_chefes_conhecidos - progresso.mini_chefes_conhecidos:
+            progresso.conhecer_mini_chefe(chave)
 
     def desenhar(self, tela):
         self.jogo.desenhar(tela)

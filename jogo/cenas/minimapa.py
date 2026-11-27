@@ -52,7 +52,7 @@ class CenaMiniMapa(Cena):
         elif evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
             marcador = self.marcador_em(evento.pos)
             if marcador is not None:
-                self.jogo.marcar_no_mapa(marcador.NOME)
+                self.jogo.marcar_no_mapa(marcador.CHAVE)
                 Recursos.tocar("coleta", 0.4)
 
     def atualizar(self, dt):
@@ -79,7 +79,7 @@ class CenaMiniMapa(Cena):
         desenhar_texto(tela, "[M] ou [Esc] fechar", 15, Cor.TEXTO_FRACO, topo_esquerda=(x, area.bottom - 22))
 
     def _marcador(self, tela, ponto, marcador, pulso, sobre):
-        marcado = marcador.NOME in self.jogo.marcados
+        marcado = marcador.CHAVE in self.jogo.marcados
         raio = self.RAIO + (3 if sobre else 0)
         pygame.draw.circle(tela, Cor.BORDA_ESCURA, ponto, raio)
         rosto = Recursos.imagem(marcador.rosto, raio * 2 - 8)

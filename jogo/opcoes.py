@@ -14,6 +14,7 @@ class OpcoesDePartida:
     melhorias: tuple = ()             # Melhorias permanentes compradas (jogo.loja.melhorias)
     desbloqueios: frozenset = frozenset()   # nomes das armas e itens comprados na loja
     lanche: Optional[type] = None     # classe do Lanche da Cantina guardado (só fora do treino)
+    mini_chefes_conhecidos: frozenset = frozenset()   # CHAVEs dos mini-chefes já invocados alguma vez
 
     @classmethod
     def treino_contra(cls, prova, direto_no_chefe=False, imortal=False):
@@ -23,7 +24,8 @@ class OpcoesDePartida:
     def com_progresso(self, progresso):
         """As mesmas opções, com o que o aluno comprou no Centro Acadêmico."""
         return replace(self, melhorias=tuple(progresso.melhorias_compradas()), desbloqueios=progresso.desbloqueios,
-                       lanche=None if self.treino else progresso.lanche_reservado)
+                       lanche=None if self.treino else progresso.lanche_reservado,
+                       mini_chefes_conhecidos=frozenset(progresso.mini_chefes_conhecidos))
 
     def criar_fases(self):
         fases = [classe() for classe in self.provas]

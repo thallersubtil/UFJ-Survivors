@@ -1,3 +1,4 @@
+import random
 from types import SimpleNamespace
 
 import pygame
@@ -25,6 +26,7 @@ class JogoFalso:
     def __init__(self, direcao=(0, 0), mira=None):
         self.entrada = SimpleNamespace(direcao=pygame.Vector2(direcao), mira=mira)
         self.arena = pygame.Rect(0, 0, 3200, 1800)
+        self.rng = random.Random(1)      # o Programador sorteia se o disparo repete
         self.adicionados = []
 
     def passo_do_chao(self, posicao):
@@ -140,9 +142,11 @@ def test_zoltraak_cria_raio():
     assert type(jogo.adicionados[0]).__name__ == "RaioZoltraak"
 
 
-def test_encher_cafe_so_afeta_armas_de_disparo():
+def test_cura_do_aluno_passa_pelo_multiplicador_de_cura():
     j = Programador((0, 0))
-    j.adicionar_arma(Caramelo())
-    j.armas[0].municao = 0
-    j.encher_cafe()
-    assert j.armas[0].municao == j.armas[0].municao_maxima
+    j.vida = 10
+    j.curar(10)
+    assert j.vida == 20                      # sem Garrafa Térmica a cura é a de sempre
+    j.mult_cura = 1.5
+    j.curar(10)
+    assert j.vida == 35

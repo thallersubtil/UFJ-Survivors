@@ -12,10 +12,10 @@ from jogo.armas.controle import Controle
 from jogo.armas.fusca import FuscaAzul
 from jogo.armas.gemini import Gemini
 from jogo.armas.quadro_branco import QuadroBranco
-from jogo.jogador.especiais import (Lotacao, RevisaoParaProva, Speedrun, SuperSaiyajin, TroteReverso, ViradaDeNoite,
+from jogo.jogador.especiais import (Lotacao, RevisaoParaProva, Speedrun, SuperSaiyajin, TelaAzul, TroteReverso,
                                     Zoltraak)
 from jogo.jogador.jogador import Jogador
-from jogo.jogador.passivas import (Cafeinado, CaronaSolidaria, InstintoOtaku, PlantaoDeDuvidas, Reflexo,
+from jogo.jogador.passivas import (CaronaSolidaria, InstintoOtaku, LacoDeRepeticao, PlantaoDeDuvidas, Reflexo,
                                    RolagemDeIniciativa, SedeDeAprender)
 
 
@@ -43,7 +43,7 @@ class Otaku(Jogador):
 
 class Programador(Jogador):
     NOME = "Programador"
-    DESCRICAO = "Ágil e frágil. Ataca de longe à base de café."
+    DESCRICAO = "Ágil e frágil. Atira em laço e trava o jogo dos inimigos."
     VIDA = 50
     VELOCIDADE = 230
     IMAGEM = "sprites/programador.png"
@@ -55,10 +55,10 @@ class Programador(Jogador):
         return CobraPython()
 
     def criar_passiva(self):
-        return Cafeinado()
+        return LacoDeRepeticao()
 
     def criar_especial(self):
-        return ViradaDeNoite()
+        return TelaAzul()
 
 
 class MestreDeRPG(Jogador):

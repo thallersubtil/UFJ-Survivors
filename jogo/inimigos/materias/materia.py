@@ -62,8 +62,9 @@ class Materia(ABC):
         chefe.executar(Rajada(vezes, intervalo, disparo))
 
     def chamada(self, chefe, jogo, quantidade, texto="CHAMADA!"):
-        """Lacaios da matéria aparecem em volta do chefe."""
-        for i in range(quantidade):
+        """Lacaios da matéria aparecem em volta do chefe (com o campo cheio, a chamada fica só no grito:
+        com dois ou três chefes vivos, as chamadas somadas passariam do teto de inimigos)."""
+        for i in range(0 if jogo.campo_cheio else quantidade):
             posicao = chefe.posicao + pygame.Vector2(140, 0).rotate(360 * i / quantidade)
             nome = jogo.rng.choice(self.LACAIOS)
             jogo.adicionar(FabricaDeInimigos.criar(nome, posicao, jogo.fase.escala_dificuldade))

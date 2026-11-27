@@ -18,7 +18,7 @@ class JogoFalso:
 
 def dono_falso():
     return SimpleNamespace(posicao=pygame.Vector2(100, 100), direcao_mira=pygame.Vector2(1, 0),
-                           multiplicador_dano=1.0, mult_cafe=1.0, mult_recarga=1.0)
+                           multiplicador_dano=1.0, mult_recarga=1.0)
 
 
 @pytest.mark.parametrize("classe", [CobraPython, Caramelo])

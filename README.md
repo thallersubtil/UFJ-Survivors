@@ -1,6 +1,6 @@
 # UFJ Survivors
 
-Sobreviva às provas do semestre na UFJ. Jogo 2D em Pygame no estilo "survivors", feito para o trabalho prático de Programação Orientada a Objetos: três provas de 5 minutos no Campus Jatobá (mapa gerado de satélite e OpenStreetMap), personagens ilustrados e animados no estilo Disgaea, inimigos que são objetos das matérias do semestre e, no fim de cada prova, um professor possuído pela própria matéria como chefe.
+Sobreviva às provas do semestre na UFJ. Jogo 2D em Pygame no estilo "survivors", feito para o trabalho prático de Programação Orientada a Objetos: três provas de 4 minutos no Campus Jatobá (mapa gerado de satélite e OpenStreetMap), personagens ilustrados e animados no estilo Disgaea, inimigos que são objetos das matérias do semestre e, no fim de cada prova (aos 4, 8 e 12 minutos, com o chefe anterior vivo ou não), um professor possuído pela própria matéria como chefe. Quem derrota os três está aprovado, e a partida continua sem fim, cada vez mais difícil, até o aluno cair.
 
 | Prova | Chefe | Fases da luta |
 |---|---|---|
@@ -51,16 +51,16 @@ py -3.12 -m venv .venv
 
 - **Aviso antes das formações:** setas vermelhas piscam na borda da tela por 1,2 s antes de um cerco ou de uma parede (dá para sair rolando).
 - **Dano com variação de ±10%** e crítico acima de 100% de chance virando dano extra.
-- **Cartas com peso:** a Cola e o que foi comprado na loja aparecem menos. **B** bane uma carta; sem nada para oferecer, aparecem cartas de atributo (Estudo Extra, Café Reforçado, Fôlego, Lanche da Cantina).
+- **Cartas com peso:** a Cola e o que foi comprado na loja aparecem menos. **B** bane uma carta; com tudo no nível máximo (ou banido), as cartas passam a ser Lanche da Cantina (recupera 30% da vida máxima) ou Bolsa de Monitoria (50 moedas).
 - **Inimigos com peso por prova:** os da matéria de cada prova aparecem mais.
 - **Moedas por prova:** a 2ª paga 1,2x e a 3ª 1,4x.
 - **Bigorna:** o Monitor Possuído deixa uma bigorna que afia uma arma (+15% de dano, até 3 vezes por arma).
 
 ## Eventos das provas
 
-- **Greve:** uma vez por prova (3:20 na 1ª, 3:30 na 2ª, 2:45 na 3ª), por 30 s não chega ninguém novo, os inimigos em campo se assustam e chovem notas em volta do aluno.
+- **Greve:** uma vez por prova (3:10 na 1ª, 3:15 na 2ª, 2:45 na 3ª), por 30 s não chega ninguém novo, os inimigos em campo se assustam e chovem notas em volta do aluno.
 - **Monitor Possuído:** mini-chefe da 2ª e da 3ª prova. Persegue o aluno e arremessa listas de exercícios (três de cada vez); ao morrer solta baú e moedas. Usa a arte do aluno tingida de roxo até ter arte própria.
-- **Mini-chefes do mapa (opcionais):** desde o começo da partida há um círculo de invocação de cada um pelo campus, com o rosto do mini-chefe em cima. Ficar dentro do círculo por 2,5 s invoca (sair esvazia): a partida para, ele é apresentado com ilustração própria, como os chefes, e entra andando pela borda da tela. Quanto mais tarde na partida, mais forte ele vem (a vida base de novo a cada 3 minutos). Chefes e mini-chefes não são puxados, atrasados nem empurrados. Cada um guarda o seu lugar (segue o aluno só até certa distância e se recupera se ele fugir), traz os próprios lacaios, é forte para quem não tem melhorias e deixa um **baú garantido** e moedas. O tom é de piada interna:
+- **Mini-chefes do mapa (opcionais):** desde o começo da partida há um círculo de invocação de cada um pelo campus, com o rosto do mini-chefe em cima. Quem nunca foi invocado é um mistério: o círculo, o mini-mapa e a seta mostram um "?" e o nome "Mini-boss misterioso"; invocado uma vez, ele fica revelado em todas as partidas (salvo no progresso). Ficar dentro do círculo por 2,5 s invoca (sair esvazia): a partida para, ele é apresentado com ilustração própria, como os chefes, e entra andando pela borda da tela. Quanto mais tarde na partida, mais forte ele vem (a vida base de novo a cada 3 minutos). Chefes e mini-chefes não são puxados, atrasados nem empurrados. Cada um guarda o seu lugar (segue o aluno só até certa distância e se recupera se ele fugir), traz os próprios lacaios, é forte para quem não tem melhorias e deixa um **baú garantido** e moedas. O tom é de piada interna:
 
   | Mini-chefe | Onde | Como ataca | Lacaios |
   |---|---|---|---|
@@ -86,7 +86,7 @@ py -3.12 -m venv .venv
 No menu principal. As moedas pegas nas provas (mais um bônus por prova aprovada e pelo tempo sobrevivido) ficam salvas em `dados/progresso.json` e são gastas na **loja** (melhorias permanentes de vida, dano, velocidade, recarga, rolamento, crítico, coleta, experiência e moedas; e desbloqueio do Pequi Explosivo, do Wi-Fi Eduroam, do Tênis de Corrida e dos Óculos de Grau) ou no **cassino** (Máquina de Salgadinho e Dado do Mestre, só com moedas do jogo). O treino não paga moedas.
 
 
-**Lanches da Cantina** (aba LANCHES da loja): um por vez, valem só para a próxima partida (fora do treino): Pão de Queijo (+20 de vida máxima), Coxinha (+15% de experiência), Café Coado (armas 10% mais rápidas), Açaí (+10% de velocidade), Pastel de Feira (+10% de dano).
+**Lanches da Cantina** (aba LANCHES da loja): um por vez, valem só para a próxima partida (fora do treino): Pão de Queijo (+20 de vida máxima), Coxinha (+15% de experiência), Caldo de Cana (armas 10% mais rápidas), Açaí (+10% de velocidade), Pastel de Feira (+10% de dano).
 
 **Cassino:** além da Máquina de Salgadinho e do Dado do Mestre, a **Roleta do Bandejão** (o aluno pede um prato e ganha se a roda parar nele: arroz 2,2x, frango 2,8x, bife 5,5x, strogonoff 11x).
 
@@ -96,7 +96,7 @@ No menu principal. As moedas pegas nas provas (mais um bônus por prova aprovada
 | Classe | Ativa (arma inicial) | Passiva | Especial |
 |---|---|---|---|
 | Otaku | Caramelo | Instinto Otaku: chance de crítico (dano em dobro) que cresce a cada nível | Super Saiyajin |
-| Programador | Cobra Python | Cafeinado: armas recarregam 1% mais rápido por nível e o café rende mais | Virada de Noite: café cheio e armas 2,5x mais rápidas por 8 s |
+| Programador | Cobra Python | Laço de Repetição: cada disparo tem 6% de chance de repetir na hora, e mais 1,6% por nível (até 35%) | Tela Azul: os inimigos da tela travam por 4 s e os projéteis deles somem (chefes e mini-chefes não travam) |
 | Mestre de RPG | Gemini | Rolagem de Iniciativa: o especial recarrega 2% mais rápido por nível | Zoltraak |
 | Monitor | Quadro Branco: área no chão que atrasa e fere | Plantão de Dúvidas: regenera vida e puxa notas de mais longe, crescendo por nível | Revisão para Prova: puxa todas as notas e cura 30% |
 | Gamer | Controle: ricocheteia entre inimigos | Reflexo: rolamento recarrega mais rápido, crescendo por nível | Speedrun: 6 s de velocidade alta e invencibilidade |
@@ -145,7 +145,7 @@ Para simular uma partida inteira sem janela (útil para balancear):
 | Classe abstrata com `atualizar()` e `desenhar()` | `jogo/nucleo/entidade.py` | `Entidade` |
 | 3+ inimigos herdando de uma base | `jogo/inimigos/` | `Inimigo` e `Bug`, `CalculadoraBrava`, `MouseDeBolinha`, `Caixinha`, `PiCambaleante`, `Ponteiro`, `PilhaAA`, `PenteDeRAM`; chefes: `Chefe` > `ChefePossuido` > `ProfessorDeCalculo`, `ProfessorDeArquiteturaEED`, `ProfessoraDeTDEPOO`; matérias: `Materia` > `CalculoI`, `ArquiteturaDeComputadores`, `EstruturaDeDadosEmC`, `TransformacaoDigital`, `ProgramacaoOrientadaAObjetos` |
 | Polimorfismo num único laço, sem `if` por tipo | `jogo/jogo.py` | `Jogo.atualizar()` |
-| Encapsulamento com `@property` e validação | `jogo/nucleo/ser_vivo.py`, `jogo/placar.py`, `jogo/armas/arma.py` | `SerVivo.vida`, `Placar.pontos`, `ArmaDeDisparo.municao` |
+| Encapsulamento com `@property` e validação | `jogo/nucleo/ser_vivo.py`, `jogo/placar.py`, `jogo/armas/arma.py` | `SerVivo.vida`, `Placar.pontos`, `ArmaDeDisparo.espera` (segundos até o próximo disparo) |
 | Composição | `jogo/jogo.py`, `jogo/jogador/jogador.py` | `Jogo` contém `Jogador`, `Fase` (a lista das três provas), `Placar`; `Jogador` contém `Arma`, `Item`, `Passiva`, `Especial`; `ChefePossuido` contém suas `Materia` |
 | Métodos especiais | `jogo/ranking.py` | `RegistroRanking.__lt__`, `__eq__`, `__str__` |
 | `@classmethod` e `@staticmethod` | `jogo/inimigos/fabrica.py`, `jogo/nucleo/colisao.py` | `FabricaDeInimigos.criar()`, `Colisao.circulos_colidem()` |

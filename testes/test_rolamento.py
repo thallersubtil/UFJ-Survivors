@@ -1,3 +1,4 @@
+import random
 from types import SimpleNamespace
 
 import pygame
@@ -11,6 +12,7 @@ class JogoFalso:
     def __init__(self, direcao=(0, 0)):
         self.entrada = SimpleNamespace(direcao=pygame.Vector2(direcao), mira=None)
         self.arena = pygame.Rect(0, 0, 3200, 1800)
+        self.rng = random.Random(1)      # o Programador sorteia se o disparo repete
 
     def passo_do_chao(self, posicao):
         return 1.0

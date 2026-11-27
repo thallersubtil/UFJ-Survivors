@@ -45,6 +45,9 @@ class Item(ABC):
     def atualizar(self, dt, jogador, jogo):
         """Chamado a cada quadro. Só itens com efeito ativo (ex.: Convite da Atlética) usam."""
 
+    def ao_eliminar(self, inimigo, jogador, jogo):
+        """Chamado a cada inimigo que o herói elimina. Só itens que reagem a isso (Kit de Primeiros Socorros) usam."""
+
     def ao_subir_de_nivel(self, jogador, jogo):
         """Chamado a cada nível que o herói sobe. A maioria dos itens não faz nada."""
 

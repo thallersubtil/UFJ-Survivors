@@ -13,6 +13,7 @@ class Progresso:
         self._lanche = None          # CHAVE do lanche guardado para a próxima partida
         self._conquistas = set()     # CHAVEs das conquistas já alcançadas
         self._classes_jogadas = set()
+        self._mini_chefes_conhecidos = set()   # CHAVEs dos mini-chefes já invocados (deixam de ser misteriosos)
         self._carregar()
 
     @property
@@ -120,6 +121,17 @@ class Progresso:
         self._classes_jogadas.add(nome)
         self.salvar()
 
+    # Mini-chefes já vistos
+
+    @property
+    def mini_chefes_conhecidos(self):
+        return set(self._mini_chefes_conhecidos)
+
+    def conhecer_mini_chefe(self, chave):
+        if chave not in self._mini_chefes_conhecidos:
+            self._mini_chefes_conhecidos.add(chave)
+            self.salvar()
+
     # Arquivo
 
     def _carregar(self):
@@ -143,10 +155,12 @@ class Progresso:
         if isinstance(desbloqueios, list):
             self._desbloqueios = {d for d in desbloqueios if isinstance(d, str)}
         lanche = dados.get("lanche")
-        from jogo.loja.lanches import LANCHES
+        from jogo.loja.lanches import CHAVES_ANTIGAS, LANCHES
+        lanche = CHAVES_ANTIGAS.get(lanche, lanche)
         if lanche in {c.CHAVE for c in LANCHES}:
             self._lanche = lanche
-        for campo, destino in (("conquistas", self._conquistas), ("classes_jogadas", self._classes_jogadas)):
+        for campo, destino in (("conquistas", self._conquistas), ("classes_jogadas", self._classes_jogadas),
+                               ("mini_chefes_conhecidos", self._mini_chefes_conhecidos)):
             valores = dados.get(campo, [])
             if isinstance(valores, list):
                 destino.update(v for v in valores if isinstance(v, str))
@@ -155,7 +169,8 @@ class Progresso:
         """Grava o progresso. Sem permissão de escrita, vale só até fechar o jogo."""
         dados = {"moedas": self._moedas, "melhorias": self._niveis, "desbloqueios": sorted(self._desbloqueios),
                  "lanche": self._lanche, "conquistas": sorted(self._conquistas),
-                 "classes_jogadas": sorted(self._classes_jogadas)}
+                 "classes_jogadas": sorted(self._classes_jogadas),
+                 "mini_chefes_conhecidos": sorted(self._mini_chefes_conhecidos)}
         try:
             self.caminho.parent.mkdir(parents=True, exist_ok=True)
             self.caminho.write_text(json.dumps(dados, ensure_ascii=False, indent=2), encoding="utf-8")

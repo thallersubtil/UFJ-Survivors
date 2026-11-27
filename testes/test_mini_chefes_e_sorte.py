@@ -198,7 +198,7 @@ def test_circulo_fica_perto_do_predio_do_mini_chefe(jogo_limpo):
     jogo = jogo_limpo()
     local = jogo.fase.abrir_invocacao(jogo, "tia_da_cantina")
     jogo._incorporar_novas()
-    assert jogo.marcadores() == [local] and not local.invocado and local.NOME == "Tia da Cantina"
+    assert jogo.marcadores() == [local] and not local.invocado and local.CHAVE == "tia_da_cantina"
     esperado = jogo.mapa.local_de("RU")
     if esperado is not None:
         assert local.posicao.distance_to(esperado) < 1 and not jogo.mapa.bloqueado(local.posicao, 60)
@@ -279,11 +279,11 @@ def test_mini_chefe_ataca_guarda_o_posto_e_deixa_bau(jogo_limpo, nome):
     for _ in range(120):
         jogo.atualizar(1 / 30)
     assert chefe.vida > chefe.vida_maxima / 2
-    jogo.marcados.add(chefe.NOME)
+    jogo.marcados.add(chefe.CHAVE)
     assert jogo.causar_dano(chefe, 10 ** 6)
     jogo._incorporar_novas()
     assert any(type(e).__name__ == "Bau" for e in jogo.entidades)
-    assert "mini_chefe" in jogo.marcos and chefe.NOME not in jogo.marcados
+    assert "mini_chefe" in jogo.marcos and chefe.CHAVE not in jogo.marcados
 
 
 def test_multa_da_bibliotecaria_tira_moedas(jogo_limpo):
@@ -359,7 +359,7 @@ def test_mini_mapa_mostra_so_o_lugar_e_o_clique_marca(tmp_path):
 
     assert jogo.marcados == set()
     app.passo(1 / 60, [clique(cena.ponto_no_mapa(local.posicao))])
-    assert jogo.marcados == {"Bibliotecária"} and app.cena_atual is cena      # clicar não fecha o mapa
+    assert jogo.marcados == {"bibliotecaria"} and app.cena_atual is cena      # clicar não fecha o mapa
     app.passo(1 / 60, [clique(cena.ponto_no_mapa(local.posicao))])
     assert jogo.marcados == set()                                              # clicar de novo desmarca
     app.passo(1 / 60, [clique((5, 5))])

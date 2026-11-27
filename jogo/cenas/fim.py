@@ -45,7 +45,15 @@ class CenaFimDeJogo(Cena):
 
     @staticmethod
     def motivo(jogo):
-        """Em que matéria o aluno reprovou: a do chefe atual ou, antes dele, a da prova."""
+        """Em que matéria o aluno reprovou (a do chefe mais antigo em campo ou, sem chefe, a da prova);
+        para quem venceu o semestre e caiu no projeto de extensão, quanto durou nele e quantos pontos fez."""
+        if jogo.venceu:
+            pontos = getattr(jogo.fase, "pontos_feitos", None)
+            if pontos is None:                  # treino: acabou quando o chefe caiu
+                return ""
+            minutos, segundos = divmod(int(jogo.fase.tempo), 60)
+            return (f"Semestre aprovado. Projeto de extensão: durou {minutos:02d}:{segundos:02d} "
+                    f"e fez {_milhar(pontos(jogo.placar))} pontos.")
         if jogo.chefe is not None and jogo.chefe.ativo:
             return f"Reprovado em {jogo.chefe.nome}."
         return f"Reprovado em {jogo.fase.MATERIA}." if jogo.fase.MATERIA else "Reprovado."
@@ -168,8 +176,10 @@ class CenaFimDeJogo(Cena):
             if self.tempo > 2.2 + i * 0.1:
                 texto(ui, valor, (x, y + 30), TINTA, 11, contorno=None)
         y += 48
-        if not self.jogo.venceu:
-            texto(ui, self.motivo(self.jogo), (b.x + 12, y), P.MARGEM, 11, contorno=None, media=True)
+        motivo = self.motivo(self.jogo)
+        if motivo:
+            texto(ui, motivo, (b.x + 12, y), (40, 150, 60) if self.jogo.venceu else P.MARGEM, 11, contorno=None,
+                  media=True)
             y += 14
         if self.conquistas:
             nomes = ", ".join(f"{c.NOME} (+{c.PREMIO})" for c in self.conquistas[:3])

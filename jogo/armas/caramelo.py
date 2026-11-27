@@ -1,12 +1,12 @@
 import math
 
 from jogo.ajudantes.ajudantes import CachorroCaramelo
-from jogo.armas.arma import ArmaSemMunicao
+from jogo.armas.arma import ArmaContinua
 
 from jogo.formas_supremas import CachorroDaMatilha
 
 
-class Caramelo(ArmaSemMunicao):
+class Caramelo(ArmaContinua):
     NOME = "Caramelo"
     ICONE = "sprites/caramelo.png"
     DESCRICAO = "Um vira-lata caramelo corre em volta de você e morde quem chega perto."

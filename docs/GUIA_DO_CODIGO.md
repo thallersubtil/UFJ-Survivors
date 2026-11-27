@@ -4,7 +4,7 @@ Mapa de tudo o que já existe no UFJ Survivors, na ordem em que vale a pena ente
 
 ## 1. O jogo em uma frase
 
-O herói (um aluno) anda pelo Campus Jatobá; as armas atacam sozinhas; ondas de inimigos (objetos das matérias) crescem durante cada uma das três provas de 5 minutos; inimigos mortos soltam notas que dão experiência; a cada nível o jogador escolhe uma carta (arma, melhoria ou item); no fim de cada prova chega o chefe: um professor possuído pela própria matéria. Vencer os três chefes = "APROVADO!"; morrer = "REPROVADO!".
+O herói (um aluno) anda pelo Campus Jatobá; as armas atacam sozinhas; ondas de inimigos (objetos das matérias) crescem com o tempo de partida ao longo das três provas de 4 minutos; inimigos mortos soltam notas que dão experiência; a cada nível o jogador escolhe uma carta (arma, melhoria ou item); no fim de cada prova (aos 4, 8 e 12 minutos do relógio, mesmo com o chefe anterior vivo) chega o chefe: um professor possuído pela própria matéria. Vencer os três chefes = "APROVADO!", e a partida segue sem fim (o Projeto de extensão), cada vez mais difícil, até o aluno cair; morrer antes disso = "REPROVADO!".
 
 ## 2. Como o programa roda
 
@@ -44,7 +44,7 @@ Entidade (abstrata: atualizar, desenhar)            jogo/nucleo/entidade.py
 ├─ SerVivo (abstrata: vida com @property)           jogo/nucleo/ser_vivo.py
 │  ├─ Jogador (abstrata: criar_arma_inicial, criar_passiva, criar_especial)   jogo/jogador/classes.py
 │  │  ├─ Otaku           130 de vida, lento, Caramelo + Instinto Otaku (crítico por nível) + Super Saiyajin
-│  │  ├─ Programador      80 de vida, rápido, Cobra Python + Cafeinado + Virada de Noite
+│  │  ├─ Programador      80 de vida, rápido, Cobra Python + Laço de Repetição + Tela Azul
 │  │  └─ MestreDeRPG     100 de vida, Gemini + Rolagem de Iniciativa + Zoltraak
 │  └─ Inimigo (abstrata: mover)                     jogo/inimigos/inimigo.py
 │     ├─ Bug, CalculadoraBrava, MouseDeBolinha, Caixinha (-> CaixinhaPequena),
@@ -58,7 +58,7 @@ Entidade (abstrata: atualizar, desenhar)            jogo/nucleo/entidade.py
 │  ├─ ProjetilDoHeroi -> CobraProjetil, TiroChatGPT, ProjetilDivisivel (EstrelaGemini, CobraGemea)
 │  └─ ProjetilInimigo -> ProjetilDaMateria (o símbolo da matéria: "dx", "*p", "{}"...)
 ├─ Ajudante (abstrata)    CachorroCaramelo, MascoteFlutuante, FuscaVeiculo, FuscaCircular
-├─ Coletavel (abstrata: ao_coletar)   Nota, CopoDeCafe, PocaoDeVida, Bau
+├─ Coletavel (abstrata: ao_coletar)   Nota, Ima, PocaoDeVida, Moeda, Bau
 ├─ Efeito (abstrata)      TextoFlutuante, FaiscaExplosao, RaioZoltraak, AuraSSJ, GolpeClaude, RaioDebate
 └─ Predio, Decoracao      obstáculos e enfeites do mapa
 ```
@@ -67,9 +67,9 @@ Entidade (abstrata: atualizar, desenhar)            jogo/nucleo/entidade.py
 
 ```
 Arma (abstrata: atualizar; nivel 1 a 7 com @property)    jogo/armas/arma.py
-├─ ArmaDeDisparo (gasta café: municao com @property)
+├─ ArmaDeDisparo (dispara e espera a recarga: espera com @property)
 │  └─ CobraPython, MascoteChatGPT, Gemini
-├─ ArmaSemMunicao (não gasta café)
+├─ ArmaContinua (age o tempo todo, no próprio ritmo)
 │  └─ Caramelo, MascoteClaude, FuscaAzul
 └─ Colab (duas armas no nível máximo viram a versão suprema)               jogo/armas/colabs.py
    └─ CarameloNoFusca, CobrasGemeas, DebateDasIAs  (herança múltipla: Colab + família da arma)
@@ -110,7 +110,7 @@ Por que composição e não herança entre `Jogador` e `Arma`: o jogador **tem**
 | Classe abstrata | `Entidade` (`atualizar`, `desenhar` com `@abstractmethod`) | Não existe "uma entidade" genérica na tela; ela só define o contrato que o laço do `Jogo` usa. |
 | Herança (3+ inimigos) | `Inimigo` e 8 lacaios + `Chefe` > `ChefePossuido` > 3 chefes | O que é comum (vida, perseguir, soltar nota, animação) está em `Inimigo`; cada lacaio só sobrescreve `mover` e às vezes `ao_morrer`. |
 | Polimorfismo | `Jogo.atualizar`, laço `for e in self.entidades` | O mesmo `e.atualizar()` faz o Bug correr, o Ponteiro mergulhar e a nota ser atraída. |
-| Encapsulamento | `SerVivo.vida`, `Placar.pontos`, `ArmaDeDisparo.municao` | O atributo real é `_vida`; o setter impede vida negativa ou acima do máximo. |
+| Encapsulamento | `SerVivo.vida`, `Placar.pontos`, `ArmaDeDisparo.espera` | O atributo real é `_vida`; o setter impede vida negativa ou acima do máximo. Na arma, `_espera` são os segundos até o próximo disparo: o setter recusa o que não é número (`TypeError`) e valor negativo (`ValueError`), e é por ele que `atualizar` desconta o tempo. A munição (`municao`) saiu do jogo em 26/11 e a `espera` entrou no lugar dela como exemplo. |
 | Composição | ver seção 5 | |
 | Métodos especiais | `RegistroRanking.__lt__`, `__eq__`, `__str__` | `__lt__` é o que deixa `sorted()` ordenar o ranking. |
 | `@classmethod` | `FabricaDeInimigos.registrar/criar` | A fábrica guarda um registro na própria classe; inimigo novo se registra com um decorador. |
@@ -123,15 +123,19 @@ Pergunta provável: "o que muda se eu criar um inimigo novo?". Resposta: nada na
 
 ## 7. As três provas (`jogo/fase.py`)
 
-| Prova | Lacaios | Mini-chefe | Chefe (aos 5:00) |
+| Prova | Lacaios | Mini-chefe | Chefe (no fim dos 4 min: 4:00, 8:00 e 12:00 de partida) |
 |---|---|---|---|
 | `ProvaDeCalculo` | bug, calculadora, pi, caixinha, mouse | Calculadora Gigante (2:30) | Cálculo I |
 | `ProvaDeArquiteturaEED` | bug, mouse, pente de RAM, ponteiro, pilha, calculadora | Pente de RAM Gigante (2:30) | Arquitetura de Computadores, depois Estrutura de Dados em C |
 | `ProvaDeTDEPOO` | todos | Caixinha Gigante (2:00), Ponteiro Gigante (3:30) | Transformação Digital, depois POO |
 
 - Cada prova é uma subclasse de `Prova` que só preenche dados (`APRESENTACOES`, `FORMACOES`, `MINI_CHEFES`, `CHEFE`); a `Prova` monta a linha do tempo a partir deles.
-- Cada prova começa mais difícil que a anterior (`INICIO_DIFICULDADE`); a dificuldade sobe com o tempo (`escala_dificuldade`) e o número de inimigos tem teto (`MAX_INIMIGOS`).
-- Quando o chefe cai, `Jogo.concluir_fase()` limpa os inimigos e tiros da tela, cura metade da vida, dá um baú e começa a próxima prova; na última, vence o jogo.
+- Cada prova dura 4 minutos e continua de onde a anterior parou (`INICIO_DIFICULDADE` = 0, 240 e 480 s; `tempo_de_partida` soma os dois); a dificuldade sobe com esse tempo (`escala_dificuldade`).
+- **Mais inimigos com o tempo**: `alvo_de_inimigos()` (quantos a fase quer em campo) cresce com o tempo de partida, de 10 no começo a 154 aos 4 min, 346 aos 8 e o teto `MAX_INIMIGOS` (450) aos 10; `intervalo_de_nascimento()` encurta junto (de 0,5 s para 0,125 s entre um grupo e outro). Com chefe em campo o alvo cai para 60% (`alvo_com`).
+- **Chefes no relógio**: o evento do fim da prova chama `Fase.chamar_chefe`, que põe o chefe em campo (`Jogo.iniciar_chefe`) e avisa `Jogo.avancar_prova()`: a prova seguinte começa na hora, sem limpar o campo, com o chefe vivo ou não. `Jogo.chefes` guarda os que estão em campo (podem ser dois; `Jogo.chefe` é o mais antigo) e o HUD desenha uma barra para cada um.
+- Quando um chefe cai, `Jogo.aprovar_prova(chefe)` guarda a nota da prova dele em `Jogo.notas[índice]`, paga as moedas, cura metade da vida e dá um baú. Com as três provas aprovadas, `venceu` vira verdadeiro e a fase passa a ser `ModoSemFim` (no treino a partida acaba ali).
+- **Modo sem fim** (`ModoSemFim`, uma `Fase` como as provas): todos os lacaios, uma formação a cada 45 s, um gigante a cada 60 s, e a dificuldade multiplicada por 1,15 a cada 15 s (`escala_dificuldade` sobrescrito: cresce exponencialmente). Essa conta não aparece na tela: o HUD mostra só "Projeto de extensão" e, no fim, o boletim diz quanto tempo o aluno durou nele e quantos pontos fez ali (`ModoSemFim.pontos_feitos`). Só acaba quando o aluno cai.
+- **O que conta como vitória**: derrotar os três chefes. Quem cai no modo sem fim continua aprovado: o boletim mostra as três notas, o ranking registra `venceu`, os pontos levam o bônus de vitória mais o tempo e as eliminações do Projeto de extensão, e as moedas pegas lá também valem (1,6x). Quem cai antes é reprovado em toda prova cujo chefe estava vivo (nota de 4 a 5,9 pelo dano feito nele) e na prova que corria (até 4 pelo tempo); as que não começaram ficam como NÃO CURSOU.
 
 ### Como o chefe possuído funciona
 
@@ -142,8 +146,12 @@ Pergunta provável: "o que muda se eu criar um inimigo novo?". Resposta: nada na
 
 ## 8. Sistemas de jogo
 
-- **Café é munição**: `ArmaDeDisparo` gasta café, que recarrega sozinho; sem café atira mais devagar.
-- **Experiência e cartas**: notas dão experiência; `Progressao` (`jogo/progressao.py`) sorteia 3 cartas (arma nova, melhoria, item). R sorteia de novo, P pula.
+- **Armas sem munição**: `ArmaDeDisparo` atira sempre que a `espera` zera e volta a esperar a recarga da arma; não há café nem nada para acabar. O que existia em volta do café foi trocado: a Garrafa Térmica faz toda cura render mais, o lanche virou Caldo de Cana e o Programador ganhou o Laço de Repetição (chance de o disparo repetir) e a Tela Azul (trava os inimigos da tela).
+- **Experiência e cartas**: notas dão experiência; `Progressao` (`jogo/progressao.py`) sorteia 3 cartas (arma nova, melhoria, item). R sorteia de novo, P pula. Com tudo no nível máximo, as cartas viram duas: recuperar 30% da vida ou ganhar 50 moedas.
+- **Ímã**: cada inimigo comum tem 0,15% de chance de soltar um `Ima`; quem pega chama `Jogo.puxar_experiencia()`, que manda todo coletável `puxar_experiencia()`. Só a `Nota` sobrescreve o método (voa até o aluno); os outros herdam o que não faz nada, então não há `isinstance`. A Revisão para Prova do Monitor usa o mesmo caminho.
+- **Cura**: os inimigos não soltam mais poção. Ela vem (1) dos objetos quebráveis e (2) do item Kit de Primeiros Socorros, que a cada 30, 24, 18 ou 12 s (conforme o nível) faz o próximo eliminado soltar uma poção, pelo gancho `Item.ao_eliminar`, chamado em `Jogo._contar_eliminacao`.
+- **Objetos quebráveis** (`jogo/inimigos/quebraveis.py`): `CaixaDePapelao`, `Lixeira` e `VasoDePlanta` herdam de `ObjetoQuebravel`, que herda de `Inimigo` para toda arma já saber acertá-los, e sobrescreve `mover` (não anda), `tocar_jogador` (não fere), `empurrar`, `possuir`, `assustar` e `ao_morrer` (solta poção ou moedas). Ficam no grupo `quebravel`, fora da lista de inimigos: não pesam no alvo da fase, e `CONTA_NO_PLACAR = False` os deixa fora das eliminações e do combo. O `Jogo` espalha 80 pelo campus uma vez só, no começo (`_espalhar_quebraveis`): em pontos sorteados, fora dos prédios, a pelo menos 320 de distância uns dos outros e 900 de onde o aluno começa. Sem semente, cada partida tem um arranjo diferente; quebrado, o objeto não volta.
+- **Mini-chefe misterioso**: `LocalDeInvocacao.NOME` e `rosto` são propriedades: enquanto o mini-chefe não foi invocado em partida nenhuma, devolvem "Mini-boss misterioso" e um rosto com "?", e o círculo fica lilás. Invocar chama `Jogo.conhecer_mini_chefe`, a `CenaPartida` grava a CHAVE no `Progresso` na hora, e as próximas partidas recebem os conhecidos pelas `OpcoesDePartida`. A marcação no mini-mapa (`Jogo.marcados`) guarda a CHAVE, não o nome, porque vários misteriosos têm o mesmo nome na tela.
 - **Colabs**: duas armas no nível máximo viram uma terceira.
 - **Combo 67**: 67 eliminações sem levar dano dão velocidade por 6 s e tocam o áudio.
 - **Ranking**: 10 melhores em `dados/ranking.json`.

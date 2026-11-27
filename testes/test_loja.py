@@ -135,7 +135,7 @@ def test_passar_de_prova_paga_moedas(jogo_limpo):
     jogo = jogo_limpo()
     jogo.fases = semestre()
     jogo.fase = jogo.fases[0]
-    jogo.concluir_fase()
+    jogo.aprovar_prova(object())             # qualquer chefe: a prova aprovada é a atual
     assert jogo.placar.moedas == jogo.MOEDAS_POR_PROVA
 
 

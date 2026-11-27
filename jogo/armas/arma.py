@@ -80,12 +80,9 @@ class Arma(ABC):
     def ao_remover(self, jogo):
         """Chamado quando a arma sai do jogador (por exemplo, virou colab)."""
 
-    def encher(self):
-        """Recarrega a munição. Armas sem munição não fazem nada."""
-
     @property
-    def fracao_cafe(self):
-        """Fração de café (0 a 1) para o HUD, ou None se a arma não usa café."""
+    def fracao_de_recarga(self):
+        """Quanto da recarga já passou (0 a 1) para o HUD, ou None se a arma não espera para atirar."""
         return None
 
     def __str__(self):
@@ -93,64 +90,56 @@ class Arma(ABC):
 
 
 class ArmaDeDisparo(Arma, ABC):
-    """Arma que gasta café (munição) a cada disparo. O café recarrega sozinho."""
+    """Arma que dispara e espera a recarga para disparar de novo. Não gasta nada: só o tempo."""
 
-    MUNICAO_BASE = 12
-    RECARGA_CAFE = 0.4
-    PENALIDADE_SEM_CAFE = 3.0
+    ESPERA_SEM_ALVO = 0.1          # sem ter em quem atirar, tenta de novo logo
+    ESPERA_DA_REPETICAO = 0.12     # Laço de Repetição (Programador): o disparo repetido sai quase junto
 
     def __init__(self):
         super().__init__()
-        self._mult_cafe = 1.0
-        self._municao = float(self.MUNICAO_BASE)
-        self._espera = 0.0
+        self._espera = 0.0         # segundos até o próximo disparo
+        self._recarga_atual = 0.0  # quanto durava a espera quando ela começou (para o HUD)
 
     @property
-    def municao_maxima(self):
-        return self.MUNICAO_BASE * self._mult_cafe
+    def espera(self):
+        """Segundos que faltam para o próximo disparo."""
+        return self._espera
 
-    @property
-    def municao(self):
-        return self._municao
-
-    @municao.setter
-    def municao(self, valor):
+    @espera.setter
+    def espera(self, valor):
         if isinstance(valor, bool) or not isinstance(valor, Real):
-            raise TypeError("a munição deve ser um número")
+            raise TypeError("a espera deve ser um número")
         if valor < 0:
-            raise ValueError("a munição não pode ser negativa")
-        self._municao = min(float(valor), self.municao_maxima)
+            raise ValueError("a espera não pode ser negativa")
+        self._espera = float(valor)
+        self._recarga_atual = max(self._recarga_atual, self._espera) if self._espera > 0 else 0.0
 
     @property
-    def tem_cafe(self):
-        return self._municao >= 1
-
-    @property
-    def fracao_cafe(self):
-        return self._municao / self.municao_maxima
-
-    def encher(self):
-        self._municao = self.municao_maxima
+    def fracao_de_recarga(self):
+        return 1.0 if self._recarga_atual <= 0 else 1 - self._espera / self._recarga_atual
 
     def atualizar(self, dt, jogo, dono):
-        self._mult_cafe = dono.mult_cafe
-        self.municao = min(self.municao_maxima, self._municao + self.RECARGA_CAFE * dono.mult_cafe * dt)
-        self._espera -= dt
+        self.espera = max(0.0, self._espera - dt)
         if self._espera > 0:
             return
-        com_cafe = self.tem_cafe
-        if self.disparar(jogo, dono):
-            if com_cafe:
-                self.municao = self._municao - 1
-            fator = 1.0 if com_cafe else self.PENALIDADE_SEM_CAFE
-            self._espera = self.valor("recarga") * dono.multiplicador_recarga * fator
+        if not self.disparar(jogo, dono):
+            self.espera = self.ESPERA_SEM_ALVO
+        elif self._repete(jogo, dono):
+            self.espera = self.ESPERA_DA_REPETICAO
         else:
-            self._espera = 0.1
+            self.espera = self.valor("recarga") * dono.multiplicador_recarga
+
+    @staticmethod
+    def _repete(jogo, dono):
+        """Sorteia se o disparo repete na hora (só sorteia para quem tem essa chance)."""
+        chance = dono.chance(dono.chance_repeticao)
+        return chance > 0 and jogo.rng.random() < chance
 
     @abstractmethod
     def disparar(self, jogo, dono):
         """Cria os projéteis. Retorna False se não havia em que atirar."""
 
 
-class ArmaSemMunicao(Arma, ABC):
-    """Arma que não gasta café: ajudantes, veículos, golpes e campos (Caramelo, Claude, Fusca, Wi-Fi)."""
+class ArmaContinua(Arma, ABC):
+    """Arma que age o tempo todo, no próprio ritmo: ajudantes, veículos, golpes e campos
+    (Caramelo, Claude, Fusca, Wi-Fi, Apostila, Quadro Branco e as colabs)."""

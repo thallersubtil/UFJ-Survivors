@@ -30,23 +30,27 @@ class Boletim:
         return round(Boletim.MEDIA_PARA_PASSAR + 4 * max(0.0, jogador.vida / jogador.vida_maxima), 1)
 
     @staticmethod
-    def nota_de_reprovacao(jogo):
-        """Caiu na prova: até 4 pelo tempo que aguentou; se o chefe já estava lá, de 4 a 5,9 pelo dano nele."""
-        chefe = jogo.chefe
-        if chefe is not None and chefe.ativo:
-            return round(4 + (Boletim.NOTA_MAXIMA_REPROVADO - 4) * (1 - chefe.vida / chefe.vida_maxima), 1)
-        return round(4 * min(1.0, jogo.fase.tempo / jogo.fase.DURACAO), 1)
+    def nota_contra_o_chefe(chefe):
+        """Caiu com o chefe da prova em campo: de 4 a 5,9, pelo dano que já tinha feito nele."""
+        return round(4 + (Boletim.NOTA_MAXIMA_REPROVADO - 4) * (1 - chefe.vida / chefe.vida_maxima), 1)
+
+    @staticmethod
+    def nota_pelo_tempo(fase):
+        """Caiu antes de o chefe chegar: até 4, pelo tempo de prova que aguentou."""
+        return round(4 * min(1.0, fase.tempo / fase.DURACAO), 1)
 
     @classmethod
     def _linha(cls, jogo, i, fase):
+        """A linha da prova `i`. Como os chefes chegam no relógio, pode haver mais de uma prova em
+        aberto: toda prova cujo chefe está vivo conta como reprovada, e a que ainda corria também."""
         disciplina = (getattr(fase, "ROTULO", "") or fase.MATERIA or fase.NOME).replace(" -> ", " e ")
-        notas = getattr(jogo, "notas", [])
-        if i < len(notas):
-            return LinhaDoBoletim(disciplina, notas[i], "APROVADO")
-        if i == jogo.indice_fase and jogo.venceu:          # venceu sem a nota guardada (não deveria acontecer)
-            return LinhaDoBoletim(disciplina, cls.nota_de_aprovacao(jogo.jogador), "APROVADO")
-        if i == jogo.indice_fase and not jogo.venceu:
-            return LinhaDoBoletim(disciplina, cls.nota_de_reprovacao(jogo), "REPROVADO")
+        if i in jogo.notas:
+            return LinhaDoBoletim(disciplina, jogo.notas[i], "APROVADO")
+        chefe = jogo.chefe_da_prova(i)
+        if chefe is not None:
+            return LinhaDoBoletim(disciplina, cls.nota_contra_o_chefe(chefe), "REPROVADO")
+        if fase is jogo.fase:
+            return LinhaDoBoletim(disciplina, cls.nota_pelo_tempo(fase), "REPROVADO")
         return LinhaDoBoletim(disciplina, None, "NÃO CURSOU")
 
     @property

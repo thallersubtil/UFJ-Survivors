@@ -34,10 +34,10 @@ def test_semestre_tem_as_tres_provas_na_ordem():
     assert [f.CHEFE for f in semestre()] == ["chefe_calculo", "chefe_arquitetura_ed", "chefe_td_poo"]
 
 
-def test_cada_prova_dura_cinco_minutos_e_comeca_mais_dificil():
-    assert DURACAO_PROVA == 300
+def test_cada_prova_dura_quatro_minutos_e_comeca_mais_dificil():
+    assert DURACAO_PROVA == 240
     provas = semestre()
-    assert all(p.DURACAO == 300 for p in provas)
+    assert all(p.DURACAO == 240 for p in provas)
     escalas = [p.escala_dificuldade for p in provas]
     assert escalas == sorted(escalas) and escalas[0] < escalas[-1]
 
@@ -73,14 +73,17 @@ def test_chefe_chega_no_fim_da_prova():
     pular_para(jogo, DURACAO_PROVA)
     assert isinstance(jogo.chefe, ChefePossuido)
     assert jogo.chefe.nome == "Cálculo I"
-    assert jogo.fase.chefe_apareceu
+    assert jogo.fases[0].chefe_apareceu
     assert any("Cálculo I chegou" in texto for texto, _ in jogo.anuncios)
 
 
-def test_derrotar_o_chefe_passa_para_a_proxima_prova():
+def test_a_proxima_prova_comeca_no_relogio_e_derrotar_o_chefe_so_premia():
+    """Antes a 2ª prova só começava quando o chefe caía (e o campo era limpo); agora quem manda é o relógio."""
     jogo = jogo_imortal()
     pular_para(jogo, DURACAO_PROVA)
     jogo._incorporar_novas()
+    assert isinstance(jogo.fase, ProvaDeArquiteturaEED) and jogo.indice_fase == 1      # já com o chefe vivo
+    assert any("2ª prova" in texto for texto, _ in jogo.anuncios)
     lacaio = Bug(jogo.jogador.posicao + (200, 0))
     tiro = ProjetilDaMateria(jogo.jogador.posicao + (400, 0), (0, 0), 5, "dx", (255, 255, 255))
     jogo.adicionar(lacaio)
@@ -91,20 +94,19 @@ def test_derrotar_o_chefe_passa_para_a_proxima_prova():
     assert jogo.causar_dano(jogo.chefe, 10 ** 7)
     assert not jogo.terminou
     assert isinstance(jogo.fase, ProvaDeArquiteturaEED) and jogo.indice_fase == 1
-    assert jogo.chefe is None
-    assert not lacaio.ativo and not tiro.ativo
+    assert jogo.chefe is None and jogo.provas_vencidas == 1
+    assert lacaio.ativo and tiro.ativo               # a partida não para: nada some do campo
     assert jogo.jogador.vida == 60
     assert jogo.baus_pendentes == 1
-    assert any("2ª prova" in texto for texto, _ in jogo.anuncios)
-    assert jogo.fase.tempo == 0
+    assert any("Aprovado em Cálculo I" in texto for texto, _ in jogo.anuncios)
 
 
-def test_derrotar_o_ultimo_chefe_vence_o_jogo():
+def test_com_uma_prova_so_derrotar_o_chefe_vence_o_jogo():
     jogo = jogo_imortal(fases=[ProvaDeTDEPOO()])
     pular_para(jogo, DURACAO_PROVA)
     jogo._incorporar_novas()
     chefe = jogo.chefe
-    jogo.causar_dano(chefe, chefe.vida)
+    jogo.causar_dano(chefe, chefe.vida * 2)      # o dano varia ±10%: o dobro garante a troca de matéria
     chefe.troca = 0
     chefe.escudo = 0
     assert jogo.causar_dano(chefe, 10 ** 7)
@@ -146,14 +148,13 @@ def test_prova_e_chefe_possuido_sao_abstratos():
         ChefePossuido((0, 0))
 
 
-def test_lacaio_criado_no_mesmo_quadro_nao_passa_para_a_proxima_prova():
+def test_inimigos_nascem_da_prova_que_esta_valendo_no_relogio():
+    """Não há mais limpeza de campo entre provas; o que muda na virada é quem passa a nascer."""
     jogo = jogo_imortal()
     pular_para(jogo, DURACAO_PROVA)
-    jogo._incorporar_novas()
-    atrasado = Bug(jogo.jogador.posicao + (200, 0))
-    jogo.adicionar(atrasado)          # ainda na fila de novas entidades
-    jogo.causar_dano(jogo.chefe, 10 ** 7)
-    assert not atrasado.ativo
+    for _ in range(60):
+        jogo.atualizar(1 / 60)
+    assert jogo.fase.ativos == ["bug", "mouse"]      # a lista da 2ª prova, do começo
 
 
 def test_reprovado_mostra_a_materia_do_chefe_atual():
@@ -163,5 +164,20 @@ def test_reprovado_mostra_a_materia_do_chefe_atual():
     pular_para(jogo, DURACAO_PROVA)
     jogo._incorporar_novas()
     chefe = jogo.chefe
-    jogo.causar_dano(chefe, chefe.vida)
+    jogo.causar_dano(chefe, chefe.vida * 2)      # o dano varia ±10%: o dobro garante a troca de matéria
     assert CenaFimDeJogo.motivo(jogo) == "Reprovado em Estrutura de Dados em C."
+
+
+def test_quem_venceu_e_caiu_no_projeto_de_extensao_ve_quanto_durou_e_quantos_pontos_fez_nele():
+    from jogo.cenas.fim import CenaFimDeJogo
+    from jogo.fase import ModoSemFim
+    jogo = jogo_imortal()
+    jogo.placar.tempo = 720
+    jogo.placar.adicionar_pontos(5000)
+    jogo.venceu = True
+    jogo.fase = ModoSemFim(inicio=720, placar=jogo.placar)
+    jogo.fase.tempo = 95
+    jogo.placar.tempo += 95
+    jogo.placar.adicionar_pontos(1234)
+    assert jogo.fase.pontos_feitos(jogo.placar) == 1234 + 95 * jogo.placar.PONTOS_POR_SEGUNDO
+    assert CenaFimDeJogo.motivo(jogo) == "Semestre aprovado. Projeto de extensão: durou 01:35 e fez 1.424 pontos."

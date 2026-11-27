@@ -25,7 +25,7 @@ class PassouEmCalculo(Conquista):
     PREMIO = 50
 
     def alcancada(self, jogo, progresso):
-        return jogo.provas_vencidas >= 1
+        return 0 in jogo.notas          # a nota da 1ª prova só existe para quem derrotou o chefe dela
 
 
 class SemestreAprovado(Conquista):

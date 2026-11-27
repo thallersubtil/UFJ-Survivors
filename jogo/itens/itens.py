@@ -68,12 +68,13 @@ class RelogioDePulso(Item):
 
 class GarrafaTermica(Item):
     NOME = "Garrafa Térmica"
-    DESCRICAO = "+25% de café máximo e de recarga de café por nível."
+    DESCRICAO = "Sopa quente o dia todo: tudo que recupera vida recupera 20% a mais por nível."
     ICONE = "icones/garrafa.png"
-    MELHORIAS = ("+25% de café.", "+25% de café.", "+25% de café.")
+    MELHORIAS = ("+20% de cura.", "+20% de cura.", "+20% de cura.")
+    CURA_POR_NIVEL = 0.20
 
     def aplicar(self, jogador):
-        jogador.mult_cafe *= 1 + 0.25 * self.nivel
+        jogador.mult_cura += self.CURA_POR_NIVEL * self.nivel
 
 
 class TenisDeCorrida(Item):
@@ -240,5 +241,40 @@ class JogoDeCintura(Item):
         jogador.chance_desvio += 0.05 * self.nivel
 
 
+class KitDePrimeirosSocorros(Item):
+    """Os inimigos não soltam mais cura sozinhos: com o kit, de tempos em tempos o próximo eliminado solta uma poção."""
+
+    NOME = "Kit de Primeiros Socorros"
+    DESCRICAO = "A cada 30 s, o próximo inimigo eliminado deixa cair uma poção de vida."
+    ICONE = "legado/itens/potion_hp.png"
+    MELHORIAS = ("A poção vem a cada 24 s.", "A poção vem a cada 18 s.", "A poção vem a cada 12 s.")
+    INTERVALOS = (30.0, 24.0, 18.0, 12.0)     # segundos entre uma poção e outra, por nível
+
+    def __init__(self):
+        super().__init__()
+        self._espera = 0.0                     # começa carregado: a primeira eliminação já solta
+
+    @property
+    def intervalo(self):
+        return self.INTERVALOS[self.nivel - 1]
+
+    @property
+    def pronto(self):
+        return self._espera <= 0
+
+    def aplicar(self, jogador):
+        """Não mexe em atributo nenhum: o efeito está em `ao_eliminar`."""
+
+    def atualizar(self, dt, jogador, jogo):
+        self._espera = max(0.0, self._espera - dt)
+
+    def ao_eliminar(self, inimigo, jogador, jogo):
+        if self.pronto:
+            from jogo.coletaveis.coletaveis import PocaoDeVida
+            self._espera = self.intervalo
+            jogo.adicionar(PocaoDeVida(inimigo.posicao + (10, 0)))
+
+
 ITENS = (CadernoDeResumos, Energetico, MarmitaDoRU, MochilaPesada, FoneDeOuvido, RelogioDePulso, GarrafaTermica,
-         TenisDeCorrida, OculosDeGrau, Cola, ConviteDaAtletica, Pendrive, MoedaDaSorte, JogoDeCintura)
+         TenisDeCorrida, OculosDeGrau, Cola, ConviteDaAtletica, Pendrive, MoedaDaSorte, JogoDeCintura,
+         KitDePrimeirosSocorros)

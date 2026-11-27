@@ -82,23 +82,23 @@ class Progressao:
                                         classe.SO_AO_SUBIR_DE_NIVEL, Progressao._peso(classe), classe))
         return opcoes
 
-    @staticmethod
-    def opcao_lanche():
-        return Opcao("Lanche da Cantina", "Recupera 30 de vida.", "legado/itens/potion_hp.png", "", "atributo",
-                     lambda j, jogo: j.curar(30))
+    CURA_NO_MAXIMO = 0.30           # fração da vida máxima que a carta de vida recupera
+    MOEDAS_NO_MAXIMO = 50           # moedas da outra carta, sem multiplicador nenhum
 
     @staticmethod
-    def opcoes_de_atributo():
-        """Cartas para quando não sobra arma nem item para oferecer (todas as vagas no máximo ou banidas)."""
-        return [
-            Opcao("Estudo Extra", "+5% de dano pelo resto da partida.", "icones/caderno.png", "", "atributo",
-                  lambda j, jogo: j.ganhar_atributo("dano", 0.05)),
-            Opcao("Café Reforçado", "Armas recarregam 5% mais rápido pelo resto da partida.", "icones/garrafa.png",
-                  "", "atributo", lambda j, jogo: j.ganhar_atributo("recarga", 0.05)),
-            Opcao("Fôlego", "+10 de vida máxima pelo resto da partida.", "icones/mochila.png", "", "atributo",
-                  lambda j, jogo: j.ganhar_atributo("vida", 10)),
-            Progressao.opcao_lanche(),
-        ]
+    def opcao_lanche():
+        return Opcao("Lanche da Cantina", "Recupera 30% da vida máxima.", "legado/itens/potion_hp.png", "", "maximo",
+                     lambda j, jogo: j.curar(j.vida_maxima * Progressao.CURA_NO_MAXIMO))
+
+    @staticmethod
+    def opcao_bolsa():
+        return Opcao("Bolsa de Monitoria", f"Ganha {Progressao.MOEDAS_NO_MAXIMO} moedas.", "icones/moeda.png", "",
+                     "maximo", lambda j, jogo: jogo.placar.adicionar_moedas(Progressao.MOEDAS_NO_MAXIMO))
+
+    @staticmethod
+    def opcoes_no_maximo():
+        """Cartas de quem não tem mais o que melhorar (tudo no nível máximo ou banido): vida ou moedas."""
+        return [Progressao.opcao_lanche(), Progressao.opcao_bolsa()]
 
     @staticmethod
     def sortear_com_peso(opcoes, quantidade, rng):
@@ -116,7 +116,7 @@ class Progressao:
         colabs = [o for o in candidatas if o.tipo == "colab"][:quantidade]
         outras = [o for o in candidatas if o.tipo != "colab"]
         escolhidas = colabs + Progressao.sortear_com_peso(outras, quantidade - len(colabs), rng)
-        return escolhidas or Progressao.sortear_com_peso(Progressao.opcoes_de_atributo(), quantidade, rng)
+        return escolhidas or Progressao.opcoes_no_maximo()
 
     @staticmethod
     def premio_bau(jogador, rng):

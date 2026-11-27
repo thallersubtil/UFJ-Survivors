@@ -16,8 +16,8 @@ FPS = 60
 ESCALA_PIXEL = 2          # a arte do mundo é pixel art ampliada 2x, sem suavizar
 
 ARENA_LARGURA, ARENA_ALTURA = 3200, 1800
-DURACAO_PROVA = 5 * 60          # cada uma das três provas; o chefe chega no fim
-MAX_INIMIGOS = 300
+DURACAO_PROVA = 4 * 60          # cada uma das três provas; o chefe chega no fim (aos 4, 8 e 12 min de partida)
+MAX_INIMIGOS = 450              # teto de inimigos em campo (o alvo cresce com o tempo até aqui)
 DISTANCIA_REPOSICIONAR = 1400   # inimigo mais longe que isso do herói renasce perto dele
 INVENCIBILIDADE_APOS_DANO = 0.5
 COMBO_ESPECIAL = 67
@@ -42,7 +42,6 @@ class Cor:
     TEXTO_FRACO = (168, 160, 190)
     VIDA = (226, 64, 74)
     EXPERIENCIA = (96, 196, 255)
-    CAFE = (176, 112, 64)
     DESTAQUE = (255, 214, 92)
     DANO = (255, 255, 255)
     DANO_FORTE = (255, 214, 92)

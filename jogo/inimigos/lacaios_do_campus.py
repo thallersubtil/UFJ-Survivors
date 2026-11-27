@@ -19,8 +19,7 @@ class LacaioDoCampus(Inimigo):
     VIDA = 12
     DANO = 5
     PONTOS = 8
-    CHANCE_CAFE = 0.0
-    CHANCE_POCAO = 0.0
+    CHANCE_IMA = 0.0
 
     def mover(self, dt, jogo):
         self.ir_em_direcao(jogo.jogador.posicao, dt)

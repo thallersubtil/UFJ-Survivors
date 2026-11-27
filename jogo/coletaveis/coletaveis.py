@@ -1,4 +1,4 @@
-"""Coisas que o herói pega no chão: notas (experiência), café, poção, moedas e baú."""
+"""Coisas que o herói pega no chão: notas (experiência), ímã, poção, moedas e baú."""
 import math
 from abc import ABC, abstractmethod
 
@@ -45,6 +45,9 @@ class Coletavel(Entidade, ABC):
     def ao_coletar(self, jogo):
         """Efeito de pegar o coletável."""
 
+    def puxar_experiencia(self):
+        """O Ímã (ou a Revisão para Prova) chamou: só o que é experiência atende. Os outros ficam onde estão."""
+
     def altura_desenho(self):
         return self.ALTURA
 
@@ -69,18 +72,23 @@ class Nota(Coletavel):
         jogo.dar_experiencia(self.valor)
         Recursos.tocar("coleta", 0.2)
 
+    def puxar_experiencia(self):
+        self.atraido = True         # voa até o aluno de onde estiver
+
     def altura_desenho(self):
         return 26 if self.valor >= 5 else self.ALTURA
 
 
-class CopoDeCafe(Coletavel):
-    IMAGEM = "sprites/cafe.png"
+class Ima(Coletavel):
+    """Ímã que um inimigo deixa cair muito de vez em quando: puxa toda a experiência do mapa até o aluno."""
+
+    IMAGEM = "icones/ima.png"
     ALTURA = 30
 
     def ao_coletar(self, jogo):
-        jogo.jogador.encher_cafe()
-        jogo.adicionar(TextoFlutuante("CAFÉ!", self.posicao, Cor.CAFE, 18))
-        Recursos.tocar("coleta", 0.4)
+        jogo.puxar_experiencia()
+        jogo.adicionar(TextoFlutuante("ÍMÃ!", self.posicao, Cor.DESTAQUE, 20))
+        Recursos.tocar("coleta", 0.5)
 
 
 class PocaoDeVida(Coletavel):

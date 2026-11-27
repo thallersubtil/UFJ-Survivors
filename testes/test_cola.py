@@ -71,9 +71,9 @@ def test_chance_de_flagra_dobra_com_chefe_e_cai_com_oculos(jogo_limpo):
     normal = cola.chance_de_flagra(heroi, jogo)
     class ChefeVivo:
         ativo = True
-    jogo.chefe = ChefeVivo()
+    jogo.chefes = [ChefeVivo()]
     assert cola.chance_de_flagra(heroi, jogo) == pytest.approx(normal * 2)
-    jogo.chefe = None
+    jogo.chefes = []
     heroi.adicionar_item(OculosDeGrau())
     assert cola.chance_de_flagra(heroi, jogo) < normal
 

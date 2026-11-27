@@ -50,7 +50,7 @@ class CaixinhaPequena(Caixinha):
     VIDA = 8
     PONTOS = 4
     EXPERIENCIA = 1
-    CHANCE_CAFE = 0.0
+    CHANCE_IMA = 0.0
 
     def ao_morrer(self, jogo):
         Inimigo.ao_morrer(self, jogo)

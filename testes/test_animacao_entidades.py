@@ -1,3 +1,4 @@
+import random
 from types import SimpleNamespace
 
 import pygame
@@ -43,7 +44,7 @@ def jogo_falso(direcao=(0, 0)):
     return SimpleNamespace(entrada=SimpleNamespace(direcao=pygame.Vector2(direcao), mira=None),
                            arena=pygame.Rect(0, 0, 3000, 3000), adicionar=lambda e: None,
                            resolver_obstaculos=lambda posicao, raio: posicao,
-                           passo_do_chao=lambda posicao: 1.0,
+                           passo_do_chao=lambda posicao: 1.0, rng=random.Random(1),
                            jogador=SimpleNamespace(posicao=pygame.Vector2(500, 500)))
 
 

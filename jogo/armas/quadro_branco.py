@@ -1,10 +1,10 @@
 from jogo.ajudantes.ajudantes import QuadroBrancoNoChao
-from jogo.armas.arma import ArmaSemMunicao
+from jogo.armas.arma import ArmaContinua
 
 from jogo.formas_supremas import AulaMagna
 
 
-class QuadroBranco(ArmaSemMunicao):
+class QuadroBranco(ArmaContinua):
     """Arma inicial do Monitor: desenha uma área no chão que atrasa e fere os inimigos."""
     NOME = "Quadro Branco"
     ICONE = "icones/quadro_branco.png"

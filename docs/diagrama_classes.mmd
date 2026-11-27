@@ -105,6 +105,11 @@ classDiagram
     class Coletavel {
         <<abstract>>
         +ao_coletar(jogo)*
+        +puxar_experiencia()
+    }
+    class ObjetoQuebravel {
+        <<abstract>>
+        +ao_morrer(jogo)
     }
     class Efeito {
         <<abstract>>
@@ -118,11 +123,11 @@ classDiagram
     }
     class ArmaDeDisparo {
         <<abstract>>
-        -_municao: float
-        +municao: float «property»
+        -_espera: float
+        +espera: float «property»
         +disparar(jogo, dono)* bool
     }
-    class ArmaSemMunicao {
+    class ArmaContinua {
         <<abstract>>
     }
     class Colab {
@@ -187,14 +192,18 @@ classDiagram
     class Jogo {
         +entidades: list~Entidade~
         +fases: list~Fase~
+        +chefes: list~Chefe~
         +a_partir_de(classe, opcoes)$ Jogo
-        +concluir_fase()
+        +avancar_prova()
+        +aprovar_prova(chefe)
         +atualizar(dt)
         +causar_dano(inimigo, dano)
     }
     class Fase {
         <<abstract>>
         +criar_eventos()* list
+        +escala_dificuldade «property»
+        +alvo_de_inimigos() int
         +posicao_de_nascimento(jogo)$
     }
     class Prova {
@@ -206,6 +215,10 @@ classDiagram
     class ProvaDeCalculo
     class ProvaDeArquiteturaEED
     class ProvaDeTDEPOO
+    class ModoSemFim {
+        +onda: int «property»
+        +escala_dificuldade «property»
+    }
     class Placar {
         -_pontos: int
         +pontos: int «property»
@@ -286,6 +299,7 @@ classDiagram
     Inimigo <|-- PilhaAA
     Inimigo <|-- MonitorPossuido
     Inimigo <|-- MiniChefe
+    Inimigo <|-- ObjetoQuebravel
     MiniChefe <|-- TiaDaCantina
     MiniChefe <|-- Vigilante
     MiniChefe <|-- Bibliotecaria
@@ -321,15 +335,16 @@ classDiagram
     Projetil <|-- ProjetilDoHeroi
     Projetil <|-- ProjetilInimigo
     Arma <|-- ArmaDeDisparo
-    Arma <|-- ArmaSemMunicao
+    Arma <|-- ArmaContinua
     Arma <|-- Colab
     Fase <|-- Prova
     Prova <|-- ProvaDeCalculo
     Prova <|-- ProvaDeArquiteturaEED
     Prova <|-- ProvaDeTDEPOO
+    Fase <|-- ModoSemFim
 
     Jogo *-- Jogador
-    Jogo *-- Fase : 3 provas
+    Jogo *-- Fase : 3 provas e o modo sem fim
     Jogo *-- Placar
     Jogo *-- Mapa
     Mapa <|-- MapaUFJ

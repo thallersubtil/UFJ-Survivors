@@ -40,9 +40,9 @@ class Coxinha(Lanche):
         jogador.mult_experiencia += 0.15
 
 
-class CafeCoado(Lanche):
-    CHAVE = "cafe_coado"
-    NOME = "Café Coado"
+class CaldoDeCana(Lanche):
+    CHAVE = "caldo_de_cana"
+    NOME = "Caldo de Cana"
     DESCRICAO = "Próxima partida: armas recarregam 10% mais rápido."
     ICONE = "icones/garrafa.png"
     PRECO = 70
@@ -72,4 +72,6 @@ class Pastel(Lanche):
         jogador.mult_dano += 0.10
 
 
-LANCHES = (PaoDeQueijo, Coxinha, CafeCoado, Acai, Pastel)
+CHAVES_ANTIGAS = {"cafe_coado": CaldoDeCana.CHAVE}    # lanche guardado num progresso salvo antes da troca
+
+LANCHES = (PaoDeQueijo, Coxinha, CaldoDeCana, Acai, Pastel)

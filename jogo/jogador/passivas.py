@@ -13,16 +13,15 @@ class InstintoOtaku(Passiva):
         jogador.chance_critico += min(self.MAXIMO, self.BASE + self.POR_NIVEL * (jogador.nivel - 1))
 
 
-class Cafeinado(Passiva):
-    NOME = "Cafeinado"
-    DESCRICAO = "Armas recarregam 1,6% mais rápido por nível (até 30%) e o café rende mais."
+class LacoDeRepeticao(Passiva):
+    NOME = "Laço de Repetição"
+    DESCRICAO = "Cada disparo tem 6% de chance de repetir na hora, e mais 1,6% a cada nível (até 35%)."
+    BASE = 0.06
     POR_NIVEL = 0.016
-    MAXIMO = 0.30
-    CAFE = 1.25
+    MAXIMO = 0.35
 
     def aplicar(self, jogador):
-        jogador.mult_recarga *= 1 - min(self.MAXIMO, self.POR_NIVEL * (jogador.nivel - 1))
-        jogador.mult_cafe *= self.CAFE
+        jogador.chance_repeticao += min(self.MAXIMO, self.BASE + self.POR_NIVEL * (jogador.nivel - 1))
 
 
 class RolagemDeIniciativa(Passiva):

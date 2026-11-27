@@ -85,12 +85,12 @@ def test_barra_do_chefe_fica_no_topo(jogo_limpo, monkeypatch):
         ativo = True
         vida, vida_maxima = 50, 100
         rotulo_da_barra = "Chefe"
-    jogo.chefe = ChefeFalso()
+    jogo.chefes = [ChefeFalso(), ChefeFalso()]
     barras = []
     monkeypatch.setattr(modulo, "barra", lambda ui, ret, *a, **k: barras.append(pygame.Rect(ret)))
     ui = pygame.Surface((640, 360), pygame.SRCALPHA)       # o HUD desenha na camada de 640x360
     modulo.Hud()._chefe(ui, jogo)
-    assert barras and barras[0].top < 360 // 4
+    assert len(barras) == 2 and barras[0].top < barras[1].top < 360 // 4      # uma barra por chefe em campo
 
 
 def test_hud_usa_combo_especial_da_config(jogo_limpo, monkeypatch):
@@ -110,9 +110,9 @@ def test_bando_de_bugs_tem_de_5_a_8():
     assert tamanhos == {5, 6, 7, 8}
 
 
-def test_arma_que_nao_usa_cafe_tem_nome_claro():
+def test_arma_que_nao_dispara_tem_nome_claro():
     from jogo.armas import arma
     from jogo.armas.caramelo import Caramelo
-    assert hasattr(arma, "ArmaSemMunicao")
-    assert issubclass(Caramelo, arma.ArmaSemMunicao)
+    assert issubclass(Caramelo, arma.ArmaContinua)
+    assert not hasattr(arma, "ArmaSemMunicao")              # o nome antigo falava de uma munição que não existe mais
     assert not hasattr(arma, "ArmaDeContato")

@@ -31,17 +31,20 @@ class SuperSaiyajin(Especial):
         Recursos.tocar("especial", 0.6)
 
 
-class ViradaDeNoite(Especial):
-    NOME = "Virada de Noite"
-    DESCRICAO = "Enche o café de todas as armas, que recarregam 2,5x mais rápido por 8 s."
-    ICONE = "icones/energetico.png"
-    DURACAO = 8.0
-    RECARGA_ARMAS = 0.4
+class TelaAzul(Especial):
+    NOME = "Tela Azul"
+    DESCRICAO = "O jogo dos inimigos trava: os da tela ficam parados por 4 s e os projéteis deles somem."
+    ICONE = "sprites/bug.png"
+    RECARGA = 50.0
+    DURACAO = 4.0
+    RAIO = 800                     # cobre a tela inteira em volta do aluno
 
     def ativar(self, dono, jogo):
-        dono.encher_cafe()
-        dono.adicionar_bonus(BonusTemporario("virada", "recarga", self.RECARGA_ARMAS, self.DURACAO))
-        jogo.adicionar(TextoFlutuante("VIRADA DE NOITE!", dono.posicao - (0, 70), Cor.DESTAQUE, 24, duracao=1.5))
+        for inimigo in jogo.inimigos_proximos(dono.posicao, self.RAIO):
+            inimigo.travar(self.DURACAO)
+        for projetil in jogo.grupos["projetil_inimigo"]:
+            projetil.remover()
+        jogo.adicionar(TextoFlutuante("TELA AZUL!", dono.posicao - (0, 70), (90, 170, 255), 24, duracao=1.5))
         Recursos.tocar("especial", 0.6)
 
 
@@ -53,10 +56,7 @@ class RevisaoParaProva(Especial):
     CURA = 0.30
 
     def ativar(self, dono, jogo):
-        from jogo.coletaveis.coletaveis import Nota
-        for coletavel in jogo.grupos["coletavel"]:
-            if isinstance(coletavel, Nota):
-                coletavel.atraido = True
+        jogo.puxar_experiencia()
         dono.curar(dono.vida_maxima * self.CURA)
         jogo.adicionar(TextoFlutuante("REVISÃO!", dono.posicao - (0, 70), Cor.DESTAQUE, 24, duracao=1.5))
         Recursos.tocar("especial", 0.6)

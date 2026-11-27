@@ -1,11 +1,11 @@
 from jogo.ajudantes.ajudantes import MascoteFlutuante
-from jogo.armas.arma import ArmaSemMunicao
+from jogo.armas.arma import ArmaContinua
 from jogo.efeitos import GolpeClaude
 from jogo.formas_supremas import golpe_em_cadeia
 from jogo.nucleo.recursos import Recursos
 
 
-class MascoteClaude(ArmaSemMunicao):
+class MascoteClaude(ArmaContinua):
     NOME = "Mascote do Claude"
     ICONE = "sprites/claude.png"
     DESCRICAO = "Pensa por um instante e acerta um golpe forte no inimigo com mais vida."

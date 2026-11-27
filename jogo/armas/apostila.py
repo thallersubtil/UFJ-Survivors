@@ -1,10 +1,10 @@
 from jogo.ajudantes.ajudantes import FolhaDaApostila
-from jogo.armas.arma import ArmaSemMunicao
+from jogo.armas.arma import ArmaContinua
 
 from jogo.formas_supremas import BolaDeConteudo
 
 
-class Apostila(ArmaSemMunicao):
+class Apostila(ArmaContinua):
     """Folhas que giram em volta do aluno por alguns segundos, somem e voltam."""
     NOME = "Apostila"
     ICONE = "icones/apostila.png"

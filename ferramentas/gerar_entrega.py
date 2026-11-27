@@ -182,7 +182,7 @@ def svg_composicao(classes):
     caixa("Placar", 762, 150, "Placar", linhas=["pontos (property)", "moedas (property)"])
     caixa("Mapa", 978, 150, "Mapa", True, [f"{n('Mapa')} mapas"])
     caixa("Entidade", 978, 14, "Entidade", True, ["atualizar()", "desenhar()", f"{n('Entidade')} classes concretas"])
-    partes_do_jogador = (("Arma", ["municao (property)", f"{n('Arma')} armas"]), ("Item", [f"{n('Item')} itens"]),
+    partes_do_jogador = (("Arma", ["espera (property)", f"{n('Arma')} armas"]), ("Item", [f"{n('Item')} itens"]),
                          ("Passiva", [f"{n('Passiva')} passivas"]), ("Especial", [f"{n('Especial')} especiais"]))
     for i, (nome, linhas) in enumerate(partes_do_jogador):
         caixa(nome, 12 + i * 216, 318, nome, True, linhas)
@@ -472,9 +472,9 @@ def requisitos(classes):
         ("Polimorfismo", "Um único laço <code>for e in entidades: e.atualizar()</code>, sem <code>if</code> por tipo",
          "<code>Jogo.atualizar()</code> em <code>jogo/jogo.py</code>. O laço não usa <code>isinstance</code> nem <code>type()</code>, "
          "e um teste automático falha se alguém colocar."),
-        ("Encapsulamento", "Vida, pontuação e munição com <code>@property</code> e validação",
+        ("Encapsulamento", "Vida, pontuação e espera da arma com <code>@property</code> e validação",
          "<code>SerVivo.vida</code> e <code>vida_maxima</code> (<code>jogo/nucleo/ser_vivo.py</code>), <code>Placar.pontos</code> e "
-         "<code>moedas</code> (<code>jogo/placar.py</code>), <code>ArmaDeDisparo.municao</code> (<code>jogo/armas/arma.py</code>)."),
+         "<code>moedas</code> (<code>jogo/placar.py</code>), <code>ArmaDeDisparo.espera</code> (<code>jogo/armas/arma.py</code>; entrou no lugar da munição, que saiu do jogo)."),
         ("Composição", "<code>Jogo</code> contém <code>Jogador</code>, <code>Fase</code> e <code>Placar</code>; <code>Jogador</code> contém <code>Arma</code>",
          "<code>Jogo.__init__</code> cria <code>self.jogador</code>, <code>self.fase</code>, <code>self.placar</code> e <code>self.mapa</code>; "
          "<code>Jogador.__init__</code> cria <code>self.armas</code>, <code>self.itens</code>, a passiva, o especial, o "
@@ -636,9 +636,9 @@ for e in self.entidades:          <span class="c"># polimorfismo: um único laç
 <tr><td><code>self.ao_morrer(jogo)</code></td><td><code>Inimigo</code>, ao zerar a vida</td><td><code>Caixinha</code> solta duas <code>CaixinhaPequena</code>; <code>PilhaAA</code> explode em faíscas; <code>PiCambaleante</code> mostra "3,14..."; <code>MiniChefe</code> deixa um baú.</td></tr>
 <tr><td><code>self.atacar(jogo)</code></td><td><code>MiniChefe</code>, na hora do ataque</td><td>A Bibliotecária aplica multas que tiram moedas; a Tia da Cantina arremessa o panelão; o ET de Varginha abre feixes de abdução.</td></tr>
 <tr><td><code>materia.ataques()</code></td><td><code>ChefePossuido</code></td><td>Cálculo I: limite, derivada e integral. POO: polimorfismo, herança e encapsulamento.</td></tr>
-<tr><td><code>coletavel.ao_coletar(jogo)</code></td><td><code>Coletavel.atualizar()</code></td><td><code>Nota</code> dá experiência; <code>CopoDeCafe</code> enche a munição; <code>Bau</code> abre o prêmio.</td></tr>
+<tr><td><code>coletavel.ao_coletar(jogo)</code></td><td><code>Coletavel.atualizar()</code></td><td><code>Nota</code> dá experiência; <code>Ima</code> puxa toda a experiência do mapa; <code>Bau</code> abre o prêmio.</td></tr>
 <tr><td><code>item.aplicar(jogador)</code></td><td><code>Jogador</code>, ao recalcular os bônus</td><td>Item, passiva e melhoria somam cada um o seu efeito, sem o aluno saber qual é qual.</td></tr>
-<tr><td><code>arma.atualizar(dt, jogo, dono)</code></td><td><code>Jogador.atualizar()</code></td><td>Arma de disparo gasta café e atira; arma sem munição mantém um ajudante na arena.</td></tr>
+<tr><td><code>arma.atualizar(dt, jogo, dono)</code></td><td><code>Jogador.atualizar()</code></td><td>Arma de disparo atira e espera a recarga; arma contínua mantém um ajudante na arena.</td></tr>
 </table></div>
 <h3>Demonstração executada</h3>
 <p>A ferramenta pede à fábrica um inimigo de cada um dos {len(linhas)} tipos registrados, coloca todos à mesma distância do aluno e

@@ -21,7 +21,7 @@ def no_maximo(arma):
 
 
 def test_tabelas_dos_itens():
-    assert len(ITENS) == 14
+    assert len(ITENS) == 15
     for classe in ITENS:
         assert len(classe.MELHORIAS) == classe.NIVEL_MAXIMO - 1
         assert classe.NOME and classe.DESCRICAO and classe.ICONE
@@ -33,7 +33,7 @@ def test_efeitos_dos_itens():
         j.adicionar_item(classe())
     assert j.alcance_coleta == pytest.approx(90 * 1.3)
     assert j.mult_recarga == pytest.approx(0.92)
-    assert j.mult_cafe == pytest.approx(1.25)
+    assert j.mult_cura == pytest.approx(1.2)
     assert j.regeneracao == pytest.approx(1 / 3)
     outro = MestreDeRPG((0, 0))
     outro.adicionar_item(MochilaPesada())
@@ -100,7 +100,7 @@ def test_aplicar_opcoes_de_melhoria_e_de_arma_nova(jogo_limpo):
     assert isinstance(j.armas[-1], Gemini)
 
 
-def test_sem_nada_para_oferecer_aparecem_cartas_de_atributo_com_lanche(jogo_limpo):
+def test_sem_nada_para_oferecer_aparecem_as_cartas_de_vida_e_de_moedas(jogo_limpo):
     jogo = jogo_limpo()
     j = jogo.jogador
     j.armas = [CarameloNoFusca(), SerpenteEstelar(), MetralhadoraDePrompts(), CarameloNoFusca()]
@@ -110,10 +110,11 @@ def test_sem_nada_para_oferecer_aparecem_cartas_de_atributo_com_lanche(jogo_limp
         item.nivel = item.NIVEL_MAXIMO
         j.itens.append(item)
     opcoes = Progressao.gerar_opcoes(j, random.Random(2))
-    assert len(opcoes) == 3 and {o.tipo for o in opcoes} == {"atributo"}
+    assert [o.titulo for o in opcoes] == ["Lanche da Cantina", "Bolsa de Monitoria"]
+    assert {o.tipo for o in opcoes} == {"maximo"}
     j.vida = 10
     Progressao.opcao_lanche().aplicar(j, jogo)
-    assert j.vida == 40
+    assert j.vida == pytest.approx(10 + j.vida_maxima * Progressao.CURA_NO_MAXIMO * j.mult_cura)
 
 
 def test_premio_do_bau_prefere_melhorar(jogo_limpo):

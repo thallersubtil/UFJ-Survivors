@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 import pygame
 
-from jogo.coletaveis.coletaveis import Bau, CopoDeCafe, Moeda, PocaoDeVida
+from jogo.coletaveis.coletaveis import Bau, Ima, Moeda
 from jogo.config import DISTANCIA_REPOSICIONAR, Cor
 from jogo.nucleo.animacao import Animador
 from jogo.efeitos import TextoFlutuante
@@ -30,8 +30,8 @@ class Inimigo(SerVivo, ABC):
     EXPERIENCIA = 1
     FATOR_LENTO = 0.6
     TAMANHO_GRUPO = (1, 1)       # (mínimo, máximo) de inimigos que nascem juntos
-    CHANCE_CAFE = 0.03
-    CHANCE_POCAO = 0.006
+    CHANCE_IMA = 0.0015        # bem raro: o ímã puxa toda a experiência do mapa
+    CONTA_NO_PLACAR = True     # se a morte vale eliminação, combo e itens (objeto quebrável: não)
     CHANCE_MOEDA = 0.05
     MOEDAS_GIGANTE = 15
 
@@ -60,6 +60,7 @@ class Inimigo(SerVivo, ABC):
         self.reposiciona = True
         self.assustado = 0.0
         self.lento = 0.0
+        self.travado = 0.0
         self.animador = Animador(Recursos.animacoes_ou_imagem(self.PASTA_SPRITE, self.IMAGEM, self.ALTURA))
 
     @classmethod
@@ -123,6 +124,9 @@ class Inimigo(SerVivo, ABC):
         if self.reposiciona and \
                 self.posicao.distance_squared_to(jogo.jogador.posicao) > DISTANCIA_REPOSICIONAR ** 2:
             self.posicao = jogo.fase.posicao_de_nascimento(jogo)
+        if self.travado > 0:          # Tela Azul: não anda, não ataca e não encosta
+            self.travado = max(0.0, self.travado - dt)
+            return
         antes = pygame.Vector2(self.posicao)
         if self.assustado > 0:
             self.assustado -= dt
@@ -173,6 +177,10 @@ class Inimigo(SerVivo, ABC):
         """Quadro Branco: por um tempo, anda mais devagar (quem tem tenacidade total nem sente)."""
         self.lento = max(self.lento, duracao * (1 - self.TENACIDADE))
 
+    def travar(self, duracao):
+        """Tela Azul: por um tempo, fica parado no lugar (quem tem tenacidade total nem sente)."""
+        self.travado = max(self.travado, duracao * (1 - self.TENACIDADE))
+
     def puxar(self, deslocamento):
         """Arrasta o inimigo (redemoinho da Aula Magna). A tenacidade desconta: chefe não sai do lugar."""
         self.posicao += pygame.Vector2(deslocamento) * (1 - self.TENACIDADE)
@@ -213,13 +221,11 @@ class Inimigo(SerVivo, ABC):
                 self.posicao += afastar / distancia * (soma - distancia) * 0.25
 
     def ao_morrer(self, jogo):
-        """O que acontece quando morre. Por padrão solta nota e, às vezes, café, poção ou moeda."""
+        """O que acontece quando morre. Por padrão solta nota e, às vezes, moeda ou (bem raramente) um ímã.
+        Cura não: ela vem dos objetos quebráveis do mapa e do Kit de Primeiros Socorros."""
         jogo.soltar_nota(self.posicao, self.valor_em_experiencia)
-        sorte = jogo.rng.random()
-        if sorte < self.CHANCE_POCAO:
-            jogo.adicionar(PocaoDeVida(self.posicao + (10, 0)))
-        elif sorte < self.CHANCE_POCAO + self.CHANCE_CAFE:
-            jogo.adicionar(CopoDeCafe(self.posicao + (10, 0)))
+        if jogo.rng.random() < self.CHANCE_IMA:
+            jogo.adicionar(Ima(self.posicao + (10, 0)))
         if self.gigante:
             jogo.adicionar(Moeda(self.posicao - (12, 0), self.MOEDAS_GIGANTE))
         elif jogo.rng.random() < jogo.jogador.chance(self.CHANCE_MOEDA):

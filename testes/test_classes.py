@@ -8,9 +8,9 @@ from jogo.armas.cobra_python import CobraPython
 from jogo.armas.gemini import Gemini
 from jogo.inimigos.bug import Bug
 from jogo.jogador.classes import CLASSES, MestreDeRPG, Otaku, Programador
-from jogo.jogador.especiais import SuperSaiyajin, ViradaDeNoite, Zoltraak
+from jogo.jogador.especiais import SuperSaiyajin, TelaAzul, Zoltraak
 from jogo.jogador.passiva import Passiva
-from jogo.jogador.passivas import Cafeinado, InstintoOtaku, RolagemDeIniciativa
+from jogo.jogador.passivas import InstintoOtaku, LacoDeRepeticao, RolagemDeIniciativa
 
 
 def subir_ate(jogador, nivel):
@@ -25,7 +25,7 @@ def test_passiva_e_abstrata():
 
 @pytest.mark.parametrize("classe, arma, passiva, especial", [
     (Otaku, Caramelo, InstintoOtaku, SuperSaiyajin),
-    (Programador, CobraPython, Cafeinado, ViradaDeNoite),
+    (Programador, CobraPython, LacoDeRepeticao, TelaAzul),
     (MestreDeRPG, Gemini, RolagemDeIniciativa, Zoltraak),
 ])
 def test_cada_classe_tem_ativa_passiva_e_especial_proprios(classe, arma, passiva, especial):
@@ -58,11 +58,12 @@ def test_outras_classes_nao_tem_critico():
     assert MestreDeRPG((0, 0)).chance_critico == 0
 
 
-def test_programador_recarrega_mais_rapido_conforme_sobe_de_nivel():
+def test_programador_repete_mais_disparos_conforme_sobe_de_nivel():
     j = Programador((0, 0))
-    antes = j.mult_recarga
+    antes = j.chance_repeticao
     subir_ate(j, 11)
-    assert j.mult_recarga < antes
+    assert j.chance_repeticao > antes > 0
+    assert j.mult_recarga == 1.0            # a passiva antiga (recarga e café) não existe mais
 
 
 def test_mestre_de_rpg_recarrega_o_especial_mais_rapido():
@@ -96,13 +97,13 @@ def test_sem_chance_de_critico_o_dano_e_o_normal(jogo_limpo):
     assert 9 <= vida - bug.vida <= 11            # variação de ±10%, sem crítico
 
 
-def test_virada_de_noite_enche_o_cafe_e_acelera_as_armas(jogo_limpo):
+def test_especial_do_programador_gasta_a_carga_e_nao_mexe_na_recarga_das_armas(jogo_limpo):
+    """A Virada de Noite (café cheio e armas mais rápidas) saiu; o efeito da Tela Azul está em test_sem_municao."""
     jogo = jogo_limpo(Programador)
     j = jogo.jogador
-    j.armas[0].municao = 0
     assert j.usar_especial(jogo)
-    assert j.armas[0].municao == j.armas[0].municao_maxima
-    assert j.multiplicador_recarga < j.mult_recarga
+    assert not j.especial.pronto
+    assert j.multiplicador_recarga == j.mult_recarga
 
 
 def test_otaku_vira_super_saiyajin_no_especial(jogo_limpo):

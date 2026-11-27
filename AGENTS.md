@@ -4,7 +4,7 @@ Leia este arquivo inteiro antes de mexer no projeto. Ele vale para qualquer pess
 
 ## O que é este projeto
 
-**UFJ Survivors** é o trabalho prático de Programação Orientada a Objetos da UFJ (Profª Emília Alves Nogueira). É um jogo 2D em Pygame no estilo "survivors" (Vampire Survivors, HoloCure): o herói anda pelo Campus Jatobá da UFJ (mapa gerado a partir de satélite e OpenStreetMap), as armas atacam sozinhas, as ondas de inimigos crescem e, no fim de cada uma das três provas de 5 minutos, chega um professor possuído pela própria matéria (Cálculo I; Arquitetura de Computadores e depois ED em C; Transformação Digital e depois POO). O jogador escolhe uma classe (Otaku, Programador, Mestre de RPG, Monitor, Gamer, Calouro, Cara da Carona), cada uma com ativa, passiva, especial e aparência próprios (um chibi na partida, o retrato grande na matrícula e o rosto no HUD); a escolha é feita na tela de matrícula, na secretaria, que imprime a carteirinha. As armas têm 4 níveis e o último é uma forma suprema com mecânica própria; duas armas certas no máximo liberam uma colab secreta. Carrega no máximo 4 armas e 4 itens, rola para esquivar (invencível durante o rolamento) e fica mais rápido aos poucos, enquanto os inimigos também aceleram com a prova; há um modo treino para enfrentar um chefe escolhido. Entre as partidas, o Centro Acadêmico (menu principal) tem a loja de melhorias permanentes e desbloqueios, paga com as moedas das provas, e um cassino com essas moedas. A arte dos monstros é ilustrada e animada, no estilo Disgaea (contorno grosso, cores saturadas); personagens, ícones e efeitos novos são chibis em pixel art. A arte nova é montada a partir de folhas em `nova_arte/_bruto/` (fora do git, como `arte_bruta/`) pelas ferramentas `ferramentas/montar_*.py` e `pintar_predios.py`. Os inimigos são objetos das matérias do semestre que ganharam vida; as armas misturam memes, IAs e anime.
+**UFJ Survivors** é o trabalho prático de Programação Orientada a Objetos da UFJ (Profª Emília Alves Nogueira). É um jogo 2D em Pygame no estilo "survivors" (Vampire Survivors, HoloCure): o herói anda pelo Campus Jatobá da UFJ (mapa gerado a partir de satélite e OpenStreetMap), as armas atacam sozinhas, as ondas de inimigos crescem com o tempo de partida e, no fim de cada uma das três provas de 4 minutos (aos 4, 8 e 12 minutos do relógio, com o chefe anterior vivo ou não: podem ficar dois em campo), chega um professor possuído pela própria matéria (Cálculo I; Arquitetura de Computadores e depois ED em C; Transformação Digital e depois POO). Derrotado o último, o semestre está aprovado e a partida segue sem fim (o Projeto de extensão, `ModoSemFim`), com a dificuldade multiplicada a cada 15 segundos até o aluno cair. Não existe munição: as armas disparam só pela recarga. Os inimigos não soltam cura: ela vem dos objetos quebráveis espalhados pelo campus (caixa, lixeira, vaso: `ObjetoQuebravel`, que soltam poção ou moedas) e do item Kit de Primeiros Socorros; bem raramente um inimigo solta um Ímã, que puxa toda a experiência do mapa. O jogador escolhe uma classe (Otaku, Programador, Mestre de RPG, Monitor, Gamer, Calouro, Cara da Carona), cada uma com ativa, passiva, especial e aparência próprios (um chibi na partida, o retrato grande na matrícula e o rosto no HUD); a escolha é feita na tela de matrícula, na secretaria, que imprime a carteirinha. As armas têm 4 níveis e o último é uma forma suprema com mecânica própria; duas armas certas no máximo liberam uma colab secreta. Carrega no máximo 4 armas e 4 itens, rola para esquivar (invencível durante o rolamento) e fica mais rápido aos poucos, enquanto os inimigos também aceleram com a prova; há um modo treino para enfrentar um chefe escolhido. Entre as partidas, o Centro Acadêmico (menu principal) tem a loja de melhorias permanentes e desbloqueios, paga com as moedas das provas, e um cassino com essas moedas. A arte dos monstros é ilustrada e animada, no estilo Disgaea (contorno grosso, cores saturadas); personagens, ícones e efeitos novos são chibis em pixel art. A arte nova é montada a partir de folhas em `nova_arte/_bruto/` (fora do git, como `arte_bruta/`) pelas ferramentas `ferramentas/montar_*.py` e `pintar_predios.py`. Os inimigos são objetos das matérias do semestre que ganharam vida; as armas misturam memes, IAs e anime.
 
 - O enunciado pede um jogo 2D em Pygame que cumpra os requisitos de POO da tabela abaixo; as entregas e os prazos estão no fim deste arquivo.
 - O que ainda falta fazer está em `docs/PENDENCIAS.md`. **Comece por lá.**
@@ -32,7 +32,7 @@ A nota depende de estes pontos continuarem verdadeiros e fáceis de mostrar na d
 | Classe abstrata `Entidade` com `atualizar()` e `desenhar()` | `jogo/nucleo/entidade.py` |
 | 3+ inimigos herdando de `Inimigo` | `jogo/inimigos/` (8 lacaios + 3 chefes possuídos) |
 | **Um único laço** `for e in self.entidades: e.atualizar(dt, self)` **sem `if`/`isinstance` por tipo** | `Jogo.atualizar()` em `jogo/jogo.py` |
-| `vida`, `pontos`, `municao` com `@property` e validação | `SerVivo`, `Placar`, `ArmaDeDisparo` (também `moedas` em `Placar` e `Progresso`) |
+| `vida`, `pontos`, `espera` (segundos até o próximo disparo; entrou no lugar da munição, que saiu do jogo) com `@property` e validação | `SerVivo`, `Placar`, `ArmaDeDisparo` (também `moedas` em `Placar` e `Progresso`, `nivel` em `Arma` e `Item`) |
 | `Jogo` contém `Jogador`, `Fase`, `Placar`; `Jogador` contém `Arma` | `jogo/jogo.py`, `jogo/jogador/jogador.py` |
 | `__str__`, `__eq__`, `__lt__` | `RegistroRanking` em `jogo/ranking.py` |
 | `@classmethod` (fábrica) e `@staticmethod` (colisão) | `FabricaDeInimigos`, `Colisao` |
@@ -47,8 +47,10 @@ Regras que decorrem disso:
 ```
 main.py                ponto de entrada (abre a CenaTitulo)
 jogo/config.py         tamanhos, cores e números gerais
-jogo/jogo.py           Jogo: a partida; o laço polimórfico; regras de dano, morte, combo 67, notas
-jogo/fase.py           Fase (abstrata), Prova e as três provas (Cálculo I; Arquitetura e ED; TD e POO), 5 min cada
+jogo/jogo.py           Jogo: a partida; o laço polimórfico; regras de dano, morte, combo 67, notas; os chefes em campo
+                       (`chefes`), a troca de prova no relógio (`avancar_prova`) e a aprovação (`aprovar_prova`)
+jogo/fase.py           Fase (abstrata), Prova e as três provas (Cálculo I; Arquitetura e ED; TD e POO), 4 min cada, com o
+                       chefe no relógio (4, 8 e 12 min), e ModoSemFim (depois do último chefe, até o aluno cair)
 jogo/mapa.py           Mapa (abstrata), MapaUFJ, Predio (obstáculo), Decoracao; jogo/cenario.py: pátio genérico
 jogo/nucleo/animacao.py  Animacao e Animador (composição: personagens contêm um Animador)
 jogo/nucleo/           Entidade, SerVivo, Colisao, Camera, GradeEspacial, Recursos (arte/som com substitutos), desenho
@@ -59,20 +61,24 @@ jogo/loja/             Centro Acadêmico: Progresso (moedas e compras salvas), M
 jogo/inimigos/         Inimigo (abstrata), FabricaDeInimigos, um arquivo por lacaio, Chefe, ChefePossuido e os três chefes,
                        MiniChefe (abstrata) e os 11 mini-chefes do mapa (mini_chefes.py), LacaioDoCampus e os lacaios deles
                        (lacaios_do_campus.py)
+jogo/inimigos/quebraveis.py  ObjetoQuebravel (um Inimigo que não anda nem fere) e os três objetos; o Jogo os espalha uma vez só, no começo, longe do aluno e uns dos outros
 jogo/inimigos/materias/  Materia (abstrata) e as cinco matérias: os ataques de cada chefe
-jogo/armas/            Arma, ArmaDeDisparo (usa café), ArmaSemMunicao (não usa café), uma arma por arquivo, colabs.py
-jogo/itens/            Item (abstrata) e os 14 itens (4 só depois de comprados na loja; a Cola só aparece ao subir de nível)
+jogo/armas/            Arma, ArmaDeDisparo (dispara e espera a recarga), ArmaContinua (age o tempo todo: ajudantes,
+                       veículos, campos), uma arma por arquivo, colabs.py
+jogo/itens/            Item (abstrata) e os 15 itens (4 só depois de comprados na loja; a Cola só aparece ao subir de nível)
 jogo/projeteis/  jogo/ajudantes/  jogo/coletaveis/  jogo/efeitos.py   o que as armas e inimigos colocam na arena
                        (projeteis/tematicos.py: os ataques desenhados dos chefes e mini-chefes, com a arte em
                        assets/ataques/ montada por ferramentas/montar_ataques.py: ProjetilTematico, Bumerangue,
                        GolpeNoChao, Poca e Marca)
-jogo/progressao.py     cartas de nível e prêmio do baú
+jogo/progressao.py     cartas de nível (com tudo no máximo: recuperar vida ou 50 moedas) e prêmio do baú
 jogo/tesouro.py        Raridade (comum, épico, lendário) e Tesouro: o que sai de um baú, com crítico de sorte
-jogo/invocacao.py      LocalDeInvocacao: o círculo do mapa que invoca um mini-chefe opcional
+jogo/invocacao.py      LocalDeInvocacao: o círculo do mapa que invoca um mini-chefe opcional (misterioso, com "?",
+                       até ser invocado pela primeira vez; quem já foi invocado fica salvo em Progresso)
 jogo/cenas/            telas (Cena abstrata) e o HUD
 jogo/ui/               interface em pixel art: CamadaPixel (640x360 ampliada 2x), texto, moldura, barra (pixel.py),
                        papel, madeira, giz, carimbo (materiais.py) e AreaInterativa (área clicável sobre a arte)
-jogo/boletim.py        Boletim do fim de jogo: uma nota por prova (Jogo.notas guarda as das provas vencidas)
+jogo/boletim.py        Boletim do fim de jogo: uma nota por prova (Jogo.notas guarda, por índice da prova, a de quem
+                       derrotou o chefe dela; prova com o chefe ainda vivo conta como reprovada)
 assets/                sprites/, icones/, cenario/, sons/, fontes/, legado/ (arte reaproveitada de outro jogo)
 ferramentas/           pixelizar.py e montar_sprites.py (folhas de animação), gerar_mapa.py (mapa da UFJ),
                        gerar_sons.py, simular_partida.py, preparar_arte.py (imagens soltas, ex.: título)
@@ -86,7 +92,7 @@ docs/                  entregas, diagrama, registro de uso de IA, guia do códig
 
 **Matéria ou chefe novo**: uma classe que herda de `Materia` em `jogo/inimigos/materias/` com `ataques()` combinando os ataques prontos (`leque`, `anel`, `rajada`, `chamada`, `chefe.investir`); o chefe é uma classe que herda de `ChefePossuido`, registrada na fábrica, com `MATERIAS = (...)` na ordem das fases. Exemplo no `README.md`.
 
-**Arma nova**: herde de `ArmaDeDisparo` (implemente `disparar()`, que retorna `False` se não havia alvo) ou de `ArmaSemMunicao` (implemente `atualizar()`). Defina `NOME`, `DESCRICAO`, `ICONE`, `ATRIBUTOS` (uma tupla de 7 valores por atributo, um por nível) e `MELHORIAS` (6 textos). Acrescente a classe em `Progressao.ARMAS` para ela aparecer nas cartas.
+**Arma nova**: herde de `ArmaDeDisparo` (implemente `disparar()`, que retorna `False` se não havia alvo) ou de `ArmaContinua` (implemente `atualizar()`). Defina `NOME`, `DESCRICAO`, `ICONE`, `ATRIBUTOS` (uma tupla de 7 valores por atributo, um por nível) e `MELHORIAS` (6 textos). Acrescente a classe em `Progressao.ARMAS` para ela aparecer nas cartas.
 
 **Item novo**: herde de `Item`, implemente `aplicar(jogador)` somando ao modificador do jogador conforme `self.nivel`, e acrescente em `ITENS` (`jogo/itens/itens.py`).
 

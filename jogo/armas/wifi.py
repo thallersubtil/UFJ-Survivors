@@ -1,10 +1,10 @@
 from jogo.ajudantes.ajudantes import SinalWifi
-from jogo.armas.arma import ArmaSemMunicao
+from jogo.armas.arma import ArmaContinua
 
 from jogo.formas_supremas import FeixeDeFibra
 
 
-class WifiEduroam(ArmaSemMunicao):
+class WifiEduroam(ArmaContinua):
     NOME = "Wi-Fi Eduroam"
     ICONE = "icones/wifi.png"
     DESCRICAO = "Um campo de sinal em volta de você fere quem entra. Às vezes o sinal cai."

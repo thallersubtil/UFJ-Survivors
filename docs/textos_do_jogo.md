@@ -12,11 +12,11 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Especial: Super Saiyajin — Cabelo dourado por 10 s: dano em dobro e mais velocidade.
 
 ### Programador
-- Descrição: Ágil e frágil. Ataca de longe à base de café.
+- Descrição: Ágil e frágil. Atira em laço e trava o jogo dos inimigos.
 - Vida: 50 | Velocidade: 230
 - Arma inicial: Cobra Python
-- Passiva: Cafeinado — Armas recarregam 1,6% mais rápido por nível (até 30%) e o café rende mais.
-- Especial: Virada de Noite — Enche o café de todas as armas, que recarregam 2,5x mais rápido por 8 s.
+- Passiva: Laço de Repetição — Cada disparo tem 6% de chance de repetir na hora, e mais 1,6% a cada nível (até 35%).
+- Especial: Tela Azul — O jogo dos inimigos trava: os da tela ficam parados por 4 s e os projéteis deles somem.
 
 ### Mestre de RPG
 - Descrição: Equilibrado. O especial volta logo.
@@ -131,7 +131,7 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 
 ### Metralhadora de Prompts
 - Receita: Mascote do ChatGPT + Mascote do Claude
-- Descrição: As duas IAs se fundem numa metralhadora que despeja prompts sem parar na direção da mira: 20 por segundo, e não gasta café.
+- Descrição: As duas IAs se fundem numa metralhadora que despeja prompts sem parar na direção da mira: 20 por segundo, sem pausa para recarregar.
 
 ### Serpente Estelar
 - Receita: Cobra Python + Gemini
@@ -176,10 +176,10 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Nível 4: -8% de recarga.
 
 ### Garrafa Térmica
-- Nível 1: +25% de café máximo e de recarga de café por nível.
-- Nível 2: +25% de café.
-- Nível 3: +25% de café.
-- Nível 4: +25% de café.
+- Nível 1: Sopa quente o dia todo: tudo que recupera vida recupera 20% a mais por nível.
+- Nível 2: +20% de cura.
+- Nível 3: +20% de cura.
+- Nível 4: +20% de cura.
 
 ### Tênis de Corrida
 - Nível 1: O rolamento recarrega 15% mais rápido por nível.
@@ -226,12 +226,16 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Nível 4: +5% de desvio.
 - Desbloqueio na loja: 300 moedas
 
-## Cartas de atributo (quando não sobra arma nem item)
+### Kit de Primeiros Socorros
+- Nível 1: A cada 30 s, o próximo inimigo eliminado deixa cair uma poção de vida.
+- Nível 2: A poção vem a cada 24 s.
+- Nível 3: A poção vem a cada 18 s.
+- Nível 4: A poção vem a cada 12 s.
 
-- Estudo Extra: +5% de dano pelo resto da partida.
-- Café Reforçado: Armas recarregam 5% mais rápido pelo resto da partida.
-- Fôlego: +10 de vida máxima pelo resto da partida.
-- Lanche da Cantina: Recupera 30 de vida.
+## Cartas de quem já levou tudo ao nível máximo (quando não sobra arma nem item)
+
+- Lanche da Cantina: Recupera 30% da vida máxima.
+- Bolsa de Monitoria: Ganha 50 moedas.
 
 ## Melhorias permanentes da loja
 
@@ -249,7 +253,7 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 
 - Pão de Queijo (60 moedas): Próxima partida: +20 de vida máxima.
 - Coxinha (80 moedas): Próxima partida: +15% de experiência.
-- Café Coado (70 moedas): Próxima partida: armas recarregam 10% mais rápido.
+- Caldo de Cana (70 moedas): Próxima partida: armas recarregam 10% mais rápido.
 - Açaí (60 moedas): Próxima partida: +10% de velocidade.
 - Pastel de Feira (80 moedas): Próxima partida: +10% de dano.
 

@@ -8,7 +8,7 @@ import math
 from abc import ABC
 
 from jogo.ajudantes.ajudantes import FuscaCircular
-from jogo.armas.arma import Arma, ArmaSemMunicao
+from jogo.armas.arma import Arma, ArmaContinua
 from jogo.armas.caramelo import Caramelo
 from jogo.armas.chatgpt import MascoteChatGPT
 from jogo.armas.claude import MascoteClaude
@@ -46,7 +46,7 @@ class Colab(Arma, ABC):
         return [a for a in armas if type(a) in receita.INGREDIENTES]
 
 
-class CarameloNoFusca(ArmaSemMunicao, Colab):
+class CarameloNoFusca(ArmaContinua, Colab):
     """Carrossel de fuscas: vários Caramelos ao volante girando num círculo perfeito, longe do herói."""
 
     NOME = "Carrossel de Fuscas"
@@ -71,7 +71,7 @@ class CarameloNoFusca(ArmaSemMunicao, Colab):
         self.fuscas = []
 
 
-class SerpenteEstelar(ArmaSemMunicao, Colab):
+class SerpenteEstelar(ArmaContinua, Colab):
     """A cobra e a estrela viram uma serpente cósmica que cruza a tela inteira atravessando tudo."""
 
     NOME = "Serpente Estelar"
@@ -102,13 +102,13 @@ class SerpenteEstelar(ArmaSemMunicao, Colab):
         Recursos.tocar("disparo", 0.2)
 
 
-class MetralhadoraDePrompts(ArmaSemMunicao, Colab):
+class MetralhadoraDePrompts(ArmaContinua, Colab):
     """ChatGPT e Claude fundidos numa metralhadora que despeja prompts sem parar na direção da mira."""
 
     NOME = "Metralhadora de Prompts"
     ICONE = "sprites/metralhadora.png"
     DESCRICAO = ("As duas IAs se fundem numa metralhadora que despeja prompts sem parar na direção da mira: "
-                 "20 por segundo, e não gasta café.")
+                 "20 por segundo, sem pausa para recarregar.")
     INGREDIENTES = (MascoteChatGPT, MascoteClaude)
     ATRIBUTOS = {"dano": (34,), "cadencia": (20,), "perfuracao": (2,), "espalhamento": (5.0,)}
     VELOCIDADE = 950                   # com 1,1 s de vida, cada prompt alcança mais de 1000 pixels

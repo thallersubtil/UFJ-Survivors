@@ -13,6 +13,7 @@ class Hud:
     VELOCIDADE_ATRASO = 0.6      # fração da vida por segundo que o branco do dano perde
     ESPERA_ATRASO = 0.25         # o branco fica parado um instante antes de cair
     DURACAO_DESTAQUE = 0.8       # pulso da etiqueta de nível ao subir
+    ALTURA_DA_BARRA_DE_CHEFE = 22  # distância entre a barra de um chefe e a do seguinte
 
     RETRATO = pygame.Rect(9, 13, 40, 40)      # quadro do rosto do herói, na camada
 
@@ -64,7 +65,7 @@ class Hud:
         largura, altura = tela.get_size()
         meio = pygame.Vector2(largura / 2, altura / 2)
         for marcador in jogo.marcadores():
-            if marcador.NOME not in jogo.marcados:
+            if marcador.CHAVE not in jogo.marcados:
                 continue
             na_tela = jogo.camera.para_tela(marcador.posicao)
             if 0 <= na_tela.x <= largura and 0 <= na_tela.y <= altura:
@@ -165,9 +166,9 @@ class Hud:
             return
         img = icone(coisa.ICONE, tam - 6)
         ui.blit(img, img.get_rect(center=(x + tam // 2, y + tam // 2)))
-        cafe = getattr(coisa, "fracao_cafe", None)
-        if cafe is not None and cafe < 1:              # recarga do café: véu que desce
-            h = int((tam - 2) * (1 - cafe))
+        recarga = getattr(coisa, "fracao_de_recarga", None)      # itens não têm; arma contínua devolve None
+        if recarga is not None and recarga < 1:        # arma recarregando: véu que vai subindo até o disparo
+            h = int((tam - 2) * (1 - recarga))
             veu = pygame.Surface((tam - 2, h), pygame.SRCALPHA)
             veu.fill((0, 0, 0, 120))
             ui.blit(veu, (x + 1, y + 1))
@@ -187,7 +188,7 @@ class Hud:
         pilula.midtop = (L // 2, 9)
         moldura(ui, pilula, fundo=(22, 26, 52), raio=8, brilho=False)
         texto(ui, placar.tempo_formatado, pilula.center, P.BRANCO, 23, contorno=None, ancora="center")
-        texto(ui, jogo.fase.NOME.upper(), (L // 2, 35), (210, 220, 255), 11, ancora="midtop")
+        texto(ui, jogo.fase.titulo.upper(), (L // 2, 35), (210, 220, 255), 11, ancora="midtop")
         moeda = icone("icones/moeda.png", 12)
         larg = max(1, int(12 * abs(math.cos(self.tempo * 3))))      # moeda girando
         valor = str(placar.moedas)
@@ -201,13 +202,12 @@ class Hud:
               P.OURO if combo > COMBO_ESPECIAL * 3 // 4 else P.CINZA, 11, ancora="topright")
 
     def _chefe(self, ui, jogo):
-        chefe = jogo.chefe
-        if chefe is None or not chefe.ativo:
-            return
-        r = pygame.Rect(0, 0, 280, 9)
-        r.midtop = (L // 2, 62)
-        texto(ui, chefe.rotulo_da_barra, (L // 2, r.top - 13), P.BRANCO, 11, ancora="midtop")
-        barra(ui, r, chefe.vida / chefe.vida_maxima, P.VERM, P.VERM2, segmentos=4)
+        """Uma barra por chefe em campo, a do mais antigo em cima (os chefes chegam no relógio e podem se juntar)."""
+        for i, chefe in enumerate(c for c in jogo.chefes if c.ativo):
+            r = pygame.Rect(0, 0, 280, 9)
+            r.midtop = (L // 2, 62 + i * self.ALTURA_DA_BARRA_DE_CHEFE)
+            texto(ui, chefe.rotulo_da_barra, (L // 2, r.top - 13), P.BRANCO, 11, ancora="midtop")
+            barra(ui, r, chefe.vida / chefe.vida_maxima, P.VERM, P.VERM2, segmentos=4)
 
     def _anuncios(self, ui, jogo):
         for i, (mensagem, restante) in enumerate(jogo.anuncios[-3:]):

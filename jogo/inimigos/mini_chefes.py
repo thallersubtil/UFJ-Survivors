@@ -212,7 +212,7 @@ class MiniChefe(Inimigo):
         super().ao_morrer(jogo)
         jogo.adicionar(Moeda(self.posicao - (18, 0), self.MOEDAS))
         jogo.marcos.add("mini_chefe")
-        jogo.marcados.discard(self.NOME)
+        jogo.marcados.discard(self.CHAVE)
         jogo.anunciar(f"{self.NOME}: fora de combate! Pegue o baú", 3)
 
     def desenhar_corpo(self, tela, camera):

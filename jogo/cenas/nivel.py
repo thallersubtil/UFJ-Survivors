@@ -11,7 +11,7 @@ from jogo.ui.pixel import (A, ESCALA, L, CamadaPixel, Paleta as P, ease_back, ea
                            moldura, quebrar, texto)
 
 COR_ROTULO = {"colab": (150, 100, 20), "nova": (40, 140, 60), "melhoria": P.AZUL2, "lanche": (40, 140, 60),
-              "atributo": (40, 140, 60)}
+              "maximo": (40, 140, 60)}
 
 
 class CenaNivel(Cena):

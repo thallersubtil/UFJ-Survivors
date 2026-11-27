@@ -58,7 +58,6 @@ class Jogador(SerVivo, ABC):
         self.imortal = False          # modo treino
         self.melhorias = []           # melhorias permanentes compradas no Centro Acadêmico
         self.banidos = set()              # classes de arma e item banidas das cartas nesta partida
-        self.atributos_extras = {"dano": 0.0, "recarga": 0.0, "vida": 0}   # cartas de atributo
         self.desbloqueios = frozenset()   # armas e itens comprados que podem aparecer nas cartas
         self.tempo = 0.0
         self.transformado = False
@@ -93,7 +92,8 @@ class Jogador(SerVivo, ABC):
         self.chance_critico = 0.0
         self.chance_desvio = 0.0      # chance de um golpe passar direto (Jogo de Cintura)
         self.sorte = 0.0              # +0.10 = tudo que depende de chance fica 10% mais provável
-        self.mult_cafe = 1.0
+        self.chance_repeticao = 0.0   # Programador: chance de um disparo repetir na hora
+        self.mult_cura = 1.0          # Garrafa Térmica: toda cura rende mais
         self.regeneracao = 0.0
         self.alcance_coleta = self.ALCANCE_COLETA_BASE
         self.vida_maxima_extra = 0
@@ -113,15 +113,11 @@ class Jogador(SerVivo, ABC):
             item.aplicar(self)
         for melhoria in self.melhorias:
             melhoria.aplicar(self)
-        extras = self.atributos_extras
-        self.mult_dano += extras["dano"]
-        self.mult_recarga *= 1 - extras["recarga"]
-        self.vida_maxima_extra += extras["vida"]
         self.vida_maxima = (self.VIDA + self.vida_maxima_extra) * self.mult_vida_maxima
         if getattr(self, "especial", None) is not None:
             self.especial.cargas_maximas = self.cargas_especial
         if self.vida_maxima > maxima_antes:
-            self.curar(self.vida_maxima - maxima_antes)
+            super().curar(self.vida_maxima - maxima_antes)   # a vida ganha entra inteira, sem bônus de cura
 
     def chance(self, base):
         """Chance `base` (0 a 1) já com a sorte do aluno: crítico, desvio, moedas, baús."""
@@ -186,18 +182,13 @@ class Jogador(SerVivo, ABC):
         """Tira uma arma ou item das cartas pelo resto da partida."""
         self.banidos.add(classe)
 
-    def ganhar_atributo(self, atributo, valor):
-        """Carta de atributo: soma um bônus permanente nesta partida."""
-        self.atributos_extras[atributo] += valor
-        self.recalcular_atributos()
-
     def subir_nivel_item(self, item):
         item.subir_nivel()
         self.recalcular_atributos()
 
-    def encher_cafe(self):
-        for arma in self.armas:
-            arma.encher()
+    def curar(self, quantidade):
+        """Recupera vida, já com o que faz a cura render mais (Garrafa Térmica)."""
+        super().curar(quantidade * self.mult_cura)
 
     @property
     def experiencia_necessaria(self):

@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from jogo.armas.arma import Arma, ArmaSemMunicao, ArmaDeDisparo
+from jogo.armas.arma import Arma, ArmaContinua, ArmaDeDisparo
 from jogo.itens.item import Item
 from jogo.jogador.bonus import BonusTemporario
 from jogo.jogador.especial import Especial
@@ -22,7 +22,7 @@ class Estilingue(ArmaDeDisparo):
         return True
 
 
-class Soco(ArmaSemMunicao):
+class Soco(ArmaContinua):
     NOME = "Soco"
     MELHORIAS = ("a", "b", "c", "d", "e", "f")
 
@@ -47,7 +47,8 @@ class Grito(Especial):
 
 
 def dono_falso():
-    return SimpleNamespace(mult_cafe=1.0, mult_recarga=1.0, multiplicador_recarga=1.0, multiplicador_dano=1.0)
+    return SimpleNamespace(mult_recarga=1.0, multiplicador_recarga=1.0, multiplicador_dano=1.0,
+                           chance_repeticao=0.0, chance=lambda base: base)
 
 
 def test_arma_e_abstrata():
@@ -79,34 +80,31 @@ def test_descricao_do_proximo_nivel_e_str():
     s.subir_nivel()
     assert s.descricao_proxima() == "b"
     assert str(s) == "Soco (nível 2)"
-    assert s.fracao_cafe is None
+    assert s.fracao_de_recarga is None
 
 
-def test_municao_validada():
+def test_espera_da_arma_validada():
+    """A munição saiu do jogo; o atributo protegido da arma de disparo agora é a espera até o próximo tiro."""
     e = Estilingue()
-    assert e.municao == e.municao_maxima == 12
+    assert e.espera == 0
     with pytest.raises(ValueError):
-        e.municao = -1
-    e.municao = 500
-    assert e.municao == 12
-    e.municao = 0
-    assert not e.tem_cafe
-    e.encher()
-    assert e.municao == 12
+        e.espera = -1
+    with pytest.raises(TypeError):
+        e.espera = "já"
+    e.espera = 2
+    assert e.espera == 2.0 and e.fracao_de_recarga == 0
 
 
-def test_disparo_gasta_cafe_e_sem_cafe_atira_mais_devagar():
+def test_disparo_so_depende_da_recarga():
     e = Estilingue()
     dono = dono_falso()
     e.atualizar(0.0, None, dono)
-    assert e.disparos == 1
-    assert e.municao == 11
-    e.municao = 0
-    e.atualizar(1.0, None, dono)
-    assert e.disparos == 2
-    e.atualizar(1.5, None, dono)
-    assert e.disparos == 2
-    assert e.fracao_cafe == pytest.approx(e.municao / 12)
+    assert e.disparos == 1 and e.espera == 1.0
+    e.atualizar(0.5, None, dono)
+    assert e.disparos == 1 and e.fracao_de_recarga == pytest.approx(0.5)
+    for _ in range(20):                     # 20 recargas seguidas: atira em todas, sem nada para acabar
+        e.atualizar(1.0, None, dono)
+    assert e.disparos == 21
 
 
 def test_item_nivel_ate_4_e_aplicar():

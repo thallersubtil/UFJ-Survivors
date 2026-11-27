@@ -150,8 +150,8 @@ class ChefePossuido(Chefe, ABC):
             super().tocar_jogador(jogo)
 
     def ao_morrer(self, jogo):
-        """Última matéria derrotada: a prova acabou."""
-        jogo.concluir_fase()
+        """Última matéria derrotada: o aluno passou na prova deste chefe."""
+        jogo.aprovar_prova(self)
 
     def desenhar_corpo(self, tela, camera):
         centro = camera.para_tela(self.posicao)

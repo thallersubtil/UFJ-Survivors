@@ -11,13 +11,20 @@ from jogo.nucleo.recursos import Recursos
 
 class LocalDeInvocacao(Entidade):
     """Círculo no chão com o rosto do mini-chefe em cima. Enche enquanto o aluno fica dentro e, cheio,
-    invoca o mini-chefe ali mesmo. Sair do círculo esvazia aos poucos: a escolha de lutar é do aluno."""
+    invoca o mini-chefe ali mesmo. Sair do círculo esvazia aos poucos: a escolha de lutar é do aluno.
+
+    Quem nunca foi invocado (em nenhuma partida) é um mistério: o círculo, o mini-mapa e a seta mostram
+    um "?" e o nome "Mini-boss misterioso". Invocar revela o mini-chefe para sempre (Jogo.conhecer_mini_chefe).
+    """
 
     grupo = "invocacao"
     camada = 0
     RAIO = 84
     TEMPO = 2.5                  # segundos dentro do círculo para invocar
     PERDA = 0.6                  # quanto do progresso por segundo se perde fora dele
+    NOME_MISTERIOSO = "Mini-boss misterioso"
+    ROSTO_MISTERIOSO = "rostos/misterioso.png"
+    COR_MISTERIOSA = (170, 150, 220)
 
     def __init__(self, posicao, nome_do_inimigo):
         super().__init__(posicao, self.RAIO)
@@ -26,16 +33,26 @@ class LocalDeInvocacao(Entidade):
         self.progresso = 0.0     # 0 a 1
         self.tempo = 0.0
         self.descoberto = not self.classe.SECRETO     # o secreto só entra no mapa quando o aluno chega perto
+        self.revelado = False        # já foi invocado alguma vez? (o Jogo diz, a cada quadro)
+
+    @property
+    def CHAVE(self):
+        """Quem ele é de verdade (nome na FabricaDeInimigos): é o que a marcação no mini-mapa guarda."""
+        return self.nome_do_inimigo
 
     @property
     def NOME(self):
-        return self.classe.NOME
+        return self.classe.NOME if self.revelado else self.NOME_MISTERIOSO
+
+    @property
+    def cor(self):
+        return self.classe.COR if self.revelado else self.COR_MISTERIOSA
 
     DISTANCIA_PARA_DESCOBRIR = 520
 
     @property
     def rosto(self):
-        return f"rostos/{self.classe.PASTA_SPRITE}.png"
+        return f"rostos/{self.classe.PASTA_SPRITE}.png" if self.revelado else self.ROSTO_MISTERIOSO
 
     @property
     def no_mapa(self):
@@ -47,6 +64,7 @@ class LocalDeInvocacao(Entidade):
 
     def atualizar(self, dt, jogo):
         self.tempo += dt
+        self.revelado = jogo.mini_chefe_conhecido(self.nome_do_inimigo)
         distancia = jogo.jogador.posicao.distance_to(self.posicao)
         if not self.descoberto and distancia <= self.DISTANCIA_PARA_DESCOBRIR:
             self.descoberto = True
@@ -67,6 +85,7 @@ class LocalDeInvocacao(Entidade):
         jogo.adicionar(chefe)
         chefe.ao_chegar(jogo)
         jogo.chefe_a_apresentar = chefe          # a partida para e ele é apresentado, como os chefes das provas
+        jogo.conhecer_mini_chefe(self.nome_do_inimigo)      # deixa de ser misterioso, nesta partida e nas próximas
         Recursos.tocar("especial", 0.6)
         self.remover()
         return chefe
@@ -76,7 +95,7 @@ class LocalDeInvocacao(Entidade):
 
     def desenhar(self, tela, camera):
         centro = camera.para_tela(self.posicao)
-        cor = self.classe.COR
+        cor = self.cor
         lado = self.raio * 2 + 12
         chao = pygame.Surface((lado, lado), pygame.SRCALPHA)
         meio = (lado // 2, lado // 2)

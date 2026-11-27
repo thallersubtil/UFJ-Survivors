@@ -64,15 +64,17 @@ def test_banir_tira_a_carta_pelo_resto_da_partida():
     assert all(o.titulo != Cola.NOME for o in Progressao.candidatas(heroi))
 
 
-def test_sem_nada_para_oferecer_aparecem_cartas_de_atributo():
+def test_sem_nada_para_oferecer_aparecem_as_cartas_de_vida_e_de_moedas():
+    """As cartas de atributo (dano, recarga, vida máxima) saíram: quem baniu tudo escolhe entre vida e moedas."""
     heroi = Programador((0, 0))
     for classe in ITENS + Progressao.ARMAS:
         heroi.banir(classe)
     opcoes = Progressao.gerar_opcoes(heroi, random.Random(1))
-    assert {o.tipo for o in opcoes} == {"atributo"}
+    assert len(opcoes) == 2 and {o.tipo for o in opcoes} == {"maximo"}
     dano = heroi.mult_dano
-    next(o for o in opcoes if "dano" in o.descricao).aplicar(heroi, None)
-    assert heroi.mult_dano > dano
+    heroi.vida = 1
+    next(o for o in opcoes if "vida" in o.descricao).aplicar(heroi, None)
+    assert heroi.vida > 1 and heroi.mult_dano == dano
 
 
 def test_bigorna_afia_uma_arma(jogo_limpo):
