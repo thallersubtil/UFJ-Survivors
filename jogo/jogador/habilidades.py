@@ -247,9 +247,10 @@ class PlantaoDeDuvidas(Habilidade):
         jogador.alcance_coleta *= self.valor(self.COLETA)
 
 
-class CanetaVermelha(Habilidade):
-    NOME = "Caneta Vermelha"
-    ICONE = "icones/caneta_vermelha.png"
+class Gabarito(Habilidade):
+    """O Monitor tem o gabarito: sabe onde o inimigo erra e marca com um X."""
+    NOME = "Gabarito"
+    ICONE = "legado/itens/item_dice.png"
     CHANCE = (0.10, 0.15, 0.20)
     DANO_EXTRA = (0.25, 0.33, 0.50)
     DURACAO_DA_MARCA = 5.0
@@ -513,6 +514,6 @@ class CarroLotado(HabilidadeComRelogio):
 
 
 HABILIDADES = (InstintoOtaku, ArmaduraDeRoteiro, PoderDaAmizade, LacoDeRepeticao, Cafeinado, Compilar,
-               RolagemDeIniciativa, FichaDePersonagem, TesteDeResistencia, PlantaoDeDuvidas, CanetaVermelha,
+               RolagemDeIniciativa, FichaDePersonagem, TesteDeResistencia, PlantaoDeDuvidas, Gabarito,
                HorarioDeAtendimento, Reflexo, FramePerfect, Combo, SedeDeAprender, VeteranoCamarada, PerdidoNoCampus,
                CaronaSolidaria, Buzina, CarroLotado)

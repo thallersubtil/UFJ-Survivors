@@ -67,7 +67,7 @@ class Inimigo(SerVivo, ABC):
         self.lento = 0.0
         self.travado = 0.0
         self.fator_lento = self.FATOR_LENTO    # quanto anda enquanto está lento (o atraso mais forte vale)
-        self.marca = 0.0             # Caneta Vermelha: segundos marcado com o X
+        self.marca = 0.0             # Gabarito e Caneta de Correção: segundos marcado com o X
         self.vulnerabilidade = 0.0   # dano a mais que leva enquanto está marcado
         self.fraqueza = 0.0          # Calourada: segundos batendo mais fraco
         self.fator_fraqueza = 1.0
@@ -209,7 +209,7 @@ class Inimigo(SerVivo, ABC):
         self.lento = max(self.lento, duracao * (1 - self.TENACIDADE))
 
     def marcar_com_x(self, duracao, dano_extra):
-        """Caneta Vermelha: marcado com um X, leva `dano_extra` a mais de dano por um tempo."""
+        """Gabarito e Caneta de Correção: marcado com um X, leva `dano_extra` a mais de dano por um tempo."""
         self.marca = max(self.marca, duracao)
         self.vulnerabilidade = max(self.vulnerabilidade, dano_extra)
 
@@ -219,7 +219,7 @@ class Inimigo(SerVivo, ABC):
 
     @property
     def fator_de_dano_recebido(self):
-        """Quanto o dano que ele leva é multiplicado (marcado pela Caneta Vermelha leva mais)."""
+        """Quanto o dano que ele leva é multiplicado (marcado com o X (Gabarito, Caneta de Correção) leva mais)."""
         return 1 + self.vulnerabilidade if self.marcado else 1.0
 
     def enfraquecer(self, duracao, fator):
@@ -301,7 +301,7 @@ class Inimigo(SerVivo, ABC):
             self._desenhar_marca(tela, camera)
 
     def _desenhar_marca(self, tela, camera):
-        """O X vermelho da Caneta Vermelha em cima da cabeça."""
+        """O X vermelho da marca em cima da cabeça."""
         p = camera.para_tela(self.posicao)
         x, y, lado = round(p.x), round(p.y - self.altura_sprite / 2 - 12), 7
         for inicio, fim in (((x - lado, y - lado), (x + lado, y + lado)), ((x + lado, y - lado), (x - lado, y + lado))):

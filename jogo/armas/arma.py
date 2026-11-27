@@ -11,6 +11,7 @@ class Arma(ABC):
     ATRIBUTOS = {}
     MELHORIAS = ()
     PRECO_DESBLOQUEIO = 0      # > 0: só aparece nas cartas depois de comprado no Centro Acadêmico
+    EXCLUSIVA = False          # arma inicial de uma classe: só ela tem; não aparece nas cartas nem entra em colab
 
     PESO = 1.0                 # chance relativa de aparecer nas cartas
     MAX_CARIMBOS = 3           # vezes que a Bigorna pode afiar esta arma

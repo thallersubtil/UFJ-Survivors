@@ -5,9 +5,9 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 ## Personagens
 
 ### Otaku
-- Descrição: Resistente e lento. O Caramelo luta junto.
+- Descrição: Resistente e lento. Agita o lightstick como num show.
 - Vida: 80 | Velocidade: 180
-- Arma inicial: Caramelo
+- Arma inicial (exclusiva): Lightstick
 - Habilidade: Instinto Otaku — 8% de chance de acerto crítico (dano em dobro). | 16% de chance de crítico. | 25% de chance de crítico.
 - Habilidade: Armadura de Roteiro — O golpe que te derrubaria deixa 1 de vida e 2 s de invencibilidade. Volta em 90 s. | 3 s invencível; volta em 75 s. | 4 s invencível; volta em 60 s.
 - Habilidade: Poder da Amizade — +5% de dano por amigo em campo (Caramelo, Fusca, mascotes, possuídos), até +50%. | +7% de dano por amigo. | +10% de dano por amigo.
@@ -16,7 +16,7 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 ### Programador
 - Descrição: Ágil e frágil. Vira a noite atirando código à base de café.
 - Vida: 50 | Velocidade: 230
-- Arma inicial: Cobra Python
+- Arma inicial (exclusiva): Teclado Mecânico
 - Habilidade: Laço de Repetição — Cada disparo tem 10% de chance de repetir na hora. | 18% de chance de repetir. | 28% de chance de repetir.
 - Habilidade: Cafeinado — Armas recarregam 1,6% mais rápido por nível do aluno; a garrafa da Virada leva +20 doses. | A garrafa leva +40 doses. | A garrafa leva +60 doses.
 - Habilidade: Compilar — Andando, acumula linhas de código; parado 1 s, compila: um pulso com o dano acumulado. | O pulso dá 1,5x o acumulado. | O pulso dá 2x o acumulado.
@@ -25,25 +25,25 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 ### Mestre de RPG
 - Descrição: Equilibrado. O especial volta logo.
 - Vida: 60 | Velocidade: 205
-- Arma inicial: Dado de 20 Lados
+- Arma inicial (exclusiva): Dado de 20 Lados
 - Habilidade: Rolagem de Iniciativa — O especial recarrega 15% mais rápido. | 30% mais rápido. | 45% mais rápido.
 - Habilidade: Ficha de Personagem — A cada 15 s, +30% num atributo sorteado por 15 s (FOR, DES, CON, INT, SAB ou CAR). | +40% no atributo sorteado. | +50% no atributo sorteado.
 - Habilidade: Teste de Resistência — Ao levar um golpe, rola um d20: com 18 ou mais, o golpe não entra. | Salva com 16 ou mais. | Salva com 14 ou mais.
 - Especial: Zoltraak — Um raio mágico enorme na direção da mira, que atravessa tudo. O dano é rolado em 8d6.
 
 ### Monitor
-- Descrição: Paciente. Atrasa os inimigos e se cuida sozinho.
+- Descrição: Paciente. Marca os erros com um X e se cuida sozinho.
 - Vida: 60 | Velocidade: 200
-- Arma inicial: Quadro Branco
+- Arma inicial (exclusiva): Caneta de Correção
 - Habilidade: Plantão de Dúvidas — Recupera 0,4 de vida por segundo e puxa as notas 20% mais de longe. | 0,8 de vida por segundo; notas 40% mais de longe. | 1,2 por segundo; notas 60% mais de longe.
-- Habilidade: Caneta Vermelha — 10% de chance de marcar o inimigo com um X: ele leva 25% a mais de dano e pode curar ao morrer. | 15% de chance; o marcado leva 33% a mais. | 20% de chance; o marcado leva 50% a mais.
+- Habilidade: Gabarito — 10% de chance de marcar o inimigo com um X: ele leva 25% a mais de dano e pode curar ao morrer. | 15% de chance; o marcado leva 33% a mais. | 20% de chance; o marcado leva 50% a mais.
 - Habilidade: Horário de Atendimento — Parado por 1 s: os inimigos em volta ficam 20% mais lentos e você cura 2% da vida a cada 2 s. | 30% mais lentos; cura 3%. | 40% mais lentos; cura 4%.
 - Especial: Revisão para Prova — Puxa todas as notas do campus, recupera 30% da vida e abre por 10 s uma zona onde nada te fere.
 
 ### Gamer
 - Descrição: Rápido e frágil. Vive rolando e trava o jogo dos inimigos.
 - Vida: 55 | Velocidade: 235
-- Arma inicial: Controle
+- Arma inicial (exclusiva): Controle
 - Habilidade: Reflexo — O rolamento recarrega 15% mais rápido. | 30% mais rápido. | 45% mais rápido.
 - Habilidade: Frame Perfect — Rolar no último instante antes de um golpe: câmera lenta por 1 s e +30% de dano por 8 s. | +45% de dano. | +60% de dano.
 - Habilidade: Combo — 50 acertos sem levar dano: +20% de velocidade e 20% de chance de golpe duplo por 10 s. | +30% de velocidade e de golpe duplo. | +40% de velocidade e de golpe duplo.
@@ -52,7 +52,7 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 ### Calouro
 - Descrição: Começa fraco, mas aprende rápido.
 - Vida: 50 | Velocidade: 215
-- Arma inicial: Apostila
+- Arma inicial (exclusiva): Mapa do Campus
 - Habilidade: Sede de Aprender — +15% de experiência. | +30% de experiência. | +45% de experiência.
 - Habilidade: Veterano Camarada — Um veterano anda com você e usa a sua arma inicial com 50% da força. | O veterano bate com 75% da força. | O veterano bate com 100% da força.
 - Habilidade: Perdido no Campus — +3% de velocidade por inimigo perto (até +80%) e +25% de experiência de quem morre perto. | +4% por inimigo; +35% de experiência. | +5% por inimigo; +50% de experiência.
@@ -61,13 +61,58 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 ### Cara da Carona
 - Descrição: Todo mundo quer carona. O Fusca vem junto.
 - Vida: 65 | Velocidade: 195
-- Arma inicial: Fusca Azul
+- Arma inicial (exclusiva): Fusca Azul
 - Habilidade: Carona Solidária — Inimigo que morre possuído (atropelado) tem 12% de chance de deixar uma moeda. | 24% de chance de moeda. | 36% de chance de moeda.
 - Habilidade: Buzina — A cada 10 s, uma buzinada em volta: dano (mais forte no centro) e atordoa por um instante. | Buzinada 50% mais forte. | Buzinada com o dobro de dano.
 - Habilidade: Carro Lotado — +3% de dano por passageiro (inimigo possuído) em campo, até +60%. | +4% por passageiro. | +5% por passageiro.
 - Especial: Lotação — Quatro fuscas lotados cruzam a tela atropelando e possuindo inimigos.
 
+## Armas exclusivas (a arma inicial de cada classe: não aparece nas cartas nem entra em colab)
+
+### Lightstick
+- Nível 1: Arremessa o lightstick, que gira, acerta quem estiver no caminho e volta para a mão.
+- Nível 2: Mais dano, mais longe e recarga menor.
+- Nível 3: Mais 1 lightstick, mais dano e recarga menor.
+- Nível 4: COREOGRAFIA: três lightsticks em leque, que estouram em notas musicais quando voltam para a mão.
+
+### Teclado Mecânico
+- Nível 1: Golpe em arco com o teclado na direção da mira; cada inimigo atingido solta teclas nos vizinhos.
+- Nível 2: Mais 1 tecla por acerto, mais dano e mais alcance.
+- Nível 3: Arco mais largo, mais dano e recarga menor.
+- Nível 4: CTRL+ALT+DEL: cada golpe também solta uma onda de teclas em volta de você.
+
+### Dado de 20 Lados
+- Nível 1: Joga um d20 no inimigo mais perto: o dano é o número que sai. 20 é crítico triplo; 1 erra.
+- Nível 2: Mais dano por ponto e recarga menor.
+- Nível 3: Mais 1 dado, mais dano e recarga menor.
+- Nível 4: VANTAGEM: três dados, e cada um rola duas vezes e fica com o melhor número.
+
+### Caneta de Correção
+- Nível 1: Estocadas da caneta vermelha na direção da mira: quem leva fica marcado com um X e apanha mais.
+- Nível 2: Mais 1 estocada, mais dano e o X pesa mais.
+- Nível 3: Mais 1 estocada, mais alcance e recarga menor.
+- Nível 4: CORREÇÃO EM MASSA: a última estocada risca no chão um X gigante, que fere quem está nele.
+
+### Controle
+- Nível 1: Arremessa o controle, que ricocheteia de um inimigo para outro.
+- Nível 2: Mais 1 ricochete, mais dano e recarga menor.
+- Nível 3: Mais 1 controle (modo cooperativo), mais 1 ricochete e mais dano.
+- Nível 4: COMBO INFINITO: cada ricochete aumenta o dano em 20% (são 9) e o último acerto explode.
+
+### Mapa do Campus
+- Nível 1: "Você está aqui!": alfinetes caem do céu sobre inimigos perto de você, com aviso no chão.
+- Nível 2: Mais 1 alfinete, mais dano e área maior.
+- Nível 3: Mais 1 alfinete, mais dano e recarga menor.
+- Nível 4: GPS: os alfinetes caem em sequência, traçando uma rota de você até o maior bolo de inimigos.
+
+### Fusca Azul
+- Nível 1: Um fusca azul atravessa a tela. Quem é atropelado sai socando os outros inimigos.
+- Nível 2: Mais 1 fusca, possessão mais longa e recarga menor.
+- Nível 3: Mais dano, possessão mais longa e recarga menor.
+- Nível 4: FUSCA MONSTRO: dois fuscas de rodas gigantes cruzam a tela esmagando várias vezes quem fica embaixo; possessão de 7 s.
+
 ## Armas
+
 ### Cobra Python
 - Nível 1: Dispara cobrinhas que avançam serpenteando na direção da mira.
 - Nível 2: Mais 1 cobra, mais dano e atravessa mais 1 inimigo.
@@ -98,12 +143,6 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Nível 3: Mais 1 estrela, mais dano e recarga menor.
 - Nível 4: SUPERNOVA: depois da última divisão, cada estrela explode numa supernova que fere tudo em volta.
 
-### Fusca Azul
-- Nível 1: Um fusca azul atravessa a tela. Quem é atropelado sai socando os outros inimigos.
-- Nível 2: Mais 1 fusca, possessão mais longa e recarga menor.
-- Nível 3: Mais dano, possessão mais longa e recarga menor.
-- Nível 4: FUSCA MONSTRO: dois fuscas de rodas gigantes cruzam a tela esmagando várias vezes quem fica embaixo; possessão de 7 s.
-
 ### Pequi Explosivo
 - Nível 1: Arremessa um pequi no inimigo mais perto. Ele estoura e espalha espinhos em volta.
 - Nível 2: Mais dano, estouro maior e recarga menor.
@@ -130,29 +169,11 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Nível 3: Mais 1 área; mais dano e volta mais rápido.
 - Nível 4: AULA MAGNA: as áreas viram redemoinhos de matéria que puxam os inimigos para o centro e não deixam sair.
 
-### Controle
-- Nível 1: Arremessa o controle, que ricocheteia de um inimigo para outro.
-- Nível 2: Mais 1 ricochete, mais dano e recarga menor.
-- Nível 3: Mais 1 controle (modo cooperativo), mais 1 ricochete e mais dano.
-- Nível 4: COMBO INFINITO: cada ricochete aumenta o dano em 20% (são 9) e o último acerto explode.
-
-### Dado de 20 Lados
-- Nível 1: Joga um d20 no inimigo mais perto: o dano é o número que sai. 20 é crítico triplo; 1 erra.
-- Nível 2: Mais dano por ponto e recarga menor.
-- Nível 3: Mais 1 dado, mais dano e recarga menor.
-- Nível 4: VANTAGEM: três dados, e cada um rola duas vezes e fica com o melhor número.
-
 ### Régua de 1 Metro
 - Nível 1: Uma régua de madeira que varre um arco na frente do aluno, na direção da mira.
 - Nível 2: Mais dano e mais alcance.
 - Nível 3: Arco mais largo, mais dano e recarga menor.
 - Nível 4: IDA E VOLTA: a régua bate na frente e, no mesmo golpe, atrás de você.
-
-### Caneta Bic
-- Nível 1: Estocadas rápidas de caneta na direção da mira. Curta, mas não para.
-- Nível 2: Mais 1 estocada e mais dano.
-- Nível 3: Mais 1 estocada, mais alcance e recarga menor.
-- Nível 4: TINTA VAZOU: a última estocada de cada série deixa no chão uma poça de tinta que fere quem pisa.
 
 ### Corrente de WhatsApp
 - Nível 1: "Encaminhe para 10 amigos": acerta o inimigo mais perto e pula para os vizinhos, sem repetir.
@@ -161,9 +182,6 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Nível 4: VIRALIZOU: oito encaminhamentos, e cada um bate 10% mais forte que o anterior.
 
 ## Colabs secretas
-### Carrossel de Fuscas
-- Receita: Caramelo + Fusca Azul
-- Descrição: Seis Caramelos ao volante giram em volta de você num círculo perfeito, bem longe: nada chega perto sem ser atropelado e possuído.
 
 ### Serpente Estelar
 - Receita: Cobra Python + Gemini
@@ -177,7 +195,20 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Receita: Corrente de WhatsApp + Mascote do ChatGPT
 - Descrição: O ChatGPT inventa e a corrente espalha: a cada 0,8 s uma notícia falsa pula por 12 inimigos, e 30% de quem ela acerta acredita e luta do seu lado por 4 s.
 
+### Aula Expositiva
+- Receita: Apostila + Quadro Branco
+- Descrição: Um quadro branco gigante gira em volta de você e fere quem encosta, soltando folhas em espiral: quem leva uma folha fica lento.
+
+### Caramelo 5G
+- Receita: Caramelo + Wi-Fi Eduroam
+- Descrição: O Caramelo corre em volta de você com o roteador na boca e deixa um rastro de sinal que fere. Quando o sinal cai, ele late e atordoa quem está perto.
+
+### Catapulta do Cerrado
+- Receita: Régua de 1 Metro + Pequi Explosivo
+- Descrição: A régua vira catapulta: três pequis voam em arco por cima de todo mundo e caem no maior bolo de inimigos, estourando em espinhos.
+
 ## Itens
+
 ### Energético
 - Nível 1: +10% de velocidade e armas 2,5% mais rápidas por nível, mas -5% de vida máxima por nível.
 - Nível 2: +10% de velocidade, -2,5% de recarga, -5% de vida máxima.

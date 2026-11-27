@@ -143,51 +143,6 @@ class FuscaVeiculo(Ajudante):
                         deslocamento_y=abs(math.sin(self.tempo * 30)) * 2)
 
 
-class FuscaCircular(Ajudante):
-    """Um Caramelo dirigindo um fusca em círculo em volta do herói, atropelando e possuindo inimigos."""
-
-    AMIGO = True
-
-    IMAGEM = "sprites/caramelo_no_fusca.png"
-    PASTA_SPRITE = "caramelo_no_fusca"
-    ALTURA = 64
-    ESPERA_ATROPELO = 0.4
-
-    def __init__(self, dono, arma, angulo=0.0):
-        super().__init__(dono.posicao, 36)
-        self.dono = dono
-        self.arma = arma
-        self.angulo = angulo
-        self.tempo = 0.0
-        self.animador = self.criar_animador()
-        self.olhando_esquerda = False
-        self._atropelados = {}
-
-    def atualizar(self, dt, jogo):
-        self.tempo += dt
-        self.animador.atualizar(dt)
-        self.angulo += self.arma.valor("velocidade") * dt
-        nova = self.dono.posicao + pygame.Vector2(math.cos(self.angulo), math.sin(self.angulo)) * self.arma.valor("raio")
-        self.olhando_esquerda = math.sin(self.angulo) > 0          # anda no sentido da volta
-        self.posicao = nova
-        for chave in list(self._atropelados):
-            self._atropelados[chave] -= dt
-            if self._atropelados[chave] <= 0:
-                del self._atropelados[chave]
-        for inimigo in jogo.inimigos_proximos(self.posicao, self.raio):
-            if inimigo in self._atropelados:
-                continue
-            self._atropelados[inimigo] = self.ESPERA_ATROPELO
-            inimigo.possuir(self.arma.valor("possessao"))
-            jogo.causar_dano(inimigo, self.arma.valor("dano") * self.dono.multiplicador_dano,
-                             inimigo.posicao - self.dono.posicao)
-
-    def desenhar(self, tela, camera):
-        imagem = self.animador.quadro_atual
-        desenhar_sprite(tela, camera, imagem, self.posicao, aura=self.aura, espelhar=self.olhando_esquerda,
-                        deslocamento_y=abs(math.sin(self.tempo * 30)) * 2)
-
-
 class SinalWifi(Ajudante):
     """Campo do Wi-Fi Eduroam: a cada pulso fere todos dentro do raio, se o sinal não cair."""
 

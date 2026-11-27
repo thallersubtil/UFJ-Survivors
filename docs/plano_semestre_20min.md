@@ -88,6 +88,15 @@ Especificação escrita pela sessão revisora (Windows, com o HoloCure decompila
 - O `isinstance(item, OculosDeGrau)` da Cola vira atributo polimórfico (ex.: `disfarce_de_cola`).
 - Conferir lanches e melhorias da loja que usam ícones de itens removidos.
 
+## M4b. Armas exclusivas (proposta da revisora, aprovada pelo Thaller em 27/11)
+
+- `Arma.EXCLUSIVA`: a arma inicial de cada classe só ela tem, como no HoloCure. Não entra em `Progressao.ARMAS` (cartas e baú) nem em colab, mas sobe de nível nas cartas de quem a tem.
+- Exclusivas: Lightstick (Otaku; vai e volta; suprema Coreografia, três em leque que estouram em notas), Teclado Mecânico (Programador; arco que solta teclas nos vizinhos; suprema Ctrl+Alt+Del, onda de teclas), Dado de 20 Lados (Mestre), Caneta de Correção (Monitor; estocadas que marcam com X; suprema Correção em Massa, X gigante no chão), Controle (Gamer), Mapa do Campus (Calouro; alfinetes com aviso no chão; suprema GPS, rota até o maior bolo) e Fusca Azul (Cara da Carona).
+- Comuns (11): Caramelo, Cobra Python, Quadro Branco, Apostila, Mascote do ChatGPT, Mascote do Claude, Gemini, Pequi Explosivo, Wi-Fi Eduroam, Régua de 1 Metro e Corrente de WhatsApp. A Caneta Bic saiu (virou a base da Caneta de Correção).
+- Colabs: ficam Serpente Estelar, Metralhadora de Prompts e Fake News; sai o Carrossel de Fuscas (o Fusca é exclusivo; a arte foi para `nova_arte/legado/caramelo_no_fusca`); entram Aula Expositiva (Apostila + Quadro Branco), Caramelo 5G (Caramelo + Wi-Fi) e Catapulta do Cerrado (Régua + Pequi).
+- A habilidade Caneta Vermelha do Monitor virou Gabarito (mesmo efeito).
+- Arte pendente, pela `nova_arte/`: ícones do Lightstick, do Teclado, do Mapa, do Gabarito (prancheta) e das 3 colabs novas; golpes e formas supremas. Até lá, ícones emprestados de `legado/itens` e golpes desenhados por código.
+
 ## M5. Balanceamento e loja (sessão "Chefes em horário fixo")
 
 - Linha de base (main 488102d, semente 3, robô antigo): o robô morre cedo demais para servir de medida.
@@ -117,7 +126,7 @@ Especificação escrita pela sessão revisora (Windows, com o HoloCure decompila
 
 ## Arte para gerar (no estilo atual)
 
-Ícones das 21 habilidades e dos especiais novos (Calourada, Tela Azul); SSJ2 e SSJ3 (variações de cor ou aura); armas novas (Dado de 20 Lados, Régua de 1 Metro e Caneta Bic com golpe e suprema, Corrente de WhatsApp, colab Fake News); ícones dos itens novos e refeitos; animação "atacar" dos 3 professores e dos mini-chefes, aura da fase 2 e ilustração de apresentação para quem não tem; cor e símbolo da matéria nova de Cálculo; telas de fim "Fim do semestre com honras!" e "Reprovado: o semestre acabou".
+Ícones das 21 habilidades e dos especiais novos (Calourada, Tela Azul); SSJ2 e SSJ3 (variações de cor ou aura); armas novas (Dado de 20 Lados, Régua de 1 Metro com golpe e suprema, Corrente de WhatsApp, colab Fake News; do M4b: Lightstick, Teclado Mecânico, Caneta de Correção, Mapa do Campus, Gabarito e as colabs Aula Expositiva, Caramelo 5G e Catapulta do Cerrado); ícones dos itens novos e refeitos; animação "atacar" dos 3 professores e dos mini-chefes, aura da fase 2 e ilustração de apresentação para quem não tem; cor e símbolo da matéria nova de Cálculo; telas de fim "Fim do semestre com honras!" e "Reprovado: o semestre acabou".
 
 ## Limpeza e documentação (último commit antes da revisão final)
 

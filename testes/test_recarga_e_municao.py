@@ -8,7 +8,7 @@ import pytest
 
 from jogo.armas.arma import Arma, ArmaContinua, ArmaDeDisparo
 from jogo.armas.cobra_python import CobraPython
-from jogo.armas.colabs import CarameloNoFusca, MetralhadoraDePrompts, SerpenteEstelar
+from jogo.armas.colabs import AulaExpositiva, Caramelo5G, Colab, MetralhadoraDePrompts, SerpenteEstelar
 from jogo.inimigos.bug import Bug
 from jogo.inimigos.fabrica import FabricaDeInimigos
 from jogo.itens.itens import ITENS, GarrafaTermica
@@ -83,7 +83,7 @@ def test_fracao_de_recarga_vai_de_zero_a_um_para_o_hud():
     assert arma.espera == pytest.approx(1.0) and arma.fracao_de_recarga == pytest.approx(0)
     arma.atualizar(0.25, jogo_falso(), dono())
     assert arma.fracao_de_recarga == pytest.approx(0.25)
-    assert CarameloNoFusca().fracao_de_recarga is None        # arma contínua não tem recarga de disparo
+    assert AulaExpositiva().fracao_de_recarga is None        # arma contínua não tem recarga de disparo
 
 
 def test_sem_alvo_tenta_de_novo_logo_e_recarga_mais_rapida_encurta_a_espera():
@@ -136,7 +136,7 @@ def test_cafe_e_municao_so_aparecem_no_programador():
         textos += [classe.DESCRICAO, heroi.especial.NOME, heroi.especial.DESCRICAO]
         textos += [t for h in heroi.habilidades_da_classe for t in (h.NOME, h.DESCRICAO, *h.MELHORIAS)]
     for classe in Progressao.ARMAS + tuple(ITENS) + tuple(LANCHES) + tuple(MELHORIAS) + \
-            (CarameloNoFusca, SerpenteEstelar, MetralhadoraDePrompts):
+            tuple(Colab.RECEITAS):
         textos += [classe.NOME, classe.DESCRICAO, *getattr(classe, "MELHORIAS", ())]
     for texto in textos:
         assert "café" not in texto.lower() and "munição" not in texto.lower(), texto
@@ -148,7 +148,7 @@ def test_cafe_e_municao_so_aparecem_no_programador():
 def test_programador_tem_habilidades_e_especial_novos():
     heroi = Programador((0, 0))
     assert [type(h) for h in heroi.habilidades_da_classe] == [LacoDeRepeticao, Cafeinado, Compilar]
-    assert isinstance(heroi.especial, ViradaDeNoite) and isinstance(heroi.armas[0], CobraPython)
+    assert isinstance(heroi.especial, ViradaDeNoite) and type(heroi.armas[0]).__name__ == "TecladoMecanico"
 
 
 def test_laco_de_repeticao_cresce_com_a_carta():
@@ -223,7 +223,7 @@ def test_tela_azul_trava_os_inimigos_e_apaga_os_projeteis_deles(jogo_limpo):
 
 def aluno_com_tudo_no_maximo(jogo):
     heroi = jogo.jogador
-    heroi.armas = [CarameloNoFusca(), SerpenteEstelar(), MetralhadoraDePrompts(), CarameloNoFusca()]
+    heroi.armas = [AulaExpositiva(), SerpenteEstelar(), MetralhadoraDePrompts(), Caramelo5G()]
     heroi.itens = []
     for classe in ITENS[:4]:
         item = classe()

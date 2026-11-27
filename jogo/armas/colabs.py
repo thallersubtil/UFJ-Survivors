@@ -2,21 +2,26 @@
 
 Uma colab não é a soma das duas armas: é uma arma nova, com aparência e poder próprios,
 mais dano e mais alcance que qualquer forma suprema. O jogo não conta as receitas: quem
-tiver a sorte de levar as duas armas certas ao máximo descobre a carta. Nem toda arma tem colab.
+tiver a sorte de levar as duas armas certas ao máximo descobre a carta. Nem toda arma tem colab, e só as
+armas comuns entram nelas: a arma exclusiva de uma classe (EXCLUSIVA) nunca é ingrediente.
 """
-import math
 from abc import ABC
 
-from jogo.ajudantes.ajudantes import FuscaCircular, MascoteFlutuante
-from jogo.ajudantes.golpes import ElosDaCorrente, corrente
+from jogo.ajudantes.ajudantes import CachorroCaramelo, MascoteFlutuante
+from jogo.ajudantes.colabs_novas import Latido, PequiEmArco, QuadroGigante, RastroDeSinal
+from jogo.ajudantes.golpes import ElosDaCorrente, corrente, mais_cheio, mostrar
+from jogo.armas.apostila import Apostila
 from jogo.armas.arma import Arma, ArmaContinua
 from jogo.armas.caramelo import Caramelo
 from jogo.armas.chatgpt import MascoteChatGPT
 from jogo.armas.claude import MascoteClaude
 from jogo.armas.cobra_python import CobraPython
 from jogo.armas.corrente_whatsapp import CorrenteDeWhatsApp
-from jogo.armas.fusca import FuscaAzul
 from jogo.armas.gemini import Gemini
+from jogo.armas.pequi import PequiExplosivo
+from jogo.armas.quadro_branco import QuadroBranco
+from jogo.armas.regua import ReguaDeUmMetro
+from jogo.armas.wifi import WifiEduroam
 from jogo.formas_supremas import MetralhadoraFlutuante, PromptDisparado, SerpenteEstelarProjetil
 from jogo.nucleo.recursos import Recursos
 
@@ -46,31 +51,6 @@ class Colab(Arma, ABC):
     @staticmethod
     def ingredientes_em(receita, armas):
         return [a for a in armas if type(a) in receita.INGREDIENTES]
-
-
-class CarameloNoFusca(ArmaContinua, Colab):
-    """Carrossel de fuscas: vários Caramelos ao volante girando num círculo perfeito, longe do herói."""
-
-    NOME = "Carrossel de Fuscas"
-    ICONE = "sprites/caramelo_no_fusca.png"
-    DESCRICAO = ("Seis Caramelos ao volante giram em volta de você num círculo perfeito, bem longe: nada chega "
-                 "perto sem ser atropelado e possuído.")
-    INGREDIENTES = (Caramelo, FuscaAzul)
-    ATRIBUTOS = {"quantidade": (6,), "dano": (85,), "raio": (285,), "velocidade": (2.3,), "possessao": (8.0,)}
-
-    def __init__(self):
-        super().__init__()
-        self.fuscas = []
-
-    def atualizar(self, dt, jogo, dono):
-        if not self.fuscas:
-            total = self.valor("quantidade")
-            self.fuscas = [self.lancar(jogo, FuscaCircular(dono, self, 2 * math.pi * i / total)) for i in range(total)]
-
-    def ao_remover(self, jogo):
-        for fusca in self.fuscas:
-            fusca.remover()
-        self.fuscas = []
 
 
 class SerpenteEstelar(ArmaContinua, Colab):
@@ -192,4 +172,99 @@ class FakeNews(ArmaContinua, Colab):
             self.mascote = None
 
 
-Colab.RECEITAS = [CarameloNoFusca, SerpenteEstelar, MetralhadoraDePrompts, FakeNews]
+class AulaExpositiva(ArmaContinua, Colab):
+    """Apostila e Quadro Branco: um quadro branco gigante gira em volta do aluno soltando folhas em espiral."""
+
+    NOME = "Aula Expositiva"
+    ICONE = "legado/itens/chest_f0.png"
+    DESCRICAO = ("Um quadro branco gigante gira em volta de você e fere quem encosta, soltando folhas em espiral: "
+                 "quem leva uma folha fica lento.")
+    INGREDIENTES = (Apostila, QuadroBranco)
+    ATRIBUTOS = {"dano": (40,), "raio": (150,), "velocidade": (2.2,), "folhas_por_segundo": (6,), "lentidao": (2.0,)}
+
+    def __init__(self):
+        super().__init__()
+        self.quadro = None
+
+    def atualizar(self, dt, jogo, dono):
+        if self.quadro is None or not self.quadro.ativo:
+            self.quadro = self.lancar(jogo, QuadroGigante(dono, self))
+
+    def ao_remover(self, jogo):
+        if self.quadro is not None:
+            self.quadro.remover()
+            self.quadro = None
+
+
+class Caramelo5G(ArmaContinua, Colab):
+    """Caramelo e Wi-Fi: o Caramelo corre com o roteador na boca, deixando um rastro de sinal que fere."""
+
+    NOME = "Caramelo 5G"
+    ICONE = "legado/itens/chest_f1.png"
+    DESCRICAO = ("O Caramelo corre em volta de você com o roteador na boca e deixa um rastro de sinal que fere. "
+                 "Quando o sinal cai, ele late e atordoa quem está perto.")
+    INGREDIENTES = (Caramelo, WifiEduroam)
+    ATRIBUTOS = {"dano": (30,), "raio": (130,), "velocidade": (4.5,), "rastro": (12,), "queda": (5.0,),
+                 "latido": (170,), "atordoa": (1.0,)}
+    RAIO_DO_RASTRO = 34
+    DURACAO_DO_RASTRO = 1.2
+
+    def __init__(self):
+        super().__init__()
+        self.cachorro = None
+        self._espera_rastro = 0.0
+        self._ate_cair = self.ATRIBUTOS["queda"][0]
+
+    def atualizar(self, dt, jogo, dono):
+        if self.cachorro is None or not self.cachorro.ativo:
+            self.cachorro = self.lancar(jogo, CachorroCaramelo(dono, 0.0, self))
+        dano = self.valor("dano") * dono.multiplicador_dano
+        self._espera_rastro -= dt
+        while self._espera_rastro <= 0:
+            self._espera_rastro += 1 / self.valor("rastro")
+            self.lancar(jogo, RastroDeSinal(self.cachorro.posicao, self.RAIO_DO_RASTRO, dano * 0.4,
+                                            self.DURACAO_DO_RASTRO))
+        self._ate_cair -= dt
+        if self._ate_cair <= 0:
+            self._ate_cair = self.valor("queda")
+            self.lancar(jogo, Latido(self.cachorro.posicao, self.valor("latido"), dano, self.valor("atordoa")))
+            mostrar(jogo, "AU AU!", self.cachorro.posicao, (255, 200, 90), 18)
+
+    def ao_remover(self, jogo):
+        if self.cachorro is not None:
+            self.cachorro.remover()
+            self.cachorro = None
+
+
+class CatapultaDoCerrado(ArmaContinua, Colab):
+    """Régua e Pequi: a régua vira catapulta e lança pequis em arco por cima do bolo de inimigos."""
+
+    NOME = "Catapulta do Cerrado"
+    ICONE = "legado/itens/chest_f2.png"
+    DESCRICAO = ("A régua vira catapulta: três pequis voam em arco por cima de todo mundo e caem no maior bolo de "
+                 "inimigos, estourando em espinhos.")
+    INGREDIENTES = (ReguaDeUmMetro, PequiExplosivo)
+    ATRIBUTOS = {"dano": (60,), "raio": (120,), "quantidade": (3,), "intervalo": (0.9,)}
+    ALCANCE = 650
+    ESPALHAMENTO = 60
+
+    def __init__(self):
+        super().__init__()
+        self._espera = 0.0
+
+    def atualizar(self, dt, jogo, dono):
+        self._espera -= dt
+        if self._espera > 0:
+            return
+        destino = mais_cheio(jogo, dono.posicao, self.ALCANCE)
+        if destino is None:
+            self._espera = 0.1
+            return
+        self._espera = self.valor("intervalo") * dono.multiplicador_recarga
+        dano = self.valor("dano") * dono.multiplicador_dano
+        for _ in range(self.valor("quantidade")):
+            espalhado = destino + (jogo.rng.uniform(-1, 1) * self.ESPALHAMENTO, jogo.rng.uniform(-1, 1) * self.ESPALHAMENTO)
+            self.lancar(jogo, PequiEmArco(dono.posicao, espalhado, self.valor("raio"), dano))
+
+
+Colab.RECEITAS = [SerpenteEstelar, MetralhadoraDePrompts, FakeNews, AulaExpositiva, Caramelo5G, CatapultaDoCerrado]

@@ -23,9 +23,11 @@ def inimigo(jogo, deslocamento, nome="pente_ram"):
 
 def test_sete_classes_com_arma_inicial_certa():
     assert len(CLASSES) == 7
-    assert isinstance(Monitor((0, 0)).armas[0], QuadroBranco)
+    from jogo.armas.caneta_correcao import CanetaDeCorrecao
+    from jogo.armas.mapa_do_campus import MapaDoCampus
+    assert isinstance(Monitor((0, 0)).armas[0], CanetaDeCorrecao)
     assert isinstance(Gamer((0, 0)).armas[0], Controle)
-    assert isinstance(Calouro((0, 0)).armas[0], Apostila)
+    assert isinstance(Calouro((0, 0)).armas[0], MapaDoCampus)
     assert isinstance(CaraDaCarona((0, 0)).armas[0], FuscaAzul)
 
 

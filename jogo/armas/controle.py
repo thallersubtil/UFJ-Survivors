@@ -12,6 +12,7 @@ class Controle(ArmaDeDisparo):
     NOME = "Controle"
     ICONE = "icones/controle.png"
     DESCRICAO = "Arremessa o controle, que ricocheteia de um inimigo para outro."
+    EXCLUSIVA = True
     ATRIBUTOS = {
         "dano": (13, 17, 22, 38),
         "ricochetes": (2, 3, 4, 9),

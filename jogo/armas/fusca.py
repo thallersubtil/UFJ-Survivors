@@ -9,6 +9,7 @@ class FuscaAzul(ArmaContinua):
     NOME = "Fusca Azul"
     ICONE = "sprites/fusca.png"
     DESCRICAO = "Um fusca azul atravessa a tela. Quem é atropelado sai socando os outros inimigos."
+    EXCLUSIVA = True
     ATRIBUTOS = {
         "recarga": (7.0, 6.0, 5.0, 2.8),
         "quantidade": (1, 2, 2, 2),

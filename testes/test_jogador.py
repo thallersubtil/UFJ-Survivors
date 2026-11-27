@@ -40,6 +40,12 @@ class JogoFalso:
     def adicionar(self, e):
         self.adicionados.append(e)
 
+    def inimigo_mais_proximo(self, posicao, raio, excluir=None):
+        return None
+
+    def inimigos_proximos(self, posicao, raio):
+        return []
+
 
 def test_jogador_e_abstrato():
     with pytest.raises(TypeError):
@@ -47,9 +53,11 @@ def test_jogador_e_abstrato():
 
 
 def test_herois_comecam_com_arma_e_especial_proprios():
+    from jogo.armas.lightstick import Lightstick
+    from jogo.armas.teclado import TecladoMecanico
     agil, forte = Programador((0, 0)), Otaku((0, 0))
-    assert isinstance(agil.armas[0], CobraPython)
-    assert isinstance(forte.armas[0], Caramelo) and isinstance(forte.especial, SuperSaiyajin)
+    assert isinstance(agil.armas[0], TecladoMecanico)
+    assert isinstance(forte.armas[0], Lightstick) and isinstance(forte.especial, SuperSaiyajin)
     assert agil.vida == Programador.VIDA and forte.vida == Otaku.VIDA and forte.vida > agil.vida
     assert agil.velocidade > forte.velocidade
     assert set(CLASSES) >= {Programador, Otaku}

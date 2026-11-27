@@ -93,7 +93,9 @@ def test_armadura_de_roteiro_segura_o_golpe_fatal_uma_vez(jogo_limpo):
 
 
 def test_poder_da_amizade_soma_dano_por_amigo(jogo_limpo):
-    jogo = jogo_limpo(Otaku)                       # o Caramelo é um ajudante em campo
+    from jogo.armas.caramelo import Caramelo
+    jogo = jogo_limpo(Otaku)
+    jogo.jogador.adicionar_arma(Caramelo())        # o Caramelo é um ajudante em campo
     pegar(jogo, 2)
     rodar(jogo, 1)
     amigos = len(jogo.grupos["ajudante"])
@@ -160,7 +162,7 @@ def test_zoltraak_rola_8d6(jogo_limpo):
 
 # ---------------------------------------------------------------- Monitor
 
-def test_caneta_vermelha_marca_e_o_marcado_leva_mais_dano(jogo_limpo):
+def test_gabarito_marca_e_o_marcado_leva_mais_dano(jogo_limpo):
     jogo = jogo_limpo(Monitor)
     pegar(jogo, 1)
     jogo.rng.random = lambda: 0.0                       # sempre marca, nunca crítico
@@ -294,7 +296,7 @@ def test_itens_e_habilidades_reagem_pelos_mesmos_ganchos(jogo_limpo):
     assert any(isinstance(e, Nota) for e in jogo.entidades)
 
 
-def test_caneta_vermelha_marca_tambem_mini_chefe(jogo_limpo):
+def test_gabarito_marca_tambem_mini_chefe(jogo_limpo):
     """MiniChefe tem o próprio `marcar` (efeitos na tela): o X da caneta não pode colidir com ele."""
     jogo = jogo_limpo(Monitor)
     pegar(jogo, 1)

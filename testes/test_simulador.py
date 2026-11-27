@@ -8,7 +8,7 @@ import pygame
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "ferramentas"))
 import simular_partida as simulador  # noqa: E402
 
-from jogo.armas.colabs import CarameloNoFusca  # noqa: E402
+from jogo.armas.colabs import Caramelo5G  # noqa: E402
 from jogo.invocacao import LocalDeInvocacao  # noqa: E402
 from jogo.jogador.classes import CLASSES, Otaku, Programador  # noqa: E402
 from jogo.loja.melhorias import MELHORIAS  # noqa: E402
@@ -23,10 +23,10 @@ def carta(tipo, origem):
 def test_cartas_seguem_a_prioridade_colab_arma_inicial_armas_itens():
     from jogo.armas.chatgpt import MascoteChatGPT
     from jogo.itens.itens import ITENS
-    from jogo.armas.cobra_python import CobraPython
+    from jogo.armas.teclado import TecladoMecanico
     heroi = Programador((0, 0))
     item, outra_arma = carta("nova", ITENS[0]), carta("nova", MascoteChatGPT)
-    inicial, colab = carta("melhoria", CobraPython), carta("colab", CarameloNoFusca)
+    inicial, colab = carta("melhoria", TecladoMecanico), carta("colab", Caramelo5G)
     assert simulador.escolher_carta([item, outra_arma, inicial], heroi) is inicial
     assert simulador.escolher_carta([item, outra_arma], heroi) is outra_arma
     assert simulador.escolher_carta([item, colab, inicial], heroi) is colab
@@ -127,9 +127,9 @@ def test_ferido_vai_quebrar_o_objeto_mais_perto_atras_de_cura():
 
 
 def test_distancia_de_combate_vem_da_arma_principal():
-    from jogo.jogador.classes import Otaku, MestreDeRPG
-    otaku, mestre = simulador.Robo(jogo_de_teste(Otaku)), simulador.Robo(jogo_de_teste(MestreDeRPG))
-    assert otaku.distancia_de_combate < 80                # o Caramelo morde em volta do aluno
+    from jogo.jogador.classes import Monitor, MestreDeRPG
+    monitor, mestre = simulador.Robo(jogo_de_teste(Monitor)), simulador.Robo(jogo_de_teste(MestreDeRPG))
+    assert monitor.distancia_de_combate < 80              # a Caneta de Correção estoca de perto
     assert mestre.distancia_de_combate == simulador.Robo.DISTANCIA_DE_TIRO      # o Dado é jogado de longe
 
 

@@ -263,7 +263,7 @@ class Jogo:
         duplo = self.jogador.multiplicador("golpe_duplo") - 1     # Combo do Gamer: chance de golpe duplo
         if duplo > 0 and self.rng.random() < duplo:
             dano *= 2
-        dano *= inimigo.fator_de_dano_recebido                     # marcado pela Caneta Vermelha leva mais
+        dano *= inimigo.fator_de_dano_recebido                     # marcado com o X (Gabarito, Caneta de Correção) leva mais
         dano = max(1, round(dano * self.rng.uniform(1 - self.VARIACAO_DANO, 1 + self.VARIACAO_DANO)))
         morreu = inimigo.receber_dano(dano)
         if inimigo.CONTA_NO_PLACAR:

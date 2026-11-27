@@ -58,7 +58,6 @@ RECEITA = [
     ("mascotes.png", "chatgpt", "mover", 4, 34, {"linha": (0, 2)}),
     ("mascotes.png", "claude", "mover", 4, 30, {"linha": (1, 2)}),
     ("fusca_mover.png", "fusca", "mover", 4, 52, {}),
-    ("caramelo_no_fusca_mover.png", "caramelo_no_fusca", "mover", 4, 58, {}),
     ("cobra_nota.png", "cobra", "mover", 4, 20, {"linha": (0, 2)}),
     ("cobra_nota.png", "nota", "mover", 4, 22, {"linha": (1, 2)}),
     ("bandeira_parado.png", "bandeira", "parado", 4, 120, {"ancora": "esquerda"}),

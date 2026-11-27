@@ -61,6 +61,7 @@ def test_calculo_tem_duas_fases_e_a_segunda_e_calculo_ii(jogo_limpo):
 
 def test_ataques_de_calculo_lancam_simbolos_investem_e_chamam(jogo_limpo):
     jogo = jogo_limpo()
+    jogo.jogador.armas = []                       # o golpe do Teclado empurraria o professor
     chefe = colocar_chefe(jogo, "chefe_calculo")
     materia = chefe.materia
     materia.limite(chefe, jogo)

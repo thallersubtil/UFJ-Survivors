@@ -1,10 +1,10 @@
-"""As armas novas do semestre: Dado de 20 Lados, Régua de 1 Metro, Caneta Bic, Corrente de WhatsApp e a colab
-Fake News."""
+"""As armas do semestre: as comuns novas (Régua de 1 Metro, Corrente de WhatsApp), a colab Fake News e as armas
+exclusivas das classes (Dado de 20 Lados; Lightstick, Teclado Mecânico, Caneta de Correção e Mapa do Campus são
+testadas em test_armas_exclusivas.py)."""
 import pygame
 import pytest
 
-from jogo.ajudantes.golpes import ArcoDaRegua, DadoArremessado, ElosDaCorrente, EstocadaDaCaneta, PocaDeTinta
-from jogo.armas.caneta_bic import CanetaBic
+from jogo.ajudantes.golpes import ArcoDaRegua, DadoArremessado, ElosDaCorrente
 from jogo.armas.chatgpt import MascoteChatGPT
 from jogo.armas.colabs import Colab, FakeNews
 from jogo.armas.corrente_whatsapp import CorrenteDeWhatsApp
@@ -14,7 +14,7 @@ from jogo.inimigos.bug import Bug
 from jogo.jogador.classes import MestreDeRPG
 from jogo.progressao import Progressao
 
-NOVAS = [DadoDeVinteLados, ReguaDeUmMetro, CanetaBic, CorrenteDeWhatsApp]
+NOVAS = [ReguaDeUmMetro, CorrenteDeWhatsApp]
 
 
 def jogo_com_bugs(jogo_limpo, *deslocamentos, classe=None):
@@ -55,6 +55,7 @@ def test_tabelas_de_atributos(classe):
 def test_mestre_de_rpg_comeca_com_o_dado_e_o_gemini_vira_arma_comum():
     from jogo.armas.gemini import Gemini
     assert [type(a) for a in MestreDeRPG((0, 0)).armas] == [DadoDeVinteLados]
+    assert DadoDeVinteLados.EXCLUSIVA and DadoDeVinteLados not in Progressao.ARMAS
     assert Gemini in Progressao.ARMAS
 
 
@@ -149,42 +150,6 @@ def test_arco_fere_cada_inimigo_uma_vez_so(jogo_limpo):
     assert bug.vida == depois_do_golpe
 
 
-# ------------------------------------------------------------------ Caneta Bic
-
-def rodar_estocada(jogo, estocada, passos=60):
-    for _ in range(passos):
-        if not estocada.ativo:
-            break
-        estocada.atualizar(1 / 30, jogo)
-
-
-def test_caneta_da_varias_estocadas_na_frente(jogo_limpo, monkeypatch):
-    jogo, (bug,) = jogo_com_bugs(jogo_limpo, (70, 0))
-    jogo.jogador.direcao_mira = pygame.Vector2(1, 0)
-    golpes = []
-    original = jogo.causar_dano
-    monkeypatch.setattr(jogo, "causar_dano", lambda alvo, *a, **k: golpes.append(alvo) or original(alvo, *a, **k))
-    caneta = CanetaBic()
-    assert caneta.disparar(jogo, jogo.jogador)
-    [estocada] = novas(jogo, EstocadaDaCaneta)
-    rodar_estocada(jogo, estocada)
-    assert golpes == [bug] * caneta.valor("estocadas")
-    assert not estocada.ativo and novas(jogo, PocaDeTinta) == []
-
-
-def test_caneta_suprema_deixa_uma_poca_de_tinta_que_fere(jogo_limpo):
-    jogo, (bug,) = jogo_com_bugs(jogo_limpo, (70, 0))
-    jogo.jogador.direcao_mira = pygame.Vector2(1, 0)
-    no_maximo(CanetaBic()).disparar(jogo, jogo.jogador)
-    [estocada] = novas(jogo, EstocadaDaCaneta)
-    rodar_estocada(jogo, estocada)
-    [poca] = novas(jogo, PocaDeTinta)
-    vida = bug.vida
-    poca.raio = 200                                       # garante que o bug está na poça
-    poca.atualizar(1 / 30, jogo)
-    assert bug.vida < vida
-
-
 # ------------------------------------------------------------------ Corrente de WhatsApp
 
 def test_corrente_pula_de_inimigo_em_inimigo_sem_repetir(jogo_limpo, monkeypatch):
@@ -253,7 +218,7 @@ def test_golpes_desenham_sem_erro(jogo_limpo, monkeypatch, suprema):
     jogo, _ = jogo_com_bugs(jogo_limpo, (70, 0), (220, 0), (370, 0))
     jogo.jogador.direcao_mira = pygame.Vector2(1, 0)
     monkeypatch.setattr(jogo.rng, "randint", lambda a, b: 20)
-    for classe in NOVAS:
+    for classe in NOVAS + [DadoDeVinteLados]:
         arma = classe()
         if suprema:
             no_maximo(arma)
@@ -264,7 +229,7 @@ def test_golpes_desenham_sem_erro(jogo_limpo, monkeypatch, suprema):
     jogo._incorporar_novas()
     for _ in range(4):                                   # alguns quadros: golpe no meio e a poça no chão
         for entidade in list(jogo.entidades):
-            if isinstance(entidade, (DadoArremessado, ArcoDaRegua, EstocadaDaCaneta, PocaDeTinta, ElosDaCorrente)):
+            if isinstance(entidade, (DadoArremessado, ArcoDaRegua, ElosDaCorrente)):
                 entidade.atualizar(1 / 30, jogo)
         jogo._incorporar_novas()
         jogo.desenhar(tela)

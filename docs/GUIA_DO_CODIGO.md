@@ -56,7 +56,7 @@ Entidade (abstrata: atualizar, desenhar)            jogo/nucleo/entidade.py
 ├─ Projetil (abstrata: verificar_colisao)           jogo/projeteis/projeteis.py
 │  ├─ ProjetilDoHeroi -> CobraProjetil, TiroChatGPT, ProjetilDivisivel (EstrelaGemini, CobraGemea)
 │  └─ ProjetilInimigo -> ProjetilDaMateria (o símbolo da matéria: "dx", "*p", "{}"...)
-├─ Ajudante (abstrata)    CachorroCaramelo, MascoteFlutuante, FuscaVeiculo, FuscaCircular
+├─ Ajudante (abstrata)    CachorroCaramelo, MascoteFlutuante, FuscaVeiculo, QuadroGigante, Veterano
 ├─ Coletavel (abstrata: ao_coletar)   Nota, Ima, PocaoDeVida, Moeda, Bau
 ├─ Efeito (abstrata)      TextoFlutuante, FaiscaExplosao, RaioZoltraak, AuraSSJ, GolpeClaude, RaioDebate
 └─ Predio, Decoracao      obstáculos e enfeites do mapa
@@ -66,14 +66,16 @@ Entidade (abstrata: atualizar, desenhar)            jogo/nucleo/entidade.py
 
 ```
 Arma (abstrata: atualizar; nivel 1 a 4 com @property, o 4º é a forma suprema)    jogo/armas/arma.py
+│  EXCLUSIVA: a arma inicial de cada classe só ela tem (fora das cartas das outras e das colabs)
 ├─ ArmaDeDisparo (dispara e espera a recarga: espera com @property)
-│  └─ CobraPython, MascoteChatGPT, Gemini, PequiExplosivo, Controle, DadoDeVinteLados,
-│     ReguaDeUmMetro, CanetaBic, CorrenteDeWhatsApp      (golpes em jogo/ajudantes/golpes.py)
+│  ├─ exclusivas: Lightstick, TecladoMecanico, DadoDeVinteLados, CanetaDeCorrecao, Controle, MapaDoCampus
+│  └─ comuns: CobraPython, MascoteChatGPT, Gemini, PequiExplosivo, ReguaDeUmMetro, CorrenteDeWhatsApp
+│     (golpes, lightstick, alfinetes e corrente em jogo/ajudantes/golpes.py)
 ├─ ArmaContinua (age o tempo todo, no próprio ritmo)
-│  └─ Caramelo, MascoteClaude, FuscaAzul, WifiEduroam, Apostila, QuadroBranco
-└─ Colab (duas armas no nível máximo viram uma arma nova)                 jogo/armas/colabs.py
-   └─ CarameloNoFusca, SerpenteEstelar, MetralhadoraDePrompts, FakeNews
-      (herança múltipla: Colab + ArmaContinua)
+│  └─ FuscaAzul (exclusiva); Caramelo, MascoteClaude, WifiEduroam, Apostila, QuadroBranco
+└─ Colab (duas armas comuns no nível máximo viram uma arma nova)          jogo/armas/colabs.py
+   └─ SerpenteEstelar, MetralhadoraDePrompts, FakeNews, AulaExpositiva, Caramelo5G, CatapultaDoCerrado
+      (herança múltipla: Colab + ArmaContinua; ajudantes em jogo/ajudantes/colabs_novas.py)
 
 ReageAoJogo (ganchos: atualizar, ao_acertar, ao_critico, ao_eliminar, ao_ser_atingido...)
 ├─ Item (abstrata: aplicar)   18 itens passivos em jogo/itens/itens.py

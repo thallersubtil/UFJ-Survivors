@@ -175,14 +175,16 @@ def test_objeto_quebravel_e_um_inimigo_que_nao_anda_nao_fere_e_nao_vai_para_a_fa
 
 
 def test_as_armas_acertam_o_objeto_e_ele_solta_cura_ou_moedas_sem_contar_no_placar(jogo_limpo):
+    from jogo.armas.cobra_python import CobraPython
     jogo = jogo_limpo()
     heroi = jogo.jogador
     heroi.imortal = True
+    heroi.armas = [CobraPython()]
     for sorteio, classe in ((0.0, PocaoDeVida), (0.99, Moeda)):
         objeto = QUEBRAVEIS[0](heroi.posicao + (150, 0))
         jogo.adicionar(objeto)
         jogo.entrada.mira = pygame.Vector2(objeto.posicao)
-        for _ in range(60 * 6):                    # a Cobra Python do Programador dá conta sozinha
+        for _ in range(60 * 6):                    # a Cobra Python dá conta sozinha
             jogo.atualizar(1 / 60)
             if not objeto.ativo:
                 break

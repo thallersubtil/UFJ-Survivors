@@ -102,7 +102,9 @@ def test_bug_encosta_e_fere_o_heroi():
 
 
 def test_cobra_acerta_bug_na_frente():
+    from jogo.armas.cobra_python import CobraPython
     jogo = jogo_sem_decoracao()
+    jogo.jogador.armas = [CobraPython()]
     bug = Bug(jogo.jogador.posicao + (120, 0))
     bug.VELOCIDADE = 0
     bug.velocidade = 0

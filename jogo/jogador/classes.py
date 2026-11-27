@@ -1,21 +1,21 @@
-"""Classes de personagem. Cada classe tem uma arma inicial (ativa), três habilidades (nas cartas) e um especial.
+"""Classes de personagem. Cada classe tem uma arma inicial exclusiva (só ela tem), três habilidades (nas cartas) e um especial.
 
 Cada classe tem a sua aparência fixa: um chibi próprio em assets/sprites/<pasta>/ (parado e
 andar), que é quem anda na partida, e o retrato grande em assets/retratos/ (a arte principal,
 mostrada na matrícula). O rosto em assets/rostos/ é o retrato pequeno do HUD e da carteirinha. A personalização de gênero e cores
 continua existindo em Jogador para quem herdar sem aparência fixa.
 """
-from jogo.armas.apostila import Apostila
-from jogo.armas.caramelo import Caramelo
-from jogo.armas.cobra_python import CobraPython
+from jogo.armas.caneta_correcao import CanetaDeCorrecao
 from jogo.armas.controle import Controle
-from jogo.armas.fusca import FuscaAzul
 from jogo.armas.dado import DadoDeVinteLados
-from jogo.armas.quadro_branco import QuadroBranco
+from jogo.armas.fusca import FuscaAzul
+from jogo.armas.lightstick import Lightstick
+from jogo.armas.mapa_do_campus import MapaDoCampus
+from jogo.armas.teclado import TecladoMecanico
 from jogo.jogador.especiais import (Calourada, Lotacao, RevisaoParaProva, SuperSaiyajin, TelaAzul, ViradaDeNoite,
                                     Zoltraak)
-from jogo.jogador.habilidades import (ArmaduraDeRoteiro, Buzina, Cafeinado, CanetaVermelha, CaronaSolidaria,
-                                      CarroLotado, Combo, Compilar, FichaDePersonagem, FramePerfect,
+from jogo.jogador.habilidades import (ArmaduraDeRoteiro, Buzina, Cafeinado, CaronaSolidaria,
+                                      CarroLotado, Combo, Compilar, FichaDePersonagem, FramePerfect, Gabarito,
                                       HorarioDeAtendimento, InstintoOtaku, LacoDeRepeticao, PerdidoNoCampus,
                                       PlantaoDeDuvidas, PoderDaAmizade, Reflexo, RolagemDeIniciativa, SedeDeAprender,
                                       TesteDeResistencia, VeteranoCamarada)
@@ -24,7 +24,7 @@ from jogo.jogador.jogador import Jogador
 
 class Otaku(Jogador):
     NOME = "Otaku"
-    DESCRICAO = "Resistente e lento. O Caramelo luta junto."
+    DESCRICAO = "Resistente e lento. Agita o lightstick como num show."
     VIDA = 80
     VELOCIDADE = 180
     IMAGEM = "sprites/otaku.png"
@@ -35,7 +35,7 @@ class Otaku(Jogador):
     IMAGEM_TRANSFORMADO = "sprites/otaku_ssj.png"
 
     def criar_arma_inicial(self):
-        return Caramelo()
+        return Lightstick()
 
     def criar_habilidades(self):
         return [InstintoOtaku(), ArmaduraDeRoteiro(), PoderDaAmizade()]
@@ -55,7 +55,7 @@ class Programador(Jogador):
     ROSTO = "rostos/programador.png"
 
     def criar_arma_inicial(self):
-        return CobraPython()
+        return TecladoMecanico()
 
     def criar_habilidades(self):
         return [LacoDeRepeticao(), Cafeinado(), Compilar()]
@@ -86,7 +86,7 @@ class MestreDeRPG(Jogador):
 
 class Monitor(Jogador):
     NOME = "Monitor"
-    DESCRICAO = "Paciente. Atrasa os inimigos e se cuida sozinho."
+    DESCRICAO = "Paciente. Marca os erros com um X e se cuida sozinho."
     VIDA = 60
     VELOCIDADE = 200
     IMAGEM = "sprites/monitor.png"
@@ -95,10 +95,10 @@ class Monitor(Jogador):
     ROSTO = "rostos/monitor.png"
 
     def criar_arma_inicial(self):
-        return QuadroBranco()
+        return CanetaDeCorrecao()
 
     def criar_habilidades(self):
-        return [PlantaoDeDuvidas(), CanetaVermelha(), HorarioDeAtendimento()]
+        return [PlantaoDeDuvidas(), Gabarito(), HorarioDeAtendimento()]
 
     def criar_especial(self):
         return RevisaoParaProva()
@@ -135,7 +135,7 @@ class Calouro(Jogador):
     ROSTO = "rostos/calouro.png"
 
     def criar_arma_inicial(self):
-        return Apostila()
+        return MapaDoCampus()
 
     def criar_habilidades(self):
         return [SedeDeAprender(), VeteranoCamarada(), PerdidoNoCampus()]
