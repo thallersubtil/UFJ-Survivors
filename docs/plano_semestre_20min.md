@@ -88,6 +88,8 @@ Especificação escrita pela sessão revisora (Windows, com o HoloCure decompila
 ## M5. Balanceamento e loja (sessão "Chefes em horário fixo")
 
 - Linha de base (main 488102d, semente 3, robô antigo): o robô morre cedo demais para servir de medida.
+- Primeira medida do robô novo (sessão dos chefes, 27/11, sem imortal): loja vazia caçando morre na mediana às 3:44 e nunca vence o Cálculo; loja cheia caçando morre às 4:37, vence o Cálculo em 14% e os três em 10%. O jogo está difícil demais no começo, não no fim: a primeira alavanca é a pressão dos primeiros 5 minutos (alvo inicial, intervalo de nascimento, dano dos lacaios), antes de qualquer ajuste na reta final.
+- Caçar hoje mata mais cedo do que não caçar. Conferir se o robô espera um nível mínimo para invocar (o jogador de verdade espera) e se `escala_dos_mini_chefes` (1 + tempo/180) não deixa o mini-chefe forte demais para os níveis 1 a 3. O objetivo do Thaller é que caçar seja o caminho para ficar forte: caçar tem que compensar.
 - Curva de experiência dos comuns (veio do M2): XP_BASE/XP_LINEAR/XP_QUADRATICO e valor das notas para quem não caça chegar ~ao nível 7 / 10 / 13 nos três chefes. Nada de mexer nisso, nas vidas ou na loja antes do M4 aprovado.
 - Robô: desviar com o rolamento, chegar perto o bastante, escolher cartas por prioridade simples, caçar mini-chefes (sem chefe vivo, ir ao círculo mais perto, invocar e lutar).
 - Simulador: `--loja nada|metade|cheia`, `--sementes N`, `--todas-as-classes`, `--sem-caca`. Uma linha por partida (nível na chegada de cada chefe, hora em que cada chefe caiu, mini-chefes derrotados, resultado, moedas) e uma tabela-resumo por classe.
