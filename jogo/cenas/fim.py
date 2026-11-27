@@ -45,12 +45,15 @@ class CenaFimDeJogo(Cena):
 
     @staticmethod
     def motivo(jogo):
-        """A frase do fim: honras para quem derrotou os três chefes; senão, onde o aluno reprovou (no chefe
-        mais antigo em campo, na prova que corria ou no fim do semestre)."""
+        """A frase do fim: honras para quem chegou vivo aos 20:00 com os três chefes derrotados, "Fim do semestre!"
+        para quem derrotou os três e caiu antes; senão, onde o aluno reprovou (no chefe mais antigo em campo, na
+        prova que corria ou no fim do semestre)."""
         if jogo.venceu:
             if jogo.treino:                     # treino: acabou quando o chefe caiu
                 return ""
-            return f"Fim do semestre com honras! Bônus de {_milhar(jogo.bonus_de_honras)} moedas."
+            if jogo.honras:
+                return f"Fim do semestre com honras! Bônus de {_milhar(jogo.bonus_de_honras)} moedas."
+            return "Fim do semestre!"
         if jogo.chefe is not None and jogo.chefe.ativo:
             return f"Reprovado em {jogo.chefe.nome}."
         prova = jogo.fase.prova_em_curso
@@ -215,7 +218,7 @@ class CenaFimDeJogo(Cena):
         if self.tempo > 3.0:
             aprovado = self.jogo.venceu
             k = ease_back(janela(self.tempo, 3.0, 0.3), 2.5)
-            marca = carimbo("HONRAS" if aprovado and not self.jogo.treino else "APROVADO" if aprovado else "REPROVADO", (40, 150, 60) if aprovado else P.MARGEM, 14,
+            marca = carimbo("HONRAS" if self.jogo.honras else "APROVADO" if aprovado else "REPROVADO", (40, 150, 60) if aprovado else P.MARGEM, 14,
                             2.6 - 1.6 * k, 23)
             ui.blit(marca, marca.get_rect(center=(b.right - 110, b.bottom - 50)))
             if self.tempo < 3.15:

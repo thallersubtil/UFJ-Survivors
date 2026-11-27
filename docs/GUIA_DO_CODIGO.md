@@ -4,7 +4,7 @@ Mapa de tudo o que já existe no UFJ Survivors, na ordem em que vale a pena ente
 
 ## 1. O jogo em uma frase
 
-O herói (um aluno) anda pelo Campus Jatobá; as armas atacam sozinhas; ondas de inimigos (objetos das matérias) crescem com o tempo ao longo de um semestre de 20 minutos; inimigos mortos soltam notas que dão experiência; a cada nível o jogador escolhe uma carta (arma, melhoria ou item); com hora marcada (5, 10 e 15 minutos do relógio, mesmo com o chefe anterior vivo) chega um chefe: um professor possuído pela própria matéria. Das 15:00 em diante a dificuldade dispara até o aluno cair por volta dos 20:00. Quem derrotou os três chefes termina com honras; quem não, é reprovado.
+O herói (um aluno) anda pelo Campus Jatobá; as armas atacam sozinhas; ondas de inimigos (objetos das matérias) crescem com o tempo ao longo de um semestre de 20 minutos; inimigos mortos soltam notas que dão experiência; a cada nível o jogador escolhe uma carta (arma, melhoria ou item); com hora marcada (5, 10 e 15 minutos do relógio, mesmo com o chefe anterior vivo) chega um chefe: um professor possuído pela própria matéria. Das 15:00 em diante a dificuldade dispara até o aluno cair por volta dos 20:00. Quem derrota os três chefes termina o semestre; quem ainda chega vivo aos 20:00 termina com honras; quem não derrota os três é reprovado.
 
 ## 2. Como o programa roda
 
@@ -136,7 +136,7 @@ Uma fase só, `Semestre(Fase)`, com a linha do tempo inteira. O calendário (`CA
 - **Chefes no relógio**: `Fase.chamar_chefe(jogo, prova)` põe o chefe em campo com `Jogo.iniciar_chefe(chefe, prova)`, que antes pede a cada inimigo `ao_chegar_o_chefe` (o lacaio comum sai; `Chefe` e `MiniChefe` sobrescrevem para ficar). O relógio não para: `Jogo.chefes` guarda os que estão em campo e o HUD desenha uma barra para cada um.
 - Quando um chefe cai, `Jogo.aprovar(chefe)` guarda a nota da prova dele em `Jogo.notas[prova]`, paga as moedas, cura metade da vida e dá um baú. Com as três provas aprovadas, `venceu` vira verdadeiro (no treino a partida acaba ali; no semestre, segue).
 - **Reta final**: das 15:00 em diante `escala_dificuldade` multiplica por 1,15 a cada 15 s e, depois das 18:00, por 1,3. Depois dos 20:00 a `furia` da fase multiplica dano e velocidade de todo inimigo em campo (`Inimigo.enfurecer`) e o alvo vai ao teto: ninguém dura muito.
-- **O que conta como vitória**: derrotar os três chefes. Quem cai depois disso termina "com honras": o boletim mostra as três notas, o ranking registra `venceu` e o número de chefes, e as moedas levam o bônus (`Jogo.bonus_de_honras`: `BONUS_HONRAS` mais `MOEDAS_POR_MINI_CHEFE` por mini-chefe derrotado). Quem cai antes é reprovado em toda prova cujo chefe estava vivo (nota de 4 a 5,9 pelo dano feito nele) e na prova que corria (até 4 pelo tempo); as que não começaram ficam como NÃO CURSOU.
+- **O que conta como vitória**: derrotar os três chefes (`Jogo.venceu`, "Fim do semestre!"): o boletim mostra as três notas e o ranking registra `venceu` e o número de chefes. Quem, além disso, está vivo quando o relógio chega aos 20:00 ganha as honras (`Jogo.honras`, marcado nesse quadro, com anúncio), mesmo caindo logo depois na fúria: carimbo HONRAS e o bônus de moedas (`Jogo.bonus_de_honras`: `BONUS_HONRAS` mais `MOEDAS_POR_MINI_CHEFE` por mini-chefe derrotado). Quem cai com chefe de pé é reprovado em toda prova cujo chefe estava vivo (nota de 4 a 5,9 pelo dano feito nele) e na prova que corria (até 4 pelo tempo); as que não começaram ficam como NÃO CURSOU.
 
 ### Como o chefe possuído funciona
 

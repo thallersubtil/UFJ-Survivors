@@ -256,24 +256,60 @@ def test_reta_final_mata_mesmo_com_desvio_alto():
 
 # ---------------------------------------------------------------- resultado
 
-def test_morrer_depois_dos_tres_chefes_da_honras_e_bonus():
-    jogo = partida()
-    vencer_os_tres_chefes(jogo)
-    assert jogo.venceu and not jogo.terminou and jogo.chefe is None
-    jogo.contar_mini_chefe()
-    jogo.contar_mini_chefe()
+def morrer(jogo):
     jogo.jogador.imortal = False
     jogo.jogador.vida = 0
     jogo.atualizar(1 / 30)
-    assert jogo.terminou and jogo.venceu
+    assert jogo.terminou
+
+
+def test_tres_chefes_e_morte_antes_dos_20_e_fim_do_semestre_sem_bonus():
+    from jogo.cenas.fim import CenaFimDeJogo
+    jogo = partida()
+    vencer_os_tres_chefes(jogo)
+    assert jogo.venceu and not jogo.terminou and jogo.chefe is None
+    jogo.fase.tempo = jogo.placar.tempo = 19 * 60
+    morrer(jogo)
+    assert jogo.venceu and not jogo.honras
+    assert jogo.bonus_de_honras == 0
+    registro = jogo.resultado("Ana")
+    assert registro.venceu and registro.chefes == 3 and not registro.honras
+    assert all(linha.aprovado for linha in Boletim(jogo).linhas)
+    assert CenaFimDeJogo.motivo(jogo) == "Fim do semestre!"
+
+
+def test_tres_chefes_e_vivo_aos_20_da_honras_com_bonus_mesmo_morrendo_depois():
+    from jogo.cenas.fim import CenaFimDeJogo
+    jogo = partida()
+    vencer_os_tres_chefes(jogo)
+    jogo.contar_mini_chefe()
+    jogo.contar_mini_chefe()
+    pular_para(jogo, 20 * 60)
+    assert jogo.honras and not jogo.terminou
+    assert any("Fim do semestre com honras!" in texto for texto, _ in jogo.anuncios)
+    jogo.fase.tempo = jogo.placar.tempo = 20 * 60 + 7
+    morrer(jogo)
+    assert jogo.venceu and jogo.honras
     esperado = round((Jogo.BONUS_HONRAS + 2 * Jogo.MOEDAS_POR_MINI_CHEFE) * jogo.jogador.mult_moedas)
     assert jogo.bonus_de_honras == esperado
     assert jogo.moedas_ganhas() >= jogo.placar.moedas + esperado
-    registro = jogo.resultado("Ana")
-    assert registro.venceu and registro.chefes == 3
-    assert all(linha.aprovado for linha in Boletim(jogo).linhas)
-    from jogo.cenas.fim import CenaFimDeJogo
+    assert jogo.resultado("Ana").honras
     assert CenaFimDeJogo.motivo(jogo).startswith("Fim do semestre com honras!")
+
+
+def test_chefe_de_pe_aos_20_e_reprovado_sem_honras():
+    jogo = partida()
+    pular_para(jogo, 5 * 60)
+    pular_para(jogo, 20 * 60)
+    assert not jogo.venceu and not jogo.honras and jogo.bonus_de_honras == 0
+
+
+def test_o_bonus_so_entra_nas_moedas_com_honras():
+    jogo = partida()
+    vencer_os_tres_chefes(jogo)
+    sem = jogo.moedas_ganhas()
+    pular_para(jogo, 20 * 60)
+    assert jogo.moedas_ganhas() - sem >= jogo.bonus_de_honras > 0
 
 
 def test_morrer_com_chefe_de_pe_reprova_sem_bonus():

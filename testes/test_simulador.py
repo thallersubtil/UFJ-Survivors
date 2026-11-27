@@ -140,3 +140,17 @@ def test_projetil_com_rapidez_em_numero_nao_quebra_o_robo():
     jogo.adicionar(tiro)
     jogo._incorporar_novas()
     simulador.Robo(jogo).agir(1 / 30)
+
+
+def test_tabela_separa_fim_do_semestre_de_honras():
+    fim = simulador.Resultado("Otaku", 1, "nada", True, chefes_caidos=[300, 600, 900], resultado="FIM", tempo=1000)
+    honras = simulador.Resultado("Otaku", 2, "nada", True, chefes_caidos=[300, 600, 900], resultado="HONRAS",
+                                 tempo=1210)
+    reprovado = simulador.Resultado("Otaku", 3, "nada", True, chefes_caidos=[300], resultado="REPROVADO", tempo=400)
+    assert fim.fim_do_semestre and not fim.honras
+    assert honras.fim_do_semestre and honras.honras
+    assert not reprovado.fim_do_semestre
+    tabela = simulador.tabela_por_classe([fim, honras, reprovado])
+    assert "fim sem." in tabela.splitlines()[0]
+    total = tabela.splitlines()[-1].split()
+    assert total[0] == "TOTAL" and total[4:6] == ["67%", "33%"]     # fim do semestre 2 de 3, honras 1 de 3

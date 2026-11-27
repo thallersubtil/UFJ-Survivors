@@ -21,7 +21,10 @@ Especificação escrita pela sessão revisora (Windows, com o HoloCure decompila
    - A curva começa suave e aperta no fim, para não matar quem ainda luta com o 3º chefe às 16:00 (base: a escalada multiplicativa do antigo modo sem fim, com expoente maior a partir das 18:00; o M5 calibra).
    - A partir das 20:00 a velocidade dos inimigos também sobe (fugir e rolar deixam de funcionar), o dano de contato passa da vida máxima possível e o spawn vai ao teto.
    - Avisos: aos 15:00, que a dificuldade começou a subir; aos 19:30, "Faltam 30 s para o fim do semestre!".
-   - O resultado é decidido pelos chefes. Com os três derrotados, a morte (em qualquer hora) mostra "Fim do semestre com honras!", paga o bônus (BONUS_HONRAS mais um valor por mini-chefe derrotado) e conta como vitória no ranking. Com algum de pé, reprovado, sem bônus.
+   - Três resultados (regra do Thaller, 27/11: "Matar os 3 bosses é "Fim do semestre" normal, caso sobreviva até a marca dos 20 minutos que ele ganha o "Fim do semestre com honras""; e "Sim, se não derrotar os bosses até 20 min ele está reprovado"):
+     - **Reprovado**: morreu com algum chefe de pé (inclusive quem chega aos 20:00 com chefe de pé). Fica com as moedas pegas, sem bônus.
+     - **"Fim do semestre!"**: derrotou os três chefes e morreu antes dos 20:00. É vitória (ranking e conquistas), sem o bônus de honras. Carimbo APROVADO.
+     - **"Fim do semestre com honras!"**: derrotou os três chefes e estava vivo aos 20:00 (`Jogo.honras`, marcado nesse quadro, com anúncio). Paga o bônus (BONUS_HONRAS mais um valor por mini-chefe derrotado) e carimba HONRAS, mesmo morrendo logo depois na fúria.
    - O antigo modo sem fim vira essa reta final e deixa de existir como modo.
 5. A loja tem que fazer diferença: sem melhorias, vencer os três chefes é raro; com a loja cheia, é o normal (metas no M5).
 
@@ -92,12 +95,13 @@ Especificação escrita pela sessão revisora (Windows, com o HoloCure decompila
 - Caçar hoje mata mais cedo do que não caçar. Conferir se o robô espera um nível mínimo para invocar (o jogador de verdade espera) e se `escala_dos_mini_chefes` (1 + tempo/180) não deixa o mini-chefe forte demais para os níveis 1 a 3. O objetivo do Thaller é que caçar seja o caminho para ficar forte: caçar tem que compensar.
 - Revisão do robô (0349e51, no Windows, `--todas-as-classes --sementes 2`): loja vazia, ninguém vence o Cálculo, mediana de morte às 3:59 e nenhum mini-chefe, porque o robô morre antes do nível 6 que exige para caçar; loja cheia, 14% de honras (Programador e Monitor), mediana às 3:18, Gamer caindo às 2:12; diferença entre classes de 50 pontos (limite: 25). Antes de mexer em números, conferir com `--detalhe` se Gamer, Cara da Carona e Mestre de RPG morrem cedo por causa do robô (alcance do Controle, Fusca fora do alcance) e não das classes.
 - Robô: quando a Virada de Noite com a Garrafa de Café entrar (M3), ele precisa segurar o especial enquanto houver café e alvo (no commit da garrafa ou logo depois). Na carta de nível máximo, trocar a busca da palavra "vida" na descrição por um campo da Opcao (ex.: `cura=True`).
+- Primeiro mini-chefe: no `--detalhe` (Monitor, loja cheia, semente 1) o robô invocou no nível 6 com 89/100 de vida e caiu em 6 segundos. Para caçar ser o caminho para ficar forte, o primeiro mini-chefe precisa ser vencível por volta do nível 5 a 6 sem loja: conferir vida e dano com `escala_dos_mini_chefes` perto de 1 e o `NIVEL_PARA_CACAR` do robô. Os multiplicadores de experiência (loja, Cola) continuam valendo sobre os 2,5 níveis do mini-chefe (decisão da revisão do M2).
 - Curva de experiência dos comuns (veio do M2): XP_BASE/XP_LINEAR/XP_QUADRATICO e valor das notas para quem não caça chegar ~ao nível 7 / 10 / 13 nos três chefes. Nada de mexer nisso, nas vidas ou na loja antes do M4 aprovado.
 - Robô: desviar com o rolamento, chegar perto o bastante, escolher cartas por prioridade simples, caçar mini-chefes (sem chefe vivo, ir ao círculo mais perto, invocar e lutar).
 - Simulador: `--loja nada|metade|cheia`, `--sementes N`, `--todas-as-classes`, `--sem-caca`. Uma linha por partida (nível na chegada de cada chefe, hora em que cada chefe caiu, mini-chefes derrotados, resultado, moedas) e uma tabela-resumo por classe.
 - Metas (sem `--imortal`; 7 classes x 5 sementes):
   - sem caça, loja vazia: nunca vence o 2º chefe;
-  - caçando, loja vazia: vence o 1º em >= 80%, os três em <= 15%, partida mediana de 9 a 14 min;
+  - caçando, loja vazia: vence o 1º em >= 80%, os três em <= 15%, partida mediana de 9 a 14 min ("vence os três" conta "Fim do semestre" e honras juntos);
   - caçando, loja pela metade (~5.000 moedas): vence os três em 40 a 60%;
   - caçando, loja cheia: vence os três em >= 85%;
   - nível na chegada dos chefes (caçando, sem loja): perto de 10 / 17 / 23;

@@ -69,7 +69,8 @@ class Jogo:
         self.chefe_a_apresentar = None   # chefe que acabou de chegar e ainda não foi apresentado (a cena consome)
         self.perigo = 0.0                # segundos de aviso de PERIGO antes do chefe (o HUD desenha)
         self.terminou = False
-        self.venceu = False
+        self.venceu = False           # derrotou os três chefes ("Fim do semestre!")
+        self._honras = False          # e ainda chegou vivo aos 20:00 ("Fim do semestre com honras!")
         self.anuncios = []
         self.invocacoes_abertas = False   # os círculos dos mini-chefes já foram espalhados pelo campus
         self.marcados = set()         # CHAVEs dos mini-chefes que o aluno marcou no mini-mapa (ganham seta na tela)
@@ -185,6 +186,14 @@ class Jogo:
         self.camera.seguir(self.jogador.posicao)
         if not self.jogador.esta_vivo:
             self.terminar()
+        elif self.venceu and not self._honras and self.fase.tempo >= self.fase.DURACAO:
+            self._honras = True               # vivo aos 20:00 com os três chefes: honras, mesmo caindo depois
+            self.anunciar("Fim do semestre com honras!", 5)
+
+    @property
+    def honras(self):
+        """Derrotou os três chefes e estava vivo quando o relógio chegou aos 20:00."""
+        return self._honras
 
     def desenhar(self, tela):
         self.mapa.desenhar_chao(tela, self.camera)
@@ -348,8 +357,8 @@ class Jogo:
 
     @property
     def bonus_de_honras(self):
-        """O bônus do fim do semestre com honras; zero para quem não derrotou os três chefes."""
-        if not self.venceu:
+        """O bônus do fim do semestre com honras; zero para quem não chegou vivo aos 20:00 com os três chefes."""
+        if not self.honras:
             return 0
         return round((self.BONUS_HONRAS + self.MOEDAS_POR_MINI_CHEFE * self.mini_chefes_derrotados)
                      * self.jogador.mult_moedas)
@@ -440,4 +449,4 @@ class Jogo:
 
     def resultado(self, nome):
         return RegistroRanking(nome, self.jogador.NOME, self.placar.pontuacao_final(self.venceu),
-                               self.placar.tempo, self.venceu, self.chefes_derrotados)
+                               self.placar.tempo, self.venceu, self.chefes_derrotados, self.honras)

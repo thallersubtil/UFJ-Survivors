@@ -362,6 +362,11 @@ class Resultado:
     def honras(self):
         return self.resultado == "HONRAS"
 
+    @property
+    def fim_do_semestre(self):
+        """Derrotou os três chefes (com ou sem honras): é vitória."""
+        return self.resultado in ("HONRAS", "FIM")
+
 
 def jogar(classe, semente, loja="nada", cacar=True, minutos=21.0, imortal=False, detalhe=False):
     """Joga uma partida com o robô e devolve o Resultado."""
@@ -401,7 +406,7 @@ def jogar(classe, semente, loja="nada", cacar=True, minutos=21.0, imortal=False,
                   f"eliminações {jogo.placar.eliminacoes:>5}  mini-chefes {jogo.mini_chefes_derrotados}  "
                   f"chefes {jogo.chefes_derrotados}  dificuldade {jogo.fase.escala_dificuldade:.1f}", flush=True)
     r.mini_chefes = jogo.mini_chefes_derrotados
-    r.resultado = "HONRAS" if jogo.venceu else "REPROVADO"
+    r.resultado = "HONRAS" if jogo.honras else "FIM" if jogo.venceu else "REPROVADO"
     r.moedas = jogo.moedas_ganhas()
     r.tempo = jogo.placar.tempo
     r.eliminacoes = jogo.placar.eliminacoes
@@ -433,12 +438,13 @@ def _media_do_nivel(resultados, indice):
 
 
 def tabela_por_classe(resultados):
-    """Tabela-resumo: por classe e no total, quanto vence cada chefe, honras, tempo, níveis e moedas."""
+    """Tabela-resumo: por classe e no total, quanto vence cada chefe, fim do semestre (os três chefes), honras
+    (os três e vivo aos 20:00), tempo, níveis e moedas."""
     grupos = {}
     for r in resultados:
         grupos.setdefault(r.classe, []).append(r)
     grupos["TOTAL"] = list(resultados)
-    cabecalho = (f"{'classe':<15} {'partidas':>8} {'1º chefe':>8} {'2º chefe':>8} {'honras':>7} "
+    cabecalho = (f"{'classe':<15} {'partidas':>8} {'1º chefe':>8} {'2º chefe':>8} {'fim sem.':>8} {'honras':>7} "
                  f"{'tempo med.':>10} {'nível 1º':>8} {'nível 2º':>8} {'nível 3º':>8} {'mini-chefes':>11} "
                  f"{'moedas med.':>11}")
     linhas = [cabecalho, "-" * len(cabecalho)]
@@ -447,6 +453,7 @@ def tabela_por_classe(resultados):
         linhas.append(
             f"{nome:<15} {n:>8} {_porcento(sum(len(r.chefes_caidos) >= 1 for r in lista), n):>8} "
             f"{_porcento(sum(len(r.chefes_caidos) >= 2 for r in lista), n):>8} "
+            f"{_porcento(sum(r.fim_do_semestre for r in lista), n):>8} "
             f"{_porcento(sum(r.honras for r in lista), n):>7} "
             f"{_relogio(statistics.median(r.tempo for r in lista)):>10} "
             f"{_media_do_nivel(lista, 0):>8} {_media_do_nivel(lista, 1):>8} {_media_do_nivel(lista, 2):>8} "
