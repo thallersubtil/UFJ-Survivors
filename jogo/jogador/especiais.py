@@ -19,9 +19,10 @@ class Zoltraak(Especial):
     NOME = "Zoltraak"
     DESCRICAO = "Um raio mágico enorme na direção da mira, que atravessa tudo. O dano é rolado em 8d6."
     ICONE = "icones/zoltraak.png"
+    RECARGA = 45.0
     DADOS = 8
     FACES = 6
-    DANO_POR_PONTO = 0.65         # cada ponto dos dados vale isto de dano a cada toque do raio
+    DANO_POR_PONTO = 1.0          # cada ponto dos dados vale isto de dano a cada toque do raio
 
     def ativar(self, dono, jogo):
         rolagem = sum(jogo.rng.randint(1, self.FACES) for _ in range(self.DADOS))
@@ -33,11 +34,12 @@ class Zoltraak(Especial):
 class SuperSaiyajin(Especial):
     """Sobe de nível a cada uso na partida: SSJ, SSJ2 e SSJ3."""
     NOME = "Super Saiyajin"
-    DESCRICAO = "Cabelo dourado: dano em dobro e mais velocidade. A cada uso sobe de nível (SSJ2, SSJ3)."
+    DESCRICAO = "Cabelo dourado: 2,5x de dano e mais velocidade por 12 s. A cada uso sobe de nível (SSJ2, SSJ3)."
     ICONE = "icones/ssj.png"
-    DANO = (2.0, 2.5, 3.0)
+    RECARGA = 50.0
+    DANO = (2.5, 3.0, 3.5)
     VELOCIDADE = (1.4, 1.5, 1.6)
-    DURACAO = (10.0, 12.0, 14.0)
+    DURACAO = (12.0, 14.0, 16.0)
 
     def __init__(self):
         super().__init__()
@@ -60,14 +62,17 @@ class SuperSaiyajin(Especial):
 
 class TelaAzul(Especial):
     NOME = "Tela Azul"
-    DESCRICAO = "O jogo dos inimigos trava: os da tela ficam parados por 4 s e os projéteis deles somem."
+    DESCRICAO = "O jogo dos inimigos trava: os da tela levam um erro fatal, ficam parados por 6 s e os projéteis somem."
     ICONE = "icones/tela_azul.png"
-    RECARGA = 50.0
-    DURACAO = 4.0
+    RECARGA = 40.0
+    DURACAO = 6.0
+    DANO = 40                      # o erro fatal, em cada inimigo da tela
     RAIO = 800                     # cobre a tela inteira em volta do aluno
 
     def ativar(self, dono, jogo):
+        dano = self.DANO * dono.multiplicador_dano * self.reforco
         for inimigo in jogo.inimigos_proximos(dono.posicao, self.RAIO):
+            jogo.causar_dano(inimigo, dano)
             inimigo.travar(self.DURACAO)
         for projetil in jogo.grupos["projetil_inimigo"]:
             projetil.remover()
@@ -99,11 +104,11 @@ class ZonaDeRevisao(Efeito):
 
 class RevisaoParaProva(Especial):
     NOME = "Revisão para Prova"
-    DESCRICAO = "Puxa todas as notas do campus, recupera 30% da vida e abre por 10 s uma zona onde nada te fere."
+    DESCRICAO = "Puxa todas as notas do campus, recupera 50% da vida e abre por 12 s uma zona onde nada te fere."
     ICONE = "icones/caderno.png"
-    RECARGA = 50.0
-    CURA = 0.30
-    DURACAO_DA_ZONA = 10.0
+    RECARGA = 40.0
+    CURA = 0.50
+    DURACAO_DA_ZONA = 12.0
 
     def ativar(self, dono, jogo):
         jogo.puxar_experiencia()
@@ -115,13 +120,13 @@ class RevisaoParaProva(Especial):
 
 class Calourada(Especial):
     NOME = "Calourada"
-    DESCRICAO = "Festa! 40% dos inimigos em volta viram seus aliados por 8 s; os outros batem 30% mais fraco."
+    DESCRICAO = "Festa! 60% dos inimigos em volta viram seus aliados por 12 s; os outros batem 40% mais fraco."
     ICONE = "icones/calourada.png"
-    RECARGA = 50.0
-    RAIO = 650
-    CHANCE = 0.40
-    DURACAO = 8.0
-    FRAQUEZA = 0.70
+    RECARGA = 40.0
+    RAIO = 700
+    CHANCE = 0.60
+    DURACAO = 12.0
+    FRAQUEZA = 0.60
 
     def ativar(self, dono, jogo):
         for inimigo in jogo.inimigos_proximos(dono.posicao, self.RAIO):
@@ -135,16 +140,17 @@ class Calourada(Especial):
 
 class Lotacao(Especial):
     NOME = "Lotação"
-    DESCRICAO = "Quatro fuscas lotados cruzam a tela atropelando e possuindo inimigos."
+    DESCRICAO = "Seis fuscas lotados cruzam a tela atropelando e possuindo inimigos."
     ICONE = "sprites/fusca.png"
-    RECARGA = 40.0
-    DANO = 20
-    POSSESSAO = 4.0
+    RECARGA = 35.0
+    DANO = 45
+    POSSESSAO = 6.0
+    FAIXAS = (0.12, 0.27, 0.42, 0.58, 0.73, 0.88)   # altura de cada fusca na tela
 
     def ativar(self, dono, jogo):
         from jogo.ajudantes.ajudantes import FuscaVeiculo
         tela = jogo.camera.retangulo
-        for i, fracao in enumerate((0.2, 0.4, 0.6, 0.8)):
+        for i, fracao in enumerate(self.FAIXAS):
             da_esquerda = i % 2 == 0
             y = tela.top + tela.height * fracao
             x = tela.left - 120 if da_esquerda else tela.right + 120
@@ -155,74 +161,112 @@ class Lotacao(Especial):
 
 
 class CodigoDisparado(ProjetilDoHeroi):
-    """Um pedaço de código da rajada da Virada de Noite: teclas e ponto e vírgula voando."""
+    """Um pedaço de código da rajada da Virada de Noite: símbolos grandes numa telinha escura, com contorno e brilho."""
 
-    SIMBOLOS = (";", "{", "}", "=", "<", ">", "()")
+    SIMBOLOS = ("{ }", "=>", "</>", "()", "&&", "++", "[ ]", "!=")
     COR = (130, 240, 130)
+    CONTORNO = (10, 40, 20)
+    TAMANHO = 34
     DURACAO = 1.1
+    _imagens = {}                 # um desenho por símbolo, feito uma vez só
 
-    def __init__(self, posicao, velocidade, dano, simbolo):
-        super().__init__(posicao, velocidade, dano, perfuracao=1, raio=9)
+    def __init__(self, posicao, velocidade, dano, simbolo, perfuracao=2):
+        super().__init__(posicao, velocidade, dano, perfuracao=perfuracao, raio=18)
         self.simbolo = simbolo
 
+    @classmethod
+    def imagem(cls, simbolo):
+        if simbolo not in cls._imagens:
+            fonte = Recursos.fonte(cls.TAMANHO)
+            texto = fonte.render(simbolo, True, cls.COR)
+            borda = fonte.render(simbolo, True, cls.CONTORNO)
+            sup = pygame.Surface((texto.get_width() + 20, texto.get_height() + 12), pygame.SRCALPHA)
+            meio = (sup.get_width() // 2, sup.get_height() // 2)
+            pygame.draw.rect(sup, (*cls.COR, 70), sup.get_rect(), border_radius=10)              # brilho
+            pygame.draw.rect(sup, (16, 28, 20, 225), sup.get_rect().inflate(-6, -6), border_radius=8)   # tela de código
+            for dx, dy in ((-2, 0), (2, 0), (0, -2), (0, 2), (-2, -2), (2, 2), (-2, 2), (2, -2)):
+                sup.blit(borda, borda.get_rect(center=(meio[0] + dx, meio[1] + dy)))
+            sup.blit(texto, texto.get_rect(center=meio))
+            cls._imagens[simbolo] = sup
+        return cls._imagens[simbolo]
+
     def desenhar(self, tela, camera):
-        imagem = Recursos.fonte(20).render(self.simbolo, True, self.COR)
+        imagem = self.imagem(self.simbolo)
         tela.blit(imagem, imagem.get_rect(center=camera.para_tela(self.posicao)))
 
 
 class ViradaDeNoite(Especial):
-    """O especial do Programador e a munição do jogo: enche a Garrafa de Café e, segurando o especial, atira uma
-    rajada de código enquanto houver café. Sem café, vem a abstinência."""
+    """O especial do Programador e a munição do jogo. A Garrafa de Café enche aos poucos enquanto o especial
+    recarrega; ativado com a garrafa cheia, ele atira sozinho uma rajada de código na mira até o café acabar."""
 
     NOME = "Virada de Noite"
-    DESCRICAO = "Enche a garrafa com 100 doses de café; segurando Espaço, cada dose é um tiro de código na mira."
+    DESCRICAO = ("A garrafa de café enche aos poucos; cheia, Espaço solta uma rajada de código na mira, "
+                 "uma dose por tiro, até o café acabar.")
     ICONE = "icones/virada_de_noite.png"
-    RECARGA = 45.0
-    TIROS_POR_SEGUNDO = 10
-    DANO = 9
-    VELOCIDADE = 620
-    ABERTURA = 6                  # graus de espalhamento da rajada
+    RECARGA = 40.0
+    TIROS_POR_SEGUNDO = 14
+    DANO = 13
+    PERFURACAO = 2
+    VELOCIDADE = 680
+    ABERTURA = 8                  # graus de espalhamento da rajada
     DOSES_DO_COPO = 10            # cada copo de café caído
-    ABSTINENCIA = 3.0             # segundos mais lento depois que o café acaba
-    LENTIDAO = 0.7
 
     def __init__(self):
         super().__init__()
         self.garrafa = GarrafaDeCafe()
+        self.disparando = False
         self._espera = 0.0
 
     @property
     def pronto(self):
-        """Só enche de novo com a garrafa vazia: com café sobrando, Espaço é para atirar."""
-        return super().pronto and self.garrafa.vazia
+        """Durante a rajada, Espaço não faz nada: ela segue sozinha até o café acabar."""
+        return super().pronto and not self.disparando
+
+    def atualizar(self, dt, mult_recarga=1.0):
+        if not self.disparando:              # a garrafa só volta a encher depois da rajada
+            super().atualizar(dt, mult_recarga)
 
     def ativar(self, dono, jogo):
         self.garrafa.capacidade = dono.capacidade_cafe
         self.garrafa.encher()
+        self.disparando = True
+        self._espera = 0.0
         gritar(jogo, dono, "VIRADA DE NOITE!", Cor.CAFE)
         Recursos.tocar("especial", 0.6)
 
     def agir(self, dt, dono, jogo):
-        if not jogo.entrada.segurando_especial or self.garrafa.vazia:
-            self._espera = max(0.0, self._espera - dt)
+        self.garrafa.capacidade = dono.capacidade_cafe
+        if not self.disparando:
+            self._encher_aos_poucos()
             return
         self._espera -= dt
         while self._espera <= 0 and not self.garrafa.vazia:      # cadência exata, qualquer que seja o quadro
             self._espera += 1 / self.TIROS_POR_SEGUNDO
             self._disparar(dono, jogo)
+        if self.garrafa.vazia:
+            self.disparando = False
+            gritar(jogo, dono, "SEM CAFÉ!", Cor.CAFE)
+
+    def _encher_aos_poucos(self):
+        """Fora da rajada, a garrafa mostra a recarga: cheia quando o especial está pronto."""
+        cheia = self.cargas > 0
+        self.garrafa.municao = self.garrafa.capacidade if cheia else int(self.progresso * self.garrafa.capacidade)
 
     def _disparar(self, dono, jogo):
         self.garrafa.gastar()
         direcao = dono.direcao_mira.rotate(jogo.rng.uniform(-self.ABERTURA, self.ABERTURA))
-        jogo.adicionar(CodigoDisparado(dono.posicao, direcao * self.VELOCIDADE, self.DANO * dono.multiplicador_dano * self.reforco,
-                                       jogo.rng.choice(CodigoDisparado.SIMBOLOS)))
-        if self.garrafa.vazia:
-            dono.adicionar_bonus(BonusTemporario("sem_cafe", "velocidade", self.LENTIDAO, self.ABSTINENCIA))
-            gritar(jogo, dono, "SEM CAFÉ!", Cor.CAFE)
+        jogo.adicionar(CodigoDisparado(dono.posicao, direcao * self.VELOCIDADE,
+                                       self.DANO * dono.multiplicador_dano * self.reforco,
+                                       jogo.rng.choice(CodigoDisparado.SIMBOLOS), self.PERFURACAO))
 
     def ao_pegar_cafe(self, dono, jogo):
+        """Na rajada, o copo vira mais tiros; fora dela, adianta a garrafa em 10 doses."""
         self.garrafa.capacidade = dono.capacidade_cafe
-        self.garrafa.acrescentar(self.DOSES_DO_COPO)
+        if self.disparando:
+            self.garrafa.acrescentar(self.DOSES_DO_COPO)
+        else:
+            self.adiantar(self.DOSES_DO_COPO / self.garrafa.capacidade)
+            self._encher_aos_poucos()
 
     @property
     def medidor_extra(self):

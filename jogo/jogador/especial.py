@@ -59,7 +59,7 @@ class Especial(ABC):
         """Efeito do especial."""
 
     def agir(self, dt, dono, jogo):
-        """Chamado a cada quadro. Só especiais que duram (a Virada de Noite, que atira enquanto há café) usam."""
+        """Chamado a cada quadro. Só especiais que duram (a Virada de Noite, que atira até o café acabar) usam."""
 
     def adiantar(self, fracao):
         """Adianta a recarga em `fracao` da RECARGA (o café caído dá um empurrão no especial)."""
@@ -69,7 +69,7 @@ class Especial(ABC):
     CARGA_DO_CAFE = 0.03          # quanto um copo de café adianta a recarga
 
     def ao_pegar_cafe(self, dono, jogo):
-        """O aluno pegou um copo de café. Por padrão adianta a recarga; a Virada de Noite enche a garrafa."""
+        """O aluno pegou um copo de café. Por padrão adianta a recarga; a Virada de Noite usa na garrafa."""
         self.adiantar(self.CARGA_DO_CAFE)
 
     @property

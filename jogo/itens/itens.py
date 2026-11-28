@@ -400,7 +400,7 @@ class ParcelarNoCartao(Item):
 
     def _vencer(self, jogador, jogo):
         """A parcela mataria: a dívida inteira vence de uma vez e entra como um golpe, pelos outros itens e
-        habilidades (o Atestado Médico e a Armadura de Roteiro decidem se o aluno cai)."""
+        habilidades (o Atestado Médico e o Bis! decidem se o aluno cai)."""
         divida, self.dividas = self.em_aberto, []
         self.cobrando = True
         try:

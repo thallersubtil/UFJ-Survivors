@@ -52,50 +52,58 @@ def tiros(jogo):
     return sum(isinstance(e, CodigoDisparado) for e in jogo.entidades)
 
 
-def test_virada_atira_enquanto_ha_cafe_e_para_quando_acaba(jogo_limpo):
+def rodar(jogo, segundos):
+    for _ in range(round(30 * segundos)):
+        jogo.atualizar(1 / 30)
+
+
+def test_virada_atira_sozinha_ate_o_cafe_acabar(jogo_limpo):
     jogo = jogo_do_programador(jogo_limpo)
     heroi, virada = jogo.jogador, jogo.jogador.especial
-    assert heroi.usar_especial(jogo) and virada.garrafa.municao == 100
-    jogo.entrada.segurando_especial = True
-    for _ in range(round(30 * 12)):                   # 12 s segurando: 100 doses a 10 por segundo acabam
-        jogo.atualizar(1 / 30)
-    assert virada.garrafa.vazia
-    assert heroi.tem_bonus("sem_cafe")
-    for _ in range(60):                               # tiros antigos somem; garrafa vazia: nenhum novo
-        jogo.atualizar(1 / 30)
+    assert heroi.usar_especial(jogo) and virada.disparando and virada.garrafa.municao == 100
+    rodar(jogo, 1)                                    # sem apertar nada: a rajada segue sozinha
+    assert 0 < virada.garrafa.municao < 100 and tiros(jogo) > 0
+    rodar(jogo, 100 / ViradaDeNoite.TIROS_POR_SEGUNDO)
+    assert not virada.disparando
+    rodar(jogo, 2)                                    # tiros antigos somem; rajada acabou: nenhum novo
     assert tiros(jogo) == 0
 
 
-def test_soltar_o_botao_guarda_as_doses(jogo_limpo):
+def test_durante_a_rajada_espaco_nao_faz_nada(jogo_limpo):
     jogo = jogo_do_programador(jogo_limpo)
-    virada = jogo.jogador.especial
-    jogo.jogador.usar_especial(jogo)
-    jogo.entrada.segurando_especial = True
-    for _ in range(15):
-        jogo.atualizar(1 / 30)
-    jogo.entrada.segurando_especial = False
-    sobrou = virada.garrafa.municao
-    for _ in range(60):
-        jogo.atualizar(1 / 30)
-    assert 0 < sobrou < 100 and virada.garrafa.municao == sobrou
-
-
-def test_com_cafe_na_garrafa_espaco_nao_gasta_o_especial(jogo_limpo):
-    jogo = jogo_do_programador(jogo_limpo)
-    heroi = jogo.jogador
+    heroi, virada = jogo.jogador, jogo.jogador.especial
     heroi.usar_especial(jogo)
-    heroi.especial.cargas = 1
-    assert not heroi.usar_especial(jogo) and heroi.especial.cargas == 1
+    virada.cargas = 1                                 # mesmo com outra carga (Pendrive)
+    assert not virada.pronto and not heroi.usar_especial(jogo) and virada.cargas == 1
 
 
-def test_cafe_coletado_enche_a_garrafa_sem_passar_da_capacidade(jogo_limpo):
+def test_a_garrafa_enche_aos_poucos_depois_da_rajada(jogo_limpo):
     jogo = jogo_do_programador(jogo_limpo)
-    heroi, garrafa = jogo.jogador, jogo.jogador.especial.garrafa
+    heroi, virada = jogo.jogador, jogo.jogador.especial
+    heroi.usar_especial(jogo)
+    rodar(jogo, 100 / ViradaDeNoite.TIROS_POR_SEGUNDO + 0.5)
+    assert not virada.disparando and virada.restante == pytest.approx(virada.RECARGA, abs=1)   # recarga parada na rajada
+    rodar(jogo, virada.RECARGA / 2)
+    meio = virada.garrafa.municao
+    assert 30 < meio < 70 and not virada.pronto
+    rodar(jogo, virada.RECARGA / 2 + 1)
+    assert virada.pronto and virada.garrafa.municao == virada.garrafa.capacidade
+
+
+def test_cafe_na_rajada_vira_mais_tiros_e_fora_dela_adianta_a_garrafa(jogo_limpo):
+    jogo = jogo_do_programador(jogo_limpo)
+    heroi, virada = jogo.jogador, jogo.jogador.especial
+    heroi.usar_especial(jogo)
+    rodar(jogo, 2)
+    antes = virada.garrafa.municao
     CopoDeCafe(heroi.posicao).ao_coletar(jogo)
-    assert garrafa.municao == ViradaDeNoite.DOSES_DO_COPO
-    garrafa.municao = garrafa.capacidade - 3
+    assert virada.garrafa.municao == antes + ViradaDeNoite.DOSES_DO_COPO
+    rodar(jogo, 15)
+    assert not virada.disparando
+    antes = virada.garrafa.municao
     CopoDeCafe(heroi.posicao).ao_coletar(jogo)
-    assert garrafa.municao == garrafa.capacidade
+    assert virada.garrafa.municao >= antes + ViradaDeNoite.DOSES_DO_COPO - 1
+    assert virada.garrafa.municao <= virada.garrafa.capacidade
 
 
 def test_para_as_outras_classes_o_cafe_adianta_o_especial(jogo_limpo):

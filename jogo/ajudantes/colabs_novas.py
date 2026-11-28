@@ -43,7 +43,6 @@ class FolhaEmEspiral(ProjetilDoHeroi):
 class QuadroGigante(Ajudante):
     """Um quadro branco gigante que gira em volta do aluno, fere quem encosta e solta folhas em espiral."""
 
-    AMIGO = False
     LARGURA, ALTURA_DO_QUADRO = 78, 52
     ESPERA_ACERTO = 0.5
 

@@ -51,7 +51,6 @@ class CenaPartida(Cena):
         x = (teclas[pygame.K_d] or teclas[pygame.K_RIGHT]) - (teclas[pygame.K_a] or teclas[pygame.K_LEFT])
         y = (teclas[pygame.K_s] or teclas[pygame.K_DOWN]) - (teclas[pygame.K_w] or teclas[pygame.K_UP])
         self.jogo.entrada.direcao = pygame.Vector2(x, y)
-        self.jogo.entrada.segurando_especial = bool(teclas[pygame.K_SPACE])
         if self.app.modo_mira == "automatica":
             alvo = self.jogo.inimigo_mais_proximo(self.jogo.jogador.posicao, self.ALCANCE_MIRA_AUTOMATICA)
             self.jogo.entrada.mira = pygame.Vector2(alvo.posicao) if alvo is not None else None

@@ -10,7 +10,7 @@ from jogo.jogador.rolamento import Rolamento
 
 class JogoFalso:
     def __init__(self, direcao=(0, 0)):
-        self.entrada = SimpleNamespace(direcao=pygame.Vector2(direcao), mira=None, segurando_especial=False)
+        self.entrada = SimpleNamespace(direcao=pygame.Vector2(direcao), mira=None)
         self.arena = pygame.Rect(0, 0, 3200, 1800)
         self.rng = random.Random(1)      # o Programador sorteia se o disparo repete
 

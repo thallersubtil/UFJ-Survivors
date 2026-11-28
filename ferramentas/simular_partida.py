@@ -166,7 +166,6 @@ class Robo:
         alvo = self._alvo_da_mira()
         jogo.entrada.mira = pygame.Vector2(alvo.posicao) if alvo is not None else None
         self._esquivar(rumo)
-        jogo.entrada.segurando_especial = alvo is not None     # a Virada de Noite atira enquanto houver café e alvo
         if heroi.especial.pronto and (jogo.chefe is not None or
                                       len(jogo.inimigos_proximos(heroi.posicao, 300)) >= 8):
             heroi.usar_especial(jogo)

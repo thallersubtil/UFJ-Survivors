@@ -13,7 +13,6 @@ from jogo.nucleo.recursos import Recursos
 class Ajudante(Entidade, ABC):
     grupo = "ajudante"
     camada = 2
-    AMIGO = False                # um companheiro de verdade (cachorro, mascote, fusca, veterano), não uma área ou folha
     PASTA_SPRITE = None
     IMAGEM = ""
     ALTURA = 24
@@ -25,8 +24,6 @@ class Ajudante(Entidade, ABC):
 
 class CachorroCaramelo(Ajudante):
     """Vira-lata caramelo que corre em volta do herói e morde quem encosta."""
-
-    AMIGO = True
 
     IMAGEM = "sprites/caramelo.png"
     PASTA_SPRITE = "caramelo"
@@ -72,8 +69,6 @@ class CachorroCaramelo(Ajudante):
 class MascoteFlutuante(Ajudante):
     """Mascote que flutua perto do herói (ChatGPT, Claude). Pode mostrar uma barrinha."""
 
-    AMIGO = True
-
     camada = 2
 
     def __init__(self, dono, imagem, altura, deslocamento, barra=None, pasta=None):
@@ -107,8 +102,6 @@ class MascoteFlutuante(Ajudante):
 
 class FuscaVeiculo(Ajudante):
     """Fusca azul que atravessa a tela buzinando e possui quem atropela."""
-
-    AMIGO = True
 
     IMAGEM = "sprites/fusca.png"
     PASTA_SPRITE = "fusca"
@@ -335,8 +328,6 @@ class QuadroBrancoNoChao(Ajudante):
 class Veterano(Ajudante):
     """O veterano da habilidade Veterano Camarada: anda atrás do aluno e usa uma cópia da arma inicial dele, com
     uma fração da força. Para a arma, ele é o "dono": tem posição, mira e multiplicadores, como o aluno."""
-
-    AMIGO = True
 
     ALTURA = 56
     ATRAS = 70                   # a que distância ele segue o aluno

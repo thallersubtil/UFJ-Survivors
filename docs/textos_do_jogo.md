@@ -5,13 +5,13 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 ## Personagens
 
 ### Otaku
-- Descrição: Resistente e lento. Agita o lightstick como num show.
+- Descrição: Resistente e lento. Fã de carteirinha: agita o lightstick e o show esquenta.
 - Vida: 80 | Velocidade: 180
 - Arma inicial (exclusiva): Lightstick
-- Habilidade: Instinto Otaku — 8% de chance de acerto crítico (dano em dobro). | 16% de chance de crítico. | 25% de chance de crítico.
-- Habilidade: Armadura de Roteiro — O golpe que te derrubaria deixa 1 de vida e 2 s de invencibilidade. Volta em 90 s. | 3 s invencível; volta em 75 s. | 4 s invencível; volta em 60 s.
-- Habilidade: Poder da Amizade — +5% de dano por amigo em campo (Caramelo, Fusca, mascotes, possuídos), até +50%. | +7% de dano por amigo. | +10% de dano por amigo.
-- Especial: Super Saiyajin — Cabelo dourado: dano em dobro e mais velocidade. A cada uso sobe de nível (SSJ2, SSJ3).
+- Habilidade: Wotagei — 8% de chance de crítico (dano em dobro); cada crítico solta uma nota musical no inimigo mais perto. | 16% de chance de crítico; notas mais fortes. | 25% de chance de crítico; notas ainda mais fortes.
+- Habilidade: Bis! — O golpe que te derrubaria deixa 1 de vida e 2 s invencível, e a plateia grita BIS: uma onda empurra e fere quem está em volta. Volta em 90 s. | 3 s invencível; volta em 75 s. | 4 s invencível; volta em 60 s.
+- Habilidade: Hype do Show — Cada inimigo eliminado dá +1% de dano, até +20%. Depois de 3 s sem eliminar, o hype esfria. | Hype até +30%. | Hype até +40%.
+- Especial: Super Saiyajin — Cabelo dourado: 2,5x de dano e mais velocidade por 12 s. A cada uso sobe de nível (SSJ2, SSJ3).
 
 ### Programador
 - Descrição: Ágil e frágil. Vira a noite atirando código à base de café.
@@ -20,7 +20,7 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Habilidade: Laço de Repetição — Cada disparo tem 10% de chance de repetir na hora. | 18% de chance de repetir. | 28% de chance de repetir.
 - Habilidade: Cafeinado — Armas recarregam 1,6% mais rápido por nível do aluno; a garrafa da Virada leva +20 doses. | A garrafa leva +40 doses. | A garrafa leva +60 doses.
 - Habilidade: Compilar — Andando, acumula linhas de código; parado 1 s, compila: um pulso com o dano acumulado. | O pulso dá 1,5x o acumulado. | O pulso dá 2x o acumulado.
-- Especial: Virada de Noite — Enche a garrafa com 100 doses de café; segurando Espaço, cada dose é um tiro de código na mira.
+- Especial: Virada de Noite — A garrafa de café enche aos poucos; cheia, Espaço solta uma rajada de código na mira, uma dose por tiro, até o café acabar.
 
 ### Mestre de RPG
 - Descrição: Equilibrado. O especial volta logo.
@@ -38,7 +38,7 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Habilidade: Plantão de Dúvidas — Recupera 0,4 de vida por segundo e puxa as notas 20% mais de longe. | 0,8 de vida por segundo; notas 40% mais de longe. | 1,2 por segundo; notas 60% mais de longe.
 - Habilidade: Gabarito — 10% de chance de marcar o inimigo com um X: ele leva 25% a mais de dano e pode curar ao morrer. | 15% de chance; o marcado leva 33% a mais. | 20% de chance; o marcado leva 50% a mais.
 - Habilidade: Horário de Atendimento — Parado por 1 s: os inimigos em volta ficam 20% mais lentos e você cura 2% da vida a cada 2 s. | 30% mais lentos; cura 3%. | 40% mais lentos; cura 4%.
-- Especial: Revisão para Prova — Puxa todas as notas do campus, recupera 30% da vida e abre por 10 s uma zona onde nada te fere.
+- Especial: Revisão para Prova — Puxa todas as notas do campus, recupera 50% da vida e abre por 12 s uma zona onde nada te fere.
 
 ### Gamer
 - Descrição: Rápido e frágil. Vive rolando e trava o jogo dos inimigos.
@@ -47,7 +47,7 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Habilidade: Reflexo — O rolamento recarrega 15% mais rápido. | 30% mais rápido. | 45% mais rápido.
 - Habilidade: Frame Perfect — Rolar no último instante antes de um golpe: câmera lenta por 1 s e +30% de dano por 8 s. | +45% de dano. | +60% de dano.
 - Habilidade: Combo — 50 acertos sem levar dano: +20% de velocidade e 20% de chance de golpe duplo por 10 s. | +30% de velocidade e de golpe duplo. | +40% de velocidade e de golpe duplo.
-- Especial: Tela Azul — O jogo dos inimigos trava: os da tela ficam parados por 4 s e os projéteis deles somem.
+- Especial: Tela Azul — O jogo dos inimigos trava: os da tela levam um erro fatal, ficam parados por 6 s e os projéteis somem.
 
 ### Calouro
 - Descrição: Começa fraco, mas aprende rápido.
@@ -56,7 +56,7 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Habilidade: Sede de Aprender — +15% de experiência. | +30% de experiência. | +45% de experiência.
 - Habilidade: Veterano Camarada — Um veterano anda com você e usa a sua arma inicial com 50% da força. | O veterano bate com 75% da força. | O veterano bate com 100% da força.
 - Habilidade: Perdido no Campus — +3% de velocidade por inimigo perto (até +80%) e +25% de experiência de quem morre perto. | +4% por inimigo; +35% de experiência. | +5% por inimigo; +50% de experiência.
-- Especial: Calourada — Festa! 40% dos inimigos em volta viram seus aliados por 8 s; os outros batem 30% mais fraco.
+- Especial: Calourada — Festa! 60% dos inimigos em volta viram seus aliados por 12 s; os outros batem 40% mais fraco.
 
 ### Cara da Carona
 - Descrição: Todo mundo quer carona. O Fusca vem junto.
@@ -65,7 +65,7 @@ Edite o que quiser e me devolva o arquivo. Só os textos: os números do jogo n�
 - Habilidade: Carona Solidária — Inimigo que morre possuído (atropelado) tem 12% de chance de deixar uma moeda. | 24% de chance de moeda. | 36% de chance de moeda.
 - Habilidade: Buzina — A cada 10 s, uma buzinada em volta: dano (mais forte no centro) e atordoa por um instante. | Buzinada 50% mais forte. | Buzinada com o dobro de dano.
 - Habilidade: Carro Lotado — +3% de dano por passageiro (inimigo possuído) em campo, até +60%. | +4% por passageiro. | +5% por passageiro.
-- Especial: Lotação — Quatro fuscas lotados cruzam a tela atropelando e possuindo inimigos.
+- Especial: Lotação — Seis fuscas lotados cruzam a tela atropelando e possuindo inimigos.
 
 ## Armas exclusivas (a arma inicial de cada classe: não aparece nas cartas nem entra em colab)
 
