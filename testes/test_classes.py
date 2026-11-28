@@ -10,8 +10,8 @@ from jogo.inimigos.bug import Bug
 from jogo.jogador.classes import CLASSES, MestreDeRPG, Otaku, Programador
 from jogo.jogador.especiais import SuperSaiyajin, ViradaDeNoite, Zoltraak
 from jogo.jogador.habilidade import Habilidade
-from jogo.jogador.habilidades import (ArmaduraDeRoteiro, Cafeinado, Compilar, FichaDePersonagem, InstintoOtaku,
-                                      LacoDeRepeticao, PoderDaAmizade, RolagemDeIniciativa, TesteDeResistencia)
+from jogo.jogador.habilidades import (Bis, Cafeinado, Compilar, FichaDePersonagem, HypeDoShow, LacoDeRepeticao,
+                                      RolagemDeIniciativa, TesteDeResistencia, Wotagei)
 
 
 def test_habilidade_e_abstrata():
@@ -20,7 +20,7 @@ def test_habilidade_e_abstrata():
 
 
 @pytest.mark.parametrize("classe, arma, habilidades, especial", [
-    (Otaku, Lightstick, (InstintoOtaku, ArmaduraDeRoteiro, PoderDaAmizade), SuperSaiyajin),
+    (Otaku, Lightstick, (Wotagei, Bis, HypeDoShow), SuperSaiyajin),
     (Programador, TecladoMecanico, (LacoDeRepeticao, Cafeinado, Compilar), ViradaDeNoite),
     (MestreDeRPG, DadoDeVinteLados, (RolagemDeIniciativa, FichaDePersonagem, TesteDeResistencia), Zoltraak),
 ])
@@ -42,13 +42,13 @@ def test_classes_tem_nome_descricao_e_tres_habilidades():
             assert h.NOME and h.DESCRICAO and h.ICONE and len(h.MELHORIAS) == h.NIVEL_MAXIMO - 1
 
 
-def test_instinto_otaku_da_critico_e_cresce_com_a_carta():
+def test_wotagei_da_critico_e_cresce_com_a_carta():
     j = Otaku((0, 0))
     assert j.chance_critico == 0
-    instinto = j.habilidades_da_classe[0]
-    j.adicionar_habilidade(instinto)
+    wotagei = j.habilidades_da_classe[0]
+    j.adicionar_habilidade(wotagei)
     primeiro = j.chance_critico
-    j.subir_nivel_habilidade(instinto)
+    j.subir_nivel_habilidade(wotagei)
     assert j.chance_critico > primeiro > 0
 
 
@@ -108,7 +108,7 @@ def test_otaku_vira_super_saiyajin_no_especial(jogo_limpo):
     jogo = jogo_limpo(Otaku)
     jogo.jogador.usar_especial(jogo)
     assert jogo.jogador.tem_bonus("ssj")
-    assert jogo.jogador.multiplicador_dano == pytest.approx(2.0)
+    assert jogo.jogador.multiplicador_dano == pytest.approx(SuperSaiyajin.DANO[0])
 
 
 def test_cartas_de_nivel_funcionam_com_todas_as_classes(jogo_limpo):

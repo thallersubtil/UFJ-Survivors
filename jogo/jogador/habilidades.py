@@ -4,6 +4,7 @@ Números de partida: o balanceamento (marco M5 do plano do semestre) ajusta. Cad
 assets/icones/ (gerado em 27/11/2026 e aprovado pelo Thaller).
 """
 
+from jogo.ajudantes.golpes import NotaMusical
 from jogo.config import Cor
 from jogo.efeitos import OndaDoGrito, TextoFlutuante
 from jogo.jogador.bonus import BonusTemporario
@@ -42,24 +43,53 @@ class HabilidadeComRelogio(Habilidade):
 
 # ---------------------------------------------------------------- Otaku
 
-class InstintoOtaku(Habilidade):
-    NOME = "Instinto Otaku"
+class Wotagei(Habilidade):
+    """A dança do lightstick: o fã acerta no tempo certo, e cada acerto crítico vira música."""
+    NOME = "Wotagei"
     ICONE = "icones/instinto_otaku.png"
     CHANCE = (0.08, 0.16, 0.25)
-    DESCRICAO = "8% de chance de acerto crítico (dano em dobro)."
-    MELHORIAS = ("16% de chance de crítico.", "25% de chance de crítico.")
+    INTERVALO_DAS_NOTAS = 0.25       # no máximo 4 notas por segundo
+    DANO_DA_NOTA = (8, 12, 16)
+    VELOCIDADE_DA_NOTA = 460
+    ALCANCE_DA_NOTA = 380
+    DESCRICAO = "8% de chance de crítico (dano em dobro); cada crítico solta uma nota musical no inimigo mais perto."
+    MELHORIAS = ("16% de chance de crítico; notas mais fortes.", "25% de chance de crítico; notas ainda mais fortes.")
+
+    def __init__(self):
+        super().__init__()
+        self._espera = 0.0
 
     def aplicar(self, jogador):
         jogador.chance_critico += self.valor(self.CHANCE)
 
+    def atualizar(self, dt, jogador, jogo):
+        self._espera = max(0.0, self._espera - dt)
 
-class ArmaduraDeRoteiro(Habilidade):
-    """O protagonista não morre no meio do episódio."""
-    NOME = "Armadura de Roteiro"
+    def ao_critico(self, inimigo, jogador, jogo):
+        if self._espera > 0:
+            return
+        alvo = jogo.inimigo_mais_proximo(inimigo.posicao, self.ALCANCE_DA_NOTA, excluir=inimigo)
+        if alvo is None:
+            return
+        rumo = alvo.posicao - inimigo.posicao
+        if rumo.length_squared() == 0:
+            return
+        self._espera = self.INTERVALO_DAS_NOTAS
+        dano = self.valor(self.DANO_DA_NOTA) * jogador.multiplicador_dano
+        jogo.adicionar(NotaMusical(inimigo.posicao, rumo.normalize() * self.VELOCIDADE_DA_NOTA, dano, perfuracao=1, raio=9))
+
+
+class Bis(Habilidade):
+    """O show não pode acabar assim: a plateia pede bis e o fã volta ao palco."""
+    NOME = "Bis!"
     ICONE = "icones/armadura_de_roteiro.png"
     INVENCIVEL = (2.0, 3.0, 4.0)
     RECARGA = (90.0, 75.0, 60.0)
-    DESCRICAO = "O golpe que te derrubaria deixa 1 de vida e 2 s de invencibilidade. Volta em 90 s."
+    RAIO = 280
+    DANO = 30
+    EMPURRAO = 420
+    DESCRICAO = ("O golpe que te derrubaria deixa 1 de vida e 2 s invencível, e a plateia grita BIS: uma onda empurra "
+                 "e fere quem está em volta. Volta em 90 s.")
     MELHORIAS = ("3 s invencível; volta em 75 s.", "4 s invencível; volta em 60 s.")
 
     def __init__(self):
@@ -77,26 +107,48 @@ class ArmaduraDeRoteiro(Habilidade):
             return dano
         self.espera = self.valor(self.RECARGA)
         jogador.invencivel = max(jogador.invencivel, self.valor(self.INVENCIVEL))
-        avisar(jogo, jogador, "ARMADURA DE ROTEIRO!")
+        for inimigo in jogo.inimigos_proximos(jogador.posicao, self.RAIO):
+            empurrao = inimigo.posicao - jogador.posicao
+            jogo.causar_dano(inimigo, self.DANO * self._nivel * jogador.multiplicador_dano, empurrao)
+            inimigo.empurrar(empurrao, self.EMPURRAO)
+        jogo.adicionar(OndaDoGrito(jogador, self.RAIO))
+        avisar(jogo, jogador, "BIS! BIS! BIS!", (255, 120, 200), 24)
         return max(0.0, jogador.vida - 1)
 
 
-class PoderDaAmizade(HabilidadeComRelogio):
-    NOME = "Poder da Amizade"
+class HypeDoShow(Habilidade):
+    """Quanto mais o show esquenta, mais forte o fã: o hype sobe a cada inimigo derrubado e esfria quando para."""
+    NOME = "Hype do Show"
     ICONE = "icones/poder_da_amizade.png"
-    POR_AMIGO = (0.05, 0.07, 0.10)
-    MAXIMO = 0.50
-    DESCRICAO = "+5% de dano por amigo em campo (Caramelo, Fusca, mascotes, possuídos), até +50%."
-    MELHORIAS = ("+7% de dano por amigo.", "+10% de dano por amigo.")
+    POR_ELIMINACAO = 0.01
+    MAXIMO = (0.20, 0.30, 0.40)
+    ESFRIA_DEPOIS = 3.0              # segundos sem eliminar até o hype começar a cair
+    ESFRIA_POR_SEGUNDO = 0.10
+    DESCRICAO = "Cada inimigo eliminado dá +1% de dano, até +20%. Depois de 3 s sem eliminar, o hype esfria."
+    MELHORIAS = ("Hype até +30%.", "Hype até +40%.")
+
+    def __init__(self):
+        super().__init__()
+        self.hype = 0.0
+        self._sem_eliminar = 0.0
 
     def aplicar(self, jogador):
-        """Nada fixo: o bônus é conferido em campo."""
+        """Nada fixo: o bônus segue o hype."""
 
-    def conferir(self, jogador, jogo):
-        amigos = sum(ajudante.AMIGO for ajudante in jogo.grupos["ajudante"]) + passageiros(jogo)
-        bonus = min(self.MAXIMO, amigos * self.valor(self.POR_AMIGO))
-        if bonus > 0:
-            jogador.adicionar_bonus(BonusTemporario("amizade", "dano", 1 + bonus, self.INTERVALO_DE_CONFERENCIA + 0.2))
+    def ao_eliminar(self, inimigo, jogador, jogo):
+        self.hype = min(self.valor(self.MAXIMO), self.hype + self.POR_ELIMINACAO)
+        self._sem_eliminar = 0.0
+
+    def atualizar(self, dt, jogador, jogo):
+        self._sem_eliminar += dt
+        if self._sem_eliminar > self.ESFRIA_DEPOIS:
+            self.hype = max(0.0, self.hype - self.ESFRIA_POR_SEGUNDO * dt)
+        if self.hype > 0:
+            jogador.adicionar_bonus(BonusTemporario("hype", "dano", 1 + self.hype, 0.2))
+
+    @property
+    def contador(self):
+        return f"HYPE +{round(self.hype * 100)}%"
 
 
 # ---------------------------------------------------------------- Programador
@@ -513,7 +565,7 @@ class CarroLotado(HabilidadeComRelogio):
             jogador.adicionar_bonus(BonusTemporario("lotado", "dano", 1 + bonus, self.INTERVALO_DE_CONFERENCIA + 0.2))
 
 
-HABILIDADES = (InstintoOtaku, ArmaduraDeRoteiro, PoderDaAmizade, LacoDeRepeticao, Cafeinado, Compilar,
+HABILIDADES = (Wotagei, Bis, HypeDoShow, LacoDeRepeticao, Cafeinado, Compilar,
                RolagemDeIniciativa, FichaDePersonagem, TesteDeResistencia, PlantaoDeDuvidas, Gabarito,
                HorarioDeAtendimento, Reflexo, FramePerfect, Combo, SedeDeAprender, VeteranoCamarada, PerdidoNoCampus,
                CaronaSolidaria, Buzina, CarroLotado)

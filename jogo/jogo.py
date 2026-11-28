@@ -31,7 +31,6 @@ from jogo.inimigos.quebraveis import QUEBRAVEIS
 class Entrada:
     direcao: pygame.Vector2 = field(default_factory=pygame.Vector2)
     mira: Optional[pygame.Vector2] = None
-    segurando_especial: bool = False     # Espaço apertado (a Virada de Noite atira enquanto segura)
 
 
 class Jogo:

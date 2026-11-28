@@ -26,7 +26,7 @@ class Turbo(Item):
 
 class JogoFalso:
     def __init__(self, direcao=(0, 0), mira=None):
-        self.entrada = SimpleNamespace(direcao=pygame.Vector2(direcao), mira=mira, segurando_especial=False)
+        self.entrada = SimpleNamespace(direcao=pygame.Vector2(direcao), mira=mira)
         self.arena = pygame.Rect(0, 0, 3200, 1800)
         self.rng = random.Random(1)      # o Programador sorteia se o disparo repete
         self.adicionados = []
@@ -140,7 +140,7 @@ def test_super_saiyajin_dobra_o_dano_e_cria_aura():
     jogo = JogoFalso()
     assert j.usar_especial(jogo)
     assert j.tem_bonus("ssj")
-    assert j.multiplicador_dano == pytest.approx(2.0)
+    assert j.multiplicador_dano == pytest.approx(j.especial.DANO[0]) and j.multiplicador_dano >= 2
     assert sum(isinstance(e, AuraSSJ) for e in jogo.adicionados) == 1
     assert not j.usar_especial(jogo)
 

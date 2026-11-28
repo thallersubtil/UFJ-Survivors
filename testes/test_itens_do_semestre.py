@@ -143,14 +143,14 @@ def test_parcela_que_mataria_passa_pelo_atestado_em_qualquer_ordem(jogo_limpo, c
     assert atestado not in heroi.itens and cartao.em_aberto == 0
 
 
-def test_parcela_que_mataria_passa_pela_armadura_de_roteiro(jogo_limpo):
+def test_parcela_que_mataria_passa_pelo_bis(jogo_limpo):
     from jogo.jogador.classes import Otaku
-    from jogo.jogador.habilidades import ArmaduraDeRoteiro
+    from jogo.jogador.habilidades import Bis
     jogo = jogo_limpo(Otaku)
     heroi = jogo.jogador
     heroi.armas = []
     heroi.adicionar_item(ParcelarNoCartao())         # itens vêm antes das habilidades nos reagentes
-    heroi.adicionar_habilidade(next(h for h in heroi.habilidades_da_classe if isinstance(h, ArmaduraDeRoteiro)))
+    heroi.adicionar_habilidade(next(h for h in heroi.habilidades_da_classe if isinstance(h, Bis)))
     jogo.ferir_jogador(heroi.vida * 2)
     rodar(jogo, 6)
     assert heroi.esta_vivo and heroi.itens[0].em_aberto == 0

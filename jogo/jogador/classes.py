@@ -14,17 +14,16 @@ from jogo.armas.mapa_do_campus import MapaDoCampus
 from jogo.armas.teclado import TecladoMecanico
 from jogo.jogador.especiais import (Calourada, Lotacao, RevisaoParaProva, SuperSaiyajin, TelaAzul, ViradaDeNoite,
                                     Zoltraak)
-from jogo.jogador.habilidades import (ArmaduraDeRoteiro, Buzina, Cafeinado, CaronaSolidaria,
-                                      CarroLotado, Combo, Compilar, FichaDePersonagem, FramePerfect, Gabarito,
-                                      HorarioDeAtendimento, InstintoOtaku, LacoDeRepeticao, PerdidoNoCampus,
-                                      PlantaoDeDuvidas, PoderDaAmizade, Reflexo, RolagemDeIniciativa, SedeDeAprender,
-                                      TesteDeResistencia, VeteranoCamarada)
+from jogo.jogador.habilidades import (Bis, Buzina, Cafeinado, CaronaSolidaria, CarroLotado, Combo, Compilar,
+                                      FichaDePersonagem, FramePerfect, Gabarito, HorarioDeAtendimento, HypeDoShow,
+                                      LacoDeRepeticao, PerdidoNoCampus, PlantaoDeDuvidas, Reflexo, RolagemDeIniciativa,
+                                      SedeDeAprender, TesteDeResistencia, VeteranoCamarada, Wotagei)
 from jogo.jogador.jogador import Jogador
 
 
 class Otaku(Jogador):
     NOME = "Otaku"
-    DESCRICAO = "Resistente e lento. Agita o lightstick como num show."
+    DESCRICAO = "Resistente e lento. Fã de carteirinha: agita o lightstick e o show esquenta."
     VIDA = 80
     VELOCIDADE = 180
     IMAGEM = "sprites/otaku.png"
@@ -38,7 +37,7 @@ class Otaku(Jogador):
         return Lightstick()
 
     def criar_habilidades(self):
-        return [InstintoOtaku(), ArmaduraDeRoteiro(), PoderDaAmizade()]
+        return [Wotagei(), Bis(), HypeDoShow()]
 
     def criar_especial(self):
         return SuperSaiyajin()

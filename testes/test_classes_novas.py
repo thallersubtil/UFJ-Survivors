@@ -52,7 +52,7 @@ def test_revisao_para_prova_puxa_notas_e_cura(jogo_limpo):
     heroi.vida = heroi.vida_maxima / 2
     assert heroi.usar_especial(jogo)
     assert nota.atraido
-    assert heroi.vida == pytest.approx(heroi.vida_maxima * 0.8)
+    assert heroi.vida == pytest.approx(heroi.vida_maxima * min(1.0, 0.5 + heroi.especial.CURA))
 
 
 def test_tela_azul_e_o_especial_do_gamer(jogo_limpo):
@@ -74,11 +74,11 @@ def test_calourada_vira_parte_dos_inimigos_e_enfraquece_os_outros(jogo_limpo):
     assert fracos[0].dano_de_contato < fracos[0].DANO
 
 
-def test_lotacao_solta_quatro_fuscas(jogo_limpo):
+def test_lotacao_solta_um_fusca_por_faixa(jogo_limpo):
     jogo = jogo_limpo(CaraDaCarona)
     jogo.jogador.usar_especial(jogo)
     jogo._incorporar_novas()
-    assert sum(isinstance(e, FuscaVeiculo) for e in jogo.entidades) == 4
+    assert sum(isinstance(e, FuscaVeiculo) for e in jogo.entidades) == len(jogo.jogador.especial.FAIXAS) == 6
 
 
 def test_carona_solidaria_solta_moeda_de_quem_morre_possuido(jogo_limpo):

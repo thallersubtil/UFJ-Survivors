@@ -200,7 +200,7 @@ def test_tela_azul_trava_os_inimigos_e_apaga_os_projeteis_deles(jogo_limpo):
     heroi = jogo.jogador
     heroi.imortal = True
     heroi.armas = []
-    perto = Bug(heroi.posicao + (200, 0))
+    perto = FabricaDeInimigos.criar("bug", heroi.posicao + (200, 0), 50)     # forte: o erro fatal não derruba
     chefe = FabricaDeInimigos.criar("chefe_calculo", heroi.posicao + (0, 300))
     tiro = ProjetilDaMateria(heroi.posicao + (150, 150), (0, 0), 5, "dx", (255, 255, 255))
     for entidade in (perto, chefe, tiro):
@@ -208,7 +208,7 @@ def test_tela_azul_trava_os_inimigos_e_apaga_os_projeteis_deles(jogo_limpo):
     jogo._incorporar_novas()
     jogo.grade.reconstruir(jogo.inimigos)
     assert heroi.usar_especial(jogo)
-    assert not tiro.ativo
+    assert not tiro.ativo and perto.vida < perto.vida_maxima      # o erro fatal acertou
     assert perto.travado == pytest.approx(TelaAzul.DURACAO) and chefe.travado == 0     # chefe tem tenacidade total
     parado = pygame.Vector2(perto.posicao)
     for _ in range(30):

@@ -81,26 +81,56 @@ def test_sorteio_de_cartas_ate_o_fim_com_todas_as_classes(jogo_limpo):
 
 # ---------------------------------------------------------------- Otaku
 
-def test_armadura_de_roteiro_segura_o_golpe_fatal_uma_vez(jogo_limpo):
+def test_wotagei_solta_nota_no_critico_sem_virar_chuva(jogo_limpo):
+    from jogo.ajudantes.golpes import NotaMusical
     jogo = jogo_limpo(Otaku)
-    armadura = pegar(jogo, 1)
+    jogo.jogador.armas = []
+    wotagei = pegar(jogo, 0)
+    alvo, vizinho = colocar(jogo, (200, 0), escala=50), colocar(jogo, (320, 0), escala=50)
+    jogo.rng.random = lambda: 0.0                  # todo golpe é crítico
+    for _ in range(5):
+        jogo.causar_dano(alvo, 1)
+    jogo._incorporar_novas()
+    notas = [e for e in jogo.entidades if isinstance(e, NotaMusical)]
+    assert len(notas) == 1                         # uma nota por vez: espera INTERVALO_DAS_NOTAS
+    assert notas[0].velocidade.x > 0 and vizinho.ativo
+    primeira = notas[0]
+    rodar(jogo, wotagei.INTERVALO_DAS_NOTAS + 0.05)     # passada a espera, o próximo crítico solta outra
+    jogo.causar_dano(alvo, 1)
+    jogo._incorporar_novas()
+    assert any(isinstance(e, NotaMusical) and e is not primeira for e in jogo.entidades)
+
+
+def test_bis_segura_o_golpe_fatal_uma_vez_e_empurra_quem_esta_perto(jogo_limpo):
+    jogo = jogo_limpo(Otaku)
+    jogo.jogador.armas = []
+    bis = pegar(jogo, 1)
     heroi = jogo.jogador
+    perto = colocar(jogo, (100, 0), escala=50)
+    vida_antes = perto.vida
     assert jogo.ferir_jogador(heroi.vida * 10) is True
-    assert heroi.vida == 1 and heroi.invencivel >= armadura.INVENCIVEL[0]
+    assert heroi.vida == 1 and heroi.invencivel >= bis.INVENCIVEL[0]
+    assert perto.vida < vida_antes and perto.empurrao.x > 0
     heroi.invencivel = 0
     jogo.ferir_jogador(heroi.vida * 10)
     assert not heroi.esta_vivo                     # ainda na recarga: o segundo golpe derruba
 
 
-def test_poder_da_amizade_soma_dano_por_amigo(jogo_limpo):
-    from jogo.armas.caramelo import Caramelo
+def test_hype_sobe_com_eliminacoes_tem_teto_e_esfria(jogo_limpo):
     jogo = jogo_limpo(Otaku)
-    jogo.jogador.adicionar_arma(Caramelo())        # o Caramelo é um ajudante em campo
-    pegar(jogo, 2)
-    rodar(jogo, 1)
-    amigos = len(jogo.grupos["ajudante"])
-    assert amigos >= 1
-    assert jogo.jogador.multiplicador("dano") == pytest.approx(1 + 0.05 * amigos)
+    jogo.jogador.armas = []
+    hype = pegar(jogo, 2)
+    heroi = jogo.jogador
+    for _ in range(50):
+        hype.ao_eliminar(None, heroi, jogo)
+    rodar(jogo, 0.1)
+    assert hype.hype == pytest.approx(hype.MAXIMO[0])
+    assert heroi.multiplicador("dano") == pytest.approx(1 + hype.MAXIMO[0])
+    assert hype.contador == "HYPE +20%"
+    rodar(jogo, hype.ESFRIA_DEPOIS + 1)
+    assert 0 < hype.hype < hype.MAXIMO[0]
+    rodar(jogo, 5)
+    assert hype.hype == 0 and not heroi.tem_bonus("hype")
 
 
 def test_super_saiyajin_sobe_de_nivel_a_cada_uso(jogo_limpo):
@@ -111,7 +141,7 @@ def test_super_saiyajin_sobe_de_nivel_a_cada_uso(jogo_limpo):
         ssj.cargas = 1
         heroi.usar_especial(jogo)
         danos.append(heroi.multiplicador("dano"))
-    assert danos == [2.0, 2.5, 3.0, 3.0] and ssj.nivel == 3
+    assert danos == [*ssj.DANO, ssj.DANO[-1]] and ssj.nivel == 3
 
 
 # ---------------------------------------------------------------- Programador
@@ -152,12 +182,13 @@ def test_teste_de_resistencia_anula_o_golpe_com_dado_alto(jogo_limpo):
 
 def test_zoltraak_rola_8d6(jogo_limpo):
     from jogo.efeitos import RaioZoltraak
+    from jogo.jogador.especiais import Zoltraak
     jogo = jogo_limpo(MestreDeRPG)
     jogo.rng.randint = lambda a, b: b                   # tudo 6: 48
     jogo.jogador.usar_especial(jogo)
     jogo._incorporar_novas()
     raio = next(e for e in jogo.entidades if isinstance(e, RaioZoltraak))
-    assert raio.dano == pytest.approx(48 * 0.65)
+    assert raio.dano == pytest.approx(48 * Zoltraak.DANO_POR_PONTO)
 
 
 # ---------------------------------------------------------------- Monitor
@@ -304,18 +335,6 @@ def test_gabarito_marca_tambem_mini_chefe(jogo_limpo):
     tia = colocar(jogo, (300, 0), "tia_da_cantina")
     jogo.causar_dano(tia, 10)
     assert tia.marcado
-
-
-def test_poder_da_amizade_so_conta_amigos_de_verdade(jogo_limpo):
-    from jogo.armas.apostila import Apostila
-    from jogo.armas.wifi import WifiEduroam
-    jogo = jogo_limpo(Otaku)
-    heroi = jogo.jogador
-    heroi.armas = [Apostila(), WifiEduroam()]            # folhas e sinal são ajudantes, mas não são amigos
-    pegar(jogo, 2)
-    rodar(jogo, 3)
-    assert jogo.grupos["ajudante"] and not any(a.AMIGO for a in jogo.grupos["ajudante"])
-    assert not heroi.tem_bonus("amizade")
 
 
 def test_camera_lenta_nao_atrasa_o_relogio_do_semestre(jogo_limpo):
