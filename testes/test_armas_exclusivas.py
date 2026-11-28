@@ -128,16 +128,11 @@ def test_lightstick_vai_acerta_volta_e_acerta_de_novo(jogo_limpo):
     golpes = []
     original = jogo.causar_dano
     jogo.causar_dano = lambda alvo, *a, **k: golpes.append(alvo) or original(alvo, *a, **k)
-    assert Lightstick().disparar(jogo, jogo.jogador)
+    Lightstick().disparar(jogo, jogo.jogador)
     [bastao] = novas(jogo, LightstickGirando)
     rodar(jogo, [bastao], 2.0)
     assert golpes == [bug, bug]                       # na ida e na volta
     assert not bastao.ativo                           # voltou para a mão
-
-
-def test_lightstick_sem_alvo_nao_sai(jogo_limpo):
-    jogo, _ = jogo_com_bugs(jogo_limpo, (900, 0))
-    assert not Lightstick().disparar(jogo, jogo.jogador)
 
 
 def test_coreografia_tres_lightsticks_que_estouram_em_notas(jogo_limpo):
@@ -154,7 +149,7 @@ def test_coreografia_tres_lightsticks_que_estouram_em_notas(jogo_limpo):
 def test_teclado_bate_no_arco_e_solta_tecla_no_vizinho(jogo_limpo):
     jogo, (perto, vizinho) = jogo_com_bugs(jogo_limpo, (80, 0), (80, 160))
     jogo.jogador.direcao_mira = pygame.Vector2(1, 0)
-    assert TecladoMecanico().disparar(jogo, jogo.jogador)
+    TecladoMecanico().disparar(jogo, jogo.jogador)
     [golpe] = novas(jogo, GolpeDoTeclado)
     golpe.atualizar(1 / 30, jogo)
     assert perto.vida < 10_000 and vizinho.vida == 10_000          # o vizinho está fora do arco
@@ -178,7 +173,7 @@ def test_caneta_de_correcao_estoca_e_marca_com_x(jogo_limpo):
     jogo, (bug,) = jogo_com_bugs(jogo_limpo, (70, 0))
     jogo.jogador.direcao_mira = pygame.Vector2(1, 0)
     caneta = CanetaDeCorrecao()
-    assert caneta.disparar(jogo, jogo.jogador)
+    caneta.disparar(jogo, jogo.jogador)
     [estocada] = novas(jogo, EstocadaDaCaneta)
     rodar(jogo, [estocada], 1.0)
     assert bug.vida < 10_000 and bug.marcado
@@ -187,9 +182,11 @@ def test_caneta_de_correcao_estoca_e_marca_com_x(jogo_limpo):
 
 
 def test_correcao_em_massa_risca_um_x_que_fere(jogo_limpo):
-    jogo, (bug,) = jogo_com_bugs(jogo_limpo, (70, 0))
+    from jogo.ajudantes.golpes import AVANCO_DO_GOLPE
+    caneta = no_maximo(CanetaDeCorrecao())
+    jogo, (bug,) = jogo_com_bugs(jogo_limpo, (AVANCO_DO_GOLPE + caneta.valor("alcance"), 0))   # o X fica na ponta
     jogo.jogador.direcao_mira = pygame.Vector2(1, 0)
-    no_maximo(CanetaDeCorrecao()).disparar(jogo, jogo.jogador)
+    caneta.disparar(jogo, jogo.jogador)
     rodar(jogo, novas(jogo, EstocadaDaCaneta), 1.0)
     [x] = novas(jogo, XDeCorrecao)
     antes = bug.vida
@@ -197,29 +194,10 @@ def test_correcao_em_massa_risca_um_x_que_fere(jogo_limpo):
     assert bug.vida < antes
 
 
-def test_caneta_de_correcao_nao_estoca_o_vazio(jogo_limpo):
-    jogo, _ = jogo_com_bugs(jogo_limpo, (400, 0))
-    assert not CanetaDeCorrecao().disparar(jogo, jogo.jogador)
-
-
-# ------------------------------------------------------------------ Mapa do Campus
-
-def test_alfinete_avisa_no_chao_e_so_fere_quando_cai(jogo_limpo):
-    jogo, (a, b) = jogo_com_bugs(jogo_limpo, (200, 0), (-200, 100))
-    mapa = MapaDoCampus()
-    assert mapa.disparar(jogo, jogo.jogador)
-    alfinetes = novas(jogo, AlfineteDoMapa)
-    assert len(alfinetes) == 2                          # dois inimigos, dois alfinetes (nível 1 solta até 2)
-    rodar(jogo, alfinetes, AlfineteDoMapa.ATRASO * 0.5)
-    assert a.vida == 10_000 and b.vida == 10_000       # ainda é só o aviso
-    rodar(jogo, alfinetes, AlfineteDoMapa.ATRASO)
-    assert a.vida < 10_000 and b.vida < 10_000
-
-
 def test_alfinete_cai_onde_o_inimigo_vai_estar_e_acerta_quem_anda_em_linha_reta(jogo_limpo):
     jogo, (bug,) = jogo_com_bugs(jogo_limpo, (400, 0))
     bug.velocidade = 125                                # anda até o aluno: em 0,6 s são 75 px, mais que o raio
-    assert MapaDoCampus().disparar(jogo, jogo.jogador)
+    MapaDoCampus().disparar(jogo, jogo.jogador)
     (alfinete,) = novas(jogo, AlfineteDoMapa)
     previsto = bug.onde_estara(jogo, AlfineteDoMapa.ATRASO)
     assert alfinete.posicao.distance_to(previsto) < 1 and previsto.x < bug.posicao.x
@@ -237,11 +215,6 @@ def test_quem_esta_parado_ou_travado_fica_onde_esta_na_previsao(jogo_limpo):
     assert parado.onde_estara(jogo, 0.6) == parado.posicao
     perto = Bug(jogo.jogador.posicao + (20, 0))
     assert perto.onde_estara(jogo, 0.6).distance_to(jogo.jogador.posicao) <= 20   # não passa do aluno
-
-
-def test_mapa_sem_ninguem_por_perto_nao_solta(jogo_limpo):
-    jogo, _ = jogo_com_bugs(jogo_limpo, (900, 0))
-    assert not MapaDoCampus().disparar(jogo, jogo.jogador)
 
 
 def test_gps_traca_rota_ate_o_maior_bolo(jogo_limpo):

@@ -1,5 +1,3 @@
-import pygame
-
 from jogo.armas.arma import ArmaDeDisparo
 from jogo.nucleo.recursos import Recursos
 from jogo.projeteis.projeteis import PequiArremessado
@@ -27,15 +25,10 @@ class PequiExplosivo(ArmaDeDisparo):
     ALCANCE = 450
 
     def disparar(self, jogo, dono):
-        alvo = jogo.inimigo_mais_proximo(dono.posicao, self.ALCANCE)
-        if alvo is None:
-            return False
-        rumo = alvo.posicao - dono.posicao
-        rumo = rumo.normalize() if rumo.length_squared() > 0 else pygame.Vector2(1, 0)
+        rumo = self.rumo_do_ataque(jogo, dono, self.ALCANCE)
         quantidade = self.valor("quantidade")
         for i in range(quantidade):
             direcao = rumo.rotate((i - (quantidade - 1) / 2) * 25)
             self.lancar(jogo, (PequiDeOuro if self.no_maximo else PequiArremessado)(dono.posicao, direcao * self.VELOCIDADE,
                                             self.valor("dano") * dono.multiplicador_dano, self.valor("raio")))
         Recursos.tocar("disparo", 0.12)
-        return True

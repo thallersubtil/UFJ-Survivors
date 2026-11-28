@@ -28,8 +28,6 @@ class CanetaDeCorrecao(ArmaDeDisparo):
 
     def disparar(self, jogo, dono):
         alcance = self.valor("alcance")
-        if jogo.inimigo_mais_proximo(dono.posicao, alcance) is None:
-            return False
         dano = self.valor("dano") * dono.multiplicador_dano
         rastro = None
         if self.no_maximo:
@@ -38,4 +36,3 @@ class CanetaDeCorrecao(ArmaDeDisparo):
         self.lancar(jogo, EstocadaDaCaneta(dono, dono.direcao_mira, alcance, dano, self.valor("estocadas"),
                                            (self.DURACAO_DA_MARCA, self.valor("marca")), rastro))
         Recursos.tocar("disparo", 0.1)
-        return True

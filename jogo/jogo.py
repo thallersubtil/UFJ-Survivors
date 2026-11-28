@@ -12,7 +12,7 @@ from jogo.cenario import Cenario
 from jogo.coletaveis.coletaveis import Moeda, Nota
 from jogo.config import (ALTURA, BONUS_67_DURACAO, BONUS_67_VELOCIDADE, LARGURA,
                          LIMITE_COLETAVEIS, LIMITE_EFEITOS, MAX_INIMIGOS, SORTEIOS_POR_PARTIDA, BANIMENTOS_POR_PARTIDA, Cor)
-from jogo.efeitos import TextoFlutuante
+from jogo.efeitos import NumeroDeDano, TextoFlutuante
 from jogo.fase import Semestre
 from jogo.jogador.bonus import BonusTemporario
 from jogo.mapa import MapaUFJ
@@ -280,12 +280,8 @@ class Jogo:
             inimigo.empurrar(direcao)
         if len(self.grupos["efeito"]) < LIMITE_EFEITOS:
             deslocamento = pygame.Vector2(self.rng.uniform(-8, 8), -inimigo.raio)
-            if critico:
-                texto = TextoFlutuante(f"{dano}!", inimigo.posicao + deslocamento, Cor.DESTAQUE, 26)
-            else:
-                texto = TextoFlutuante(str(dano), inimigo.posicao + deslocamento,
-                                       Cor.DANO_FORTE if forte else Cor.DANO, 22 if forte else 16)
-            self.adicionar(texto)
+            self.adicionar(NumeroDeDano(dano, inimigo.posicao + deslocamento, critico, forte,
+                                        lado=self.rng.uniform(-40, 40)))
         Recursos.tocar("acerto", 0.12)
         if morreu:
             self._registrar_morte(inimigo)
@@ -302,6 +298,9 @@ class Jogo:
 
     def _registrar_morte(self, inimigo):
         inimigo.remover()
+        corpo = inimigo.criar_corpo(self)
+        if corpo is not None and len(self.grupos["efeito"]) < LIMITE_EFEITOS:
+            self.adicionar(corpo)
         if inimigo.CONTA_NO_PLACAR:
             self._contar_eliminacao(inimigo)
         inimigo.ao_morrer(self)

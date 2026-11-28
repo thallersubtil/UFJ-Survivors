@@ -22,8 +22,6 @@ class ReguaDeUmMetro(ArmaDeDisparo):
 
     def disparar(self, jogo, dono):
         alcance = self.valor("alcance")
-        if jogo.inimigo_mais_proximo(dono.posicao, alcance) is None:
-            return False                       # não gasta o golpe no vazio
         direcoes = [dono.direcao_mira]
         if self.no_maximo:
             direcoes.append(-dono.direcao_mira)
@@ -31,4 +29,3 @@ class ReguaDeUmMetro(ArmaDeDisparo):
             self.lancar(jogo, ArcoDaRegua(dono, direcao, alcance, self.valor("abertura"),
                                           self.valor("dano") * dono.multiplicador_dano))
         Recursos.tocar("disparo", 0.12)
-        return True

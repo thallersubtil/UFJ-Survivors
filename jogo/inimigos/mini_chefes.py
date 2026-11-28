@@ -294,6 +294,9 @@ class Laco(BatGancho):
 class MiniChefe(Inimigo):
     """Base dos mini-chefes do mapa. Cada subclasse diz onde fica, quem a acompanha e como ataca (`atacar`)."""
 
+    TREME_NO_GOLPE = True
+    DURACAO_DO_CORPO = 0.8        # o mini-chefe cai mais devagar, tremendo, com um estouro de poeira
+    POEIRA_DO_CORPO = 14
     LOCAL = ""                   # nome do prédio do mapa perto de onde ele aparece
     PONTO = None                 # (x, y) fixo no campus, para quem não fica perto de prédio nenhum
     ONDE = ""                    # como o anúncio diz o lugar ("perto do RU")

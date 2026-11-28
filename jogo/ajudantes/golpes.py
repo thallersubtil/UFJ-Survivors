@@ -57,12 +57,17 @@ def no_arco(inimigo, origem, direcao, alcance, abertura):
     return abs(desvio) <= abertura / 2
 
 
+AVANCO_DO_GOLPE = 40          # os golpes corpo a corpo nascem esta distância à frente do corpo, não colados nele
+
+
 class ArcoDaRegua(Ajudante):
-    """Um golpe que varre um arco na frente do aluno: fere quem estiver nele uma vez e some."""
+    """Um golpe que varre um arco na frente do aluno: fere quem estiver nele uma vez e some. O arco nasce
+    AVANCO_DO_GOLPE à frente do corpo e vai até o alcance, como uma foice."""
 
     camada = 3
     DURACAO = 0.18
     COR_DO_ARCO = (250, 230, 120)
+    MIOLO = 0.35                  # o desenho é uma faixa curva: começa nesta fração do alcance
 
     def __init__(self, dono, direcao, alcance, abertura, dano):
         super().__init__(dono.posicao, alcance)
@@ -77,9 +82,14 @@ class ArcoDaRegua(Ajudante):
     def esta_visivel(self, camera):
         return True
 
+    @property
+    def centro(self):
+        """De onde o arco sai: um pouco à frente do aluno, na direção do golpe."""
+        return self.dono.posicao + self.direcao * AVANCO_DO_GOLPE
+
     def atualizar(self, dt, jogo):
         self.tempo += dt
-        self.posicao = pygame.Vector2(self.dono.posicao)
+        self.posicao = self.centro
         if not self._ja_feriu:
             self._ja_feriu = True
             for inimigo in jogo.inimigos_proximos(self.posicao, self.alcance):
@@ -98,15 +108,17 @@ class ArcoDaRegua(Ajudante):
         inicio = -self.abertura / 2
         varrido = inicio + self.abertura * fracao               # o golpe passa de um lado ao outro
         base = self.direcao.as_polar()[1]
-        pontos = [centro]
+        fora, dentro = [], []
         for passo in range(9):
             angulo = base + inicio + (varrido - inicio) * passo / 8
-            pontos.append(centro + pygame.Vector2(self.alcance, 0).rotate(angulo))
+            fora.append(centro + pygame.Vector2(self.alcance, 0).rotate(angulo))
+            dentro.append(centro + pygame.Vector2(self.alcance * self.MIOLO, 0).rotate(angulo))
         cor = self.aura or self.COR_DO_ARCO
         sup = camada_transparente(tela)
-        pygame.draw.polygon(sup, (*cor, 90), pontos)
+        pygame.draw.polygon(sup, (*cor, 90), fora + dentro[::-1])
         tela.blit(sup, (0, 0))
-        self.desenhar_instrumento(tela, centro, centro + pygame.Vector2(self.alcance, 0).rotate(base + varrido))
+        ponta = pygame.Vector2(self.alcance, 0).rotate(base + varrido)
+        self.desenhar_instrumento(tela, centro + ponta * self.MIOLO, centro + ponta)
 
     def desenhar_instrumento(self, tela, centro, ponta):
         pygame.draw.line(tela, (200, 150, 70), centro, ponta, 8)            # a régua de madeira
@@ -224,8 +236,13 @@ class EstocadaDaCaneta(Ajudante):
         return True
 
     @property
+    def base(self):
+        """A caneta sai um pouco à frente do aluno, não colada nele."""
+        return self.dono.posicao + self.direcao * AVANCO_DO_GOLPE
+
+    @property
     def ponta(self):
-        return self.dono.posicao + self.direcao * self.alcance
+        return self.base + self.direcao * self.alcance
 
     def atualizar(self, dt, jogo):
         self.tempo += dt
@@ -237,8 +254,8 @@ class EstocadaDaCaneta(Ajudante):
             return
         self.restantes -= 1
         self._espera = self.INTERVALO
-        for inimigo in jogo.inimigos_proximos(self.dono.posicao, self.alcance):
-            if Colisao.segmento_acerta_circulo(self.dono.posicao, self.ponta, self.LARGURA, inimigo.posicao,
+        for inimigo in jogo.inimigos_proximos(self.dono.posicao, self.alcance + AVANCO_DO_GOLPE):
+            if Colisao.segmento_acerta_circulo(self.base, self.ponta, self.LARGURA, inimigo.posicao,
                                                inimigo.raio):
                 jogo.causar_dano(inimigo, self.dano, self.direcao)
                 if self.marca is not None and inimigo.ativo:
@@ -249,9 +266,9 @@ class EstocadaDaCaneta(Ajudante):
             jogo.adicionar(entidade)
 
     def desenhar(self, tela, camera):
-        inicio = camera.para_tela(self.dono.posicao)
+        inicio = camera.para_tela(self.base)
         avanco = 0.6 + 0.4 * abs(math.sin(self.tempo * 40))   # a caneta vai e volta
-        fim = camera.para_tela(self.dono.posicao + self.direcao * self.alcance * avanco)
+        fim = camera.para_tela(self.base + self.direcao * self.alcance * avanco)
         pygame.draw.line(tela, self.COR, inicio, fim, 7)
         pygame.draw.line(tela, self.aura or (240, 230, 230), inicio, fim, 2)
 

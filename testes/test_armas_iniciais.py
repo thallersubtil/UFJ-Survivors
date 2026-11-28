@@ -31,7 +31,7 @@ def test_tabelas_de_atributos_tem_um_valor_por_nivel(classe):
 def test_cobra_dispara_mais_cobras_nos_niveis_altos():
     jogo, dono = JogoFalso(), dono_falso()
     arma = CobraPython()
-    assert arma.disparar(jogo, dono)
+    arma.disparar(jogo, dono)
     assert len(jogo.adicionados) == 1
     arma.subir_nivel()
     jogo.adicionados.clear()

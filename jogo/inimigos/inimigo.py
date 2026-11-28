@@ -7,7 +7,7 @@ import pygame
 from jogo.coletaveis.coletaveis import Bau, CopoDeCafe, Ima, Moeda
 from jogo.config import DISTANCIA_REPOSICIONAR, Cor
 from jogo.nucleo.animacao import Animador
-from jogo.efeitos import TextoFlutuante
+from jogo.efeitos import CorpoCaindo, TextoFlutuante
 from jogo.nucleo.colisao import Colisao
 from jogo.nucleo.desenho import desenhar_sprite
 from jogo.nucleo.recursos import Recursos
@@ -285,6 +285,21 @@ class Inimigo(SerVivo, ABC):
                 distancia = math.sqrt(distancia2)
                 self.posicao += afastar / distancia * (soma - distancia) * 0.25
 
+    # o corpo que fica um instante na tela depois da morte (CorpoCaindo)
+    DURACAO_DO_CORPO = 0.3
+    DESLIZE_DO_CORPO = 35
+    POEIRA_DO_CORPO = 4
+
+    def criar_corpo(self, jogo):
+        """O efeito do corpo caindo, ou None para quem não deixa corpo. Escorrega para onde o golpe empurrou;
+        sem empurrão, para longe do aluno."""
+        direcao = pygame.Vector2(self.empurrao)
+        if direcao.length_squared() == 0:
+            direcao = self.posicao - jogo.jogador.posicao
+        return CorpoCaindo(self.animador.quadro_atual, self.posicao, direcao, self.olhando_esquerda,
+                           self.DURACAO_DO_CORPO, self.DESLIZE_DO_CORPO, self.TREMIDA if self.gigante else 0.0,
+                           self.POEIRA_DO_CORPO + (4 if self.gigante else 0), jogo.rng)
+
     def ao_morrer(self, jogo):
         """O que acontece quando morre. Por padrão solta nota e, às vezes, moeda ou (bem raramente) um ímã.
         Cura não: ela vem dos objetos quebráveis do mapa e do Kit de Primeiros Socorros."""
@@ -308,8 +323,22 @@ class Inimigo(SerVivo, ABC):
         """Balanço de quem não tem animação de verdade (arte estática)."""
         return 0 if self.animado else abs(math.sin(self.tempo * 9)) * 3
 
+    DURACAO_PISCAR = 2 / 30       # a piscada branca do golpe: dois quadros cheios
+    TREME_NO_GOLPE = False        # inimigos grandes tremem quando apanham (os gigantes também)
+    TREMIDA = 2                   # px
+
+    @property
+    def tremendo(self):
+        return self.piscar > 0 and (self.TREME_NO_GOLPE or self.gigante)
+
     def desenhar(self, tela, camera):
-        self.desenhar_corpo(tela, camera)
+        if self.tremendo:             # treme no golpe: desenha deslocado, qualquer que seja o desenho do corpo
+            dx = self.TREMIDA if int(self.piscar * 60) % 2 else -self.TREMIDA
+            self.posicao.x += dx
+            self.desenhar_corpo(tela, camera)
+            self.posicao.x -= dx
+        else:
+            self.desenhar_corpo(tela, camera)
         if self.possuido > 0:
             self._desenhar_possessao(tela, camera)
         if self.marcado:

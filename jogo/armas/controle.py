@@ -37,4 +37,3 @@ class Controle(ArmaDeDisparo):
             self.lancar(jogo, (ControleLendario if self.no_maximo else ControleRicochete)(dono.posicao, direcao * self.VELOCIDADE,
                                              self.valor("dano") * dono.multiplicador_dano, self.valor("ricochetes")))
         Recursos.tocar("disparo", 0.12)
-        return True

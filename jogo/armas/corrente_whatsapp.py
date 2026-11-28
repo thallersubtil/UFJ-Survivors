@@ -1,4 +1,6 @@
 """Corrente de WhatsApp: acerta o inimigo mais perto e é encaminhada de inimigo em inimigo."""
+import pygame
+
 from jogo.ajudantes.golpes import ElosDaCorrente, corrente
 from jogo.armas.arma import ArmaDeDisparo
 from jogo.nucleo.recursos import Recursos
@@ -19,6 +21,7 @@ class CorrenteDeWhatsApp(ArmaDeDisparo):
         "VIRALIZOU: oito encaminhamentos, e cada um bate 10% mais forte que o anterior.",
     )
     ALCANCE = 380
+    FRACAO_NO_VAZIO = 0.5         # sem ninguém no alcance, o raio vai até a metade dele
     ALCANCE_DO_SALTO = 200
     CRESCIMENTO = 0.10                         # no nível máximo, quanto cada encaminhamento cresce
 
@@ -32,9 +35,8 @@ class CorrenteDeWhatsApp(ArmaDeDisparo):
             acertos.append(inimigo)
 
         pontos = corrente(jogo, dono.posicao, self.ALCANCE, self.valor("saltos"), self.ALCANCE_DO_SALTO, acertar)
-        if not pontos:
-            return False
+        if not pontos:                      # ninguém no alcance: o raio sai na direção da mira e se perde
+            pontos = [pygame.Vector2(dono.posicao), dono.posicao + dono.direcao_mira * self.ALCANCE * self.FRACAO_NO_VAZIO]
         elos = ElosDaCorrente(pontos)
         self.lancar(jogo, elos)
         Recursos.tocar("disparo", 0.12)
-        return True

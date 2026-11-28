@@ -27,19 +27,23 @@ def test_tabelas_de_atributos(classe):
     assert classe.NOME and classe.DESCRICAO and classe.ICONE
 
 
-def test_chatgpt_atira_no_mais_proximo_e_nao_atira_sem_alvo(jogo_limpo, monkeypatch):
+def test_chatgpt_atira_no_mais_proximo_e_sem_alvo_atira_na_mira(jogo_limpo, monkeypatch):
     monkeypatch.setattr(MascoteChatGPT, "CHANCE_ALUCINAR", 0.0)
     jogo = jogo_limpo()
     arma = MascoteChatGPT()
+    jogo.jogador.direcao_mira = pygame.Vector2(-1, 0)
     arma.atualizar(0.0, jogo, jogo.jogador)
     jogo._incorporar_novas()
-    assert not any(isinstance(e, TiroChatGPT) for e in jogo.entidades)
+    sem_alvo = [e for e in jogo.entidades if isinstance(e, TiroChatGPT)]
+    assert len(sem_alvo) == 1 and sem_alvo[0].velocidade.x < 0     # ninguém perto: vai para a mira
+    for tiro in sem_alvo:
+        tiro.remover()
     jogo.adicionar(parado(Bug(jogo.jogador.posicao + (200, 0))))
     jogo._incorporar_novas()
     jogo.grade.reconstruir(jogo.inimigos)
-    assert arma.disparar(jogo, jogo.jogador)
+    arma.disparar(jogo, jogo.jogador)
     jogo._incorporar_novas()
-    tiros = [e for e in jogo.entidades if isinstance(e, TiroChatGPT)]
+    tiros = [e for e in jogo.entidades if isinstance(e, TiroChatGPT) and e.ativo]
     assert len(tiros) == 1 and tiros[0].velocidade.x > 0
 
 
@@ -86,7 +90,7 @@ def test_estrela_gemini_se_divide_ao_acertar(jogo_limpo):
 def test_gemini_dispara_estrela_com_geracoes_do_nivel(jogo_limpo):
     jogo = jogo_limpo()
     arma = Gemini()
-    assert arma.disparar(jogo, jogo.jogador)
+    arma.disparar(jogo, jogo.jogador)
     jogo._incorporar_novas()
     estrela = [e for e in jogo.entidades if isinstance(e, EstrelaGemini)][0]
     assert estrela.geracoes == arma.valor("geracoes")
@@ -184,11 +188,10 @@ def test_pequi_estoura_e_fere_quem_esta_em_volta(jogo_limpo):
         jogo.adicionar(bug)
     jogo._incorporar_novas()
     jogo.grade.reconstruir(jogo.inimigos)
-    assert PequiExplosivo().disparar(jogo, jogo.jogador)
+    PequiExplosivo().disparar(jogo, jogo.jogador)
     for _ in range(40):
         jogo.atualizar(1 / 60)
     assert alvo.vida < 1000 and vizinho.vida < 1000 and longe.vida == 1000
-    assert not PequiExplosivo().disparar(jogo_limpo(), jogo.jogador)   # sem alvo perto, não arremessa
 
 
 def test_wifi_fere_quem_esta_no_sinal_e_some_ao_remover(jogo_limpo, monkeypatch):
@@ -215,3 +218,22 @@ def test_fusca_azul_fortalecido_e_suprema_com_pelo_menos_1_6_do_dano_do_nivel_3(
     assert FuscaAzul.ATRIBUTOS["recarga"] == (5.0, 4.5, 4.0, 2.5)
     dano = FuscaAzul.ATRIBUTOS["dano"]
     assert dano[:3] == (14, 18, 24) and dano[3] >= 1.6 * dano[2]
+
+
+@pytest.mark.parametrize("modulo, classe", [
+    ("pequi", "PequiExplosivo"), ("dado", "DadoDeVinteLados"), ("regua", "ReguaDeUmMetro"),
+    ("corrente_whatsapp", "CorrenteDeWhatsApp"), ("lightstick", "Lightstick"), ("caneta_correcao", "CanetaDeCorrecao"),
+    ("mapa_do_campus", "MapaDoCampus"), ("teclado", "TecladoMecanico"), ("chatgpt", "MascoteChatGPT"),
+])
+def test_arma_de_disparo_ataca_mesmo_sem_inimigo_na_direcao_da_mira(jogo_limpo, modulo, classe):
+    """Como no HoloCure, a arma nunca para: sem ninguém no alcance, ataca na direção da mira."""
+    import importlib
+    arma = getattr(importlib.import_module(f"jogo.armas.{modulo}"), classe)()
+    jogo = jogo_limpo()
+    jogo.rng.randint = lambda a, b: b                 # o dado não tira 1 (o 1 erra de propósito)
+    jogo.jogador.direcao_mira = pygame.Vector2(-1, 0)
+    antes = len(jogo.entidades)
+    arma.atualizar(0.0, jogo, jogo.jogador)
+    jogo._incorporar_novas()
+    assert len(jogo.entidades) > antes
+    assert arma.espera > 0                            # e volta a esperar a recarga inteira, não um instante

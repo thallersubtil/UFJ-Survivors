@@ -2,6 +2,8 @@
 from abc import ABC, abstractmethod
 from numbers import Real
 
+import pygame
+
 
 class Arma(ABC):
     NOME = "Arma"
@@ -90,11 +92,21 @@ class Arma(ABC):
     def __str__(self):
         return f"{self.NOME} (nível {self._nivel})"
 
+    @staticmethod
+    def rumo_do_ataque(jogo, dono, alcance, origem=None):
+        """Para onde atacar: o inimigo mais perto dentro do alcance ou, sem ninguém, a direção da mira. A arma
+        nunca para de atacar, como no HoloCure."""
+        origem = dono.posicao if origem is None else origem
+        alvo = jogo.inimigo_mais_proximo(origem, alcance)
+        if alvo is not None and alvo.posicao.distance_squared_to(origem) > 0:
+            return (alvo.posicao - origem).normalize()
+        return pygame.Vector2(dono.direcao_mira)
+
 
 class ArmaDeDisparo(Arma, ABC):
-    """Arma que dispara e espera a recarga para disparar de novo. Não gasta nada: só o tempo."""
+    """Arma que dispara e espera a recarga para disparar de novo. Não gasta nada: só o tempo. Dispara mesmo sem
+    inimigo por perto (na direção da mira), como no HoloCure."""
 
-    ESPERA_SEM_ALVO = 0.1          # sem ter em quem atirar, tenta de novo logo
     ESPERA_DA_REPETICAO = 0.12     # Laço de Repetição (Programador): o disparo repetido sai quase junto
 
     def __init__(self):
@@ -124,9 +136,8 @@ class ArmaDeDisparo(Arma, ABC):
         self.espera = max(0.0, self._espera - dt)
         if self._espera > 0:
             return
-        if not self.disparar(jogo, dono):
-            self.espera = self.ESPERA_SEM_ALVO
-        elif self._repete(jogo, dono):
+        self.disparar(jogo, dono)
+        if self._repete(jogo, dono):
             self.espera = self.ESPERA_DA_REPETICAO
         else:
             self.espera = self.valor("recarga") * dono.multiplicador_recarga
@@ -139,7 +150,7 @@ class ArmaDeDisparo(Arma, ABC):
 
     @abstractmethod
     def disparar(self, jogo, dono):
-        """Cria os projéteis. Retorna False se não havia em que atirar."""
+        """Cria os projéteis: no inimigo mais perto do alcance ou, sem ninguém, na direção da mira."""
 
 
 class ArmaContinua(Arma, ABC):

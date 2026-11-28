@@ -1,6 +1,4 @@
 """Lightstick: a arma exclusiva do Otaku. O bastão sai girando e volta para a mão."""
-import pygame
-
 from jogo.ajudantes.golpes import LightstickGirando
 from jogo.armas.arma import ArmaDeDisparo
 from jogo.nucleo.recursos import Recursos
@@ -27,11 +25,7 @@ class Lightstick(ArmaDeDisparo):
     NOTAS = 8                         # notas musicais de cada lightstick na Coreografia
 
     def disparar(self, jogo, dono):
-        alvo = jogo.inimigo_mais_proximo(dono.posicao, self.valor("alcance") + 120)
-        if alvo is None:
-            return False
-        rumo = alvo.posicao - dono.posicao
-        rumo = rumo.normalize() if rumo.length_squared() > 0 else pygame.Vector2(dono.direcao_mira)
+        rumo = self.rumo_do_ataque(jogo, dono, self.valor("alcance") + 120)
         quantidade = self.valor("quantidade")
         notas = self.NOTAS if self.no_maximo else 0
         for i in range(quantidade):
@@ -39,4 +33,3 @@ class Lightstick(ArmaDeDisparo):
             self.lancar(jogo, LightstickGirando(dono, direcao * self.VELOCIDADE, self.valor("dano") * dono.multiplicador_dano,
                                                 self.valor("alcance"), notas))
         Recursos.tocar("disparo", 0.12)
-        return True

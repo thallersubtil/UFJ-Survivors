@@ -34,4 +34,3 @@ class CobraPython(ArmaDeDisparo):
             self.lancar(jogo, classe(dono.posicao, direcao * velocidade, dano,
                                      perfuracao=self.valor("perfuracao")))
         Recursos.tocar("disparo", 0.15)
-        return True

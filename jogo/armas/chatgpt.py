@@ -41,11 +41,7 @@ class MascoteChatGPT(ArmaDeDisparo):
 
     def disparar(self, jogo, dono):
         origem = self.mascote.posicao if self.mascote else dono.posicao
-        alvo = jogo.inimigo_mais_proximo(origem, self.ALCANCE)
-        if alvo is None:
-            return False
-        rumo = alvo.posicao - origem
-        rumo = rumo.normalize() if rumo.length_squared() > 0 else pygame.Vector2(1, 0)
+        rumo = self.rumo_do_ataque(jogo, dono, self.ALCANCE, origem)
         quantidade = self.valor("quantidade")
         for i in range(quantidade):
             alucinou = jogo.rng.random() < self.CHANCE_ALUCINAR
@@ -63,7 +59,6 @@ class MascoteChatGPT(ArmaDeDisparo):
                     self.lancar(jogo, TiroChatGPT(origem, direcao * self.VELOCIDADE,
                                                   self.valor("dano") * dono.multiplicador_dano * 2, alucinado=True))
         Recursos.tocar("disparo", 0.12)
-        return True
 
     def ao_remover(self, jogo):
         if self.mascote is not None:

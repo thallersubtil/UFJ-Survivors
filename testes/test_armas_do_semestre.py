@@ -89,18 +89,13 @@ def test_um_natural_nao_joga_o_dado_e_vinte_joga_com_dano_triplo(jogo_limpo, mon
     jogo, _ = jogo_com_bugs(jogo_limpo, (200, 0))
     dado, heroi = DadoDeVinteLados(), jogo.jogador
     monkeypatch.setattr(jogo.rng, "randint", lambda a, b: 1)
-    assert dado.disparar(jogo, heroi)                     # jogou, mas errou
+    dado.disparar(jogo, heroi)                     # jogou, mas errou
     assert novas(jogo, DadoArremessado) == []
     monkeypatch.setattr(jogo.rng, "randint", lambda a, b: 20)
     dado.disparar(jogo, heroi)
     [voando] = novas(jogo, DadoArremessado)
     assert voando.numero == 20 and voando.dano == pytest.approx(dado.dano_da_rolagem(20, heroi))
     assert voando.velocidade.x > 0                        # vai no bug, à direita
-
-
-def test_dado_sem_alvo_nao_joga(jogo_limpo):
-    jogo, _ = jogo_com_bugs(jogo_limpo)
-    assert not DadoDeVinteLados().disparar(jogo, jogo.jogador)
 
 
 def test_dado_supremo_joga_tres_dados(jogo_limpo, monkeypatch):
@@ -116,7 +111,7 @@ def test_regua_acerta_o_arco_da_frente_e_nao_o_de_tras(jogo_limpo):
     jogo, (frente, atras) = jogo_com_bugs(jogo_limpo, (80, 0), (-80, 0))
     jogo.jogador.direcao_mira = pygame.Vector2(1, 0)
     vida = frente.vida
-    assert ReguaDeUmMetro().disparar(jogo, jogo.jogador)
+    ReguaDeUmMetro().disparar(jogo, jogo.jogador)
     for arco in novas(jogo, ArcoDaRegua):
         arco.atualizar(1 / 30, jogo)
     assert frente.vida < vida and atras.vida == vida
@@ -131,11 +126,6 @@ def test_regua_suprema_bate_na_frente_e_atras(jogo_limpo):
     for arco in arcos:
         arco.atualizar(1 / 30, jogo)
     assert len(arcos) == 2 and frente.vida < vida and atras.vida < vida
-
-
-def test_regua_nao_gasta_o_golpe_no_vazio(jogo_limpo):
-    jogo, _ = jogo_com_bugs(jogo_limpo, (400, 0))
-    assert not ReguaDeUmMetro().disparar(jogo, jogo.jogador)
 
 
 def test_arco_fere_cada_inimigo_uma_vez_so(jogo_limpo):
@@ -158,7 +148,7 @@ def test_corrente_pula_de_inimigo_em_inimigo_sem_repetir(jogo_limpo, monkeypatch
     original = jogo.causar_dano
     monkeypatch.setattr(jogo, "causar_dano", lambda alvo, *a, **k: golpes.append(alvo) or original(alvo, *a, **k))
     corrente = CorrenteDeWhatsApp()
-    assert corrente.disparar(jogo, jogo.jogador)
+    corrente.disparar(jogo, jogo.jogador)
     assert golpes == bugs[:corrente.valor("saltos") + 1]                     # do mais perto para longe, sem repetir
     [elos] = novas(jogo, ElosDaCorrente)
     assert len(elos.pontos) == len(golpes) + 1                               # começa no aluno
@@ -177,20 +167,6 @@ def test_corrente_suprema_cresce_a_cada_encaminhamento(jogo_limpo, monkeypatch):
     monkeypatch.setattr(jogo, "causar_dano", lambda alvo, dano, *a, **k: danos.append(dano))
     no_maximo(CorrenteDeWhatsApp()).disparar(jogo, jogo.jogador)
     assert danos[1] == pytest.approx(danos[0] * 1.1) and danos[2] == pytest.approx(danos[0] * 1.2)
-
-
-def test_corrente_sem_alvo_nao_dispara(jogo_limpo):
-    jogo, _ = jogo_com_bugs(jogo_limpo)
-    assert not CorrenteDeWhatsApp().disparar(jogo, jogo.jogador)
-
-
-# ------------------------------------------------------------------ Fake News
-
-def test_fake_news_e_a_colab_da_corrente_com_o_chatgpt():
-    assert FakeNews in Colab.RECEITAS
-    armas = [no_maximo(CorrenteDeWhatsApp()), no_maximo(MascoteChatGPT())]
-    assert FakeNews in Colab.colabs_disponiveis(armas)
-    assert FakeNews not in Colab.colabs_disponiveis([CorrenteDeWhatsApp(), no_maximo(MascoteChatGPT())])
 
 
 def test_fake_news_espalha_e_quem_acredita_luta_do_seu_lado(jogo_limpo, monkeypatch):
@@ -222,7 +198,7 @@ def test_golpes_desenham_sem_erro(jogo_limpo, monkeypatch, suprema):
         arma = classe()
         if suprema:
             no_maximo(arma)
-        assert arma.disparar(jogo, jogo.jogador)
+        arma.disparar(jogo, jogo.jogador)
     fake = FakeNews()
     fake.atualizar(1 / 30, jogo, jogo.jogador)
     tela = pygame.Surface((1280, 720))

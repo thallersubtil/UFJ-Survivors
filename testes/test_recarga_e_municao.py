@@ -27,13 +27,9 @@ class Estilingue(ArmaDeDisparo):
     def __init__(self):
         super().__init__()
         self.disparos = 0
-        self.tem_alvo = True
 
     def disparar(self, jogo, dono):
-        if not self.tem_alvo:
-            return False
         self.disparos += 1
-        return True
 
 
 def dono(repeticao=0.0, recarga=1.0):
@@ -86,13 +82,8 @@ def test_fracao_de_recarga_vai_de_zero_a_um_para_o_hud():
     assert AulaExpositiva().fracao_de_recarga is None        # arma contínua não tem recarga de disparo
 
 
-def test_sem_alvo_tenta_de_novo_logo_e_recarga_mais_rapida_encurta_a_espera():
+def test_recarga_mais_rapida_encurta_a_espera():
     arma = Estilingue()
-    arma.tem_alvo = False
-    arma.atualizar(0.1, jogo_falso(), dono())
-    assert arma.espera == pytest.approx(ArmaDeDisparo.ESPERA_SEM_ALVO)
-    arma.tem_alvo = True
-    arma.espera = 0
     arma.atualizar(0.1, jogo_falso(), dono(recarga=0.5))
     assert arma.espera == pytest.approx(0.5)
 

@@ -1,3 +1,5 @@
+import math
+
 import pygame
 
 from jogo.cenas.bau import CenaBau
@@ -16,7 +18,6 @@ from jogo.opcoes import OpcoesDePartida
 
 class CenaPartida(Cena):
     ESPERA_FIM = 1.5
-    ALCANCE_MIRA_AUTOMATICA = 700
 
     def __init__(self, app, classe_jogador, opcoes=None):
         super().__init__(app)
@@ -51,8 +52,10 @@ class CenaPartida(Cena):
         x = (teclas[pygame.K_d] or teclas[pygame.K_RIGHT]) - (teclas[pygame.K_a] or teclas[pygame.K_LEFT])
         y = (teclas[pygame.K_s] or teclas[pygame.K_DOWN]) - (teclas[pygame.K_w] or teclas[pygame.K_UP])
         self.jogo.entrada.direcao = pygame.Vector2(x, y)
-        if self.app.modo_mira == "automatica":
-            alvo = self.jogo.inimigo_mais_proximo(self.jogo.jogador.posicao, self.ALCANCE_MIRA_AUTOMATICA)
+        if self.app.modo_mira == "automatica":         # o inimigo mais perto na tela inteira; sem ninguém, a última direção
+            tela = self.jogo.camera.retangulo
+            alcance = math.hypot(tela.width, tela.height) / 2
+            alvo = self.jogo.inimigo_mais_proximo(self.jogo.jogador.posicao, alcance)
             self.jogo.entrada.mira = pygame.Vector2(alvo.posicao) if alvo is not None else None
         else:
             self.jogo.entrada.mira = self.jogo.camera.para_mundo(pygame.mouse.get_pos())

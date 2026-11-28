@@ -30,6 +30,8 @@ class Fase(ABC):
     ALVO_POR_SEGUNDO = 0.3        # quantos a mais a cada segundo de partida...
     ALVO_ACELERACAO = 1.5         # ...e mais isto vezes (minutos de partida)²: o começo é calmo, o fim enche a tela
     PASSO_DIFICULDADE = 400       # segundos para a dificuldade subir 1 ponto
+    TURMA_INICIAL = 10            # lacaios que já nascem no primeiro instante, cada um de um lado da tela
+    FORA_DA_TELA = 60             # os inimigos nascem esta distância fora da borda da tela
 
     def __init__(self):
         self.tempo = 0.0
@@ -40,6 +42,7 @@ class Fase(ABC):
         self.chefe_apareceu = False
         self.greve = 0.0              # segundos de greve restantes: sem inimigos novos, chuva de notas
         self._espera_nota = 0.0
+        self._turma_inicial = False
         self.eventos = sorted(self.criar_eventos(), key=lambda e: e.tempo)
 
     @abstractmethod
@@ -102,6 +105,10 @@ class Fase(ABC):
                 evento.executado = True
                 evento.acao(jogo)
         self._atualizar_greve(dt, jogo)
+        if not self._turma_inicial and self.ativos:      # só no começo: em greve (ou depois) não sai turma
+            self._turma_inicial = True
+            if self.greve <= 0:
+                self.soltar_turma_inicial(jogo)
         self._espera -= dt
         if self._espera <= 0 and self.ativos and self.greve <= 0:
             self._espera = self.intervalo_de_nascimento()
@@ -123,20 +130,36 @@ class Fase(ABC):
             espalhar = pygame.Vector2(jogo.rng.uniform(-40, 40), jogo.rng.uniform(-40, 40))
             jogo.adicionar(self.criar(nome, centro + espalhar))
 
+    def soltar_turma_inicial(self, jogo):
+        """Logo no começo, uma turma do primeiro lacaio nasce em volta da tela: ninguém fica segundos sem ter o
+        que matar."""
+        for _ in range(self.TURMA_INICIAL):
+            jogo.adicionar(self.criar(self.ativos[0], self.posicao_de_nascimento(jogo)))
+
     def criar(self, nome, posicao):
         """Um lacaio com a força deste instante da fase (escala e fúria)."""
         inimigo = FabricaDeInimigos.criar(nome, posicao, self.escala_dificuldade)
         inimigo.enfurecer(self.furia)
         return inimigo
 
-    @staticmethod
-    def posicao_de_nascimento(jogo):
-        """Um ponto logo fora da tela, em volta do herói, dentro da arena e fora dos prédios."""
-        distancia = math.hypot(LARGURA, ALTURA) / 2 + 80
+    @classmethod
+    def posicao_de_nascimento(cls, jogo):
+        """Um ponto na borda da tela, FORA_DA_TELA além dela, em volta do herói, dentro da arena e fora dos prédios.
+        Nasce perto da borda (e não num círculo largo) para o inimigo entrar logo na tela."""
         p = pygame.Vector2(jogo.jogador.posicao)
         for tentativa in range(30):
-            angulo = jogo.rng.uniform(0, 2 * math.pi)
-            p = jogo.jogador.posicao + pygame.Vector2(math.cos(angulo), math.sin(angulo)) * (distancia + tentativa * 10)
+            folga = cls.FORA_DA_TELA + tentativa * 10
+            meia_largura, meia_altura = LARGURA / 2 + folga, ALTURA / 2 + folga
+            ao_longo = jogo.rng.uniform(0, 4 * (meia_largura + meia_altura))     # um ponto do contorno, por igual
+            if ao_longo < 2 * meia_largura:                                         # em cima
+                x, y = ao_longo - meia_largura, -meia_altura
+            elif ao_longo < 4 * meia_largura:                                       # embaixo
+                x, y = ao_longo - 3 * meia_largura, meia_altura
+            elif ao_longo < 4 * meia_largura + 2 * meia_altura:                     # à esquerda
+                x, y = -meia_largura, ao_longo - 4 * meia_largura - meia_altura
+            else:                                                                   # à direita
+                x, y = meia_largura, ao_longo - 4 * meia_largura - 3 * meia_altura
+            p = jogo.jogador.posicao + pygame.Vector2(x, y)
             p.x = max(jogo.arena.left + 30, min(p.x, jogo.arena.right - 30))
             p.y = max(jogo.arena.top + 30, min(p.y, jogo.arena.bottom - 30))
             if not jogo.mapa.bloqueado(p, 30):

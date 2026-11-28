@@ -1,6 +1,4 @@
 """Dado de 20 Lados: a arma inicial do Mestre de RPG. O dano é o número que sai."""
-import pygame
-
 from jogo.ajudantes.golpes import DadoArremessado, mostrar
 from jogo.armas.arma import ArmaDeDisparo
 from jogo.config import Cor
@@ -43,11 +41,7 @@ class DadoDeVinteLados(ArmaDeDisparo):
         return dano * self.CRITICO if numero == self.FACES else dano
 
     def disparar(self, jogo, dono):
-        alvo = jogo.inimigo_mais_proximo(dono.posicao, self.ALCANCE)
-        if alvo is None:
-            return False
-        rumo = alvo.posicao - dono.posicao
-        rumo = rumo.normalize() if rumo.length_squared() > 0 else pygame.Vector2(1, 0)
+        rumo = self.rumo_do_ataque(jogo, dono, self.ALCANCE)
         quantidade = self.valor("quantidade")
         for i in range(quantidade):
             numero = self.rolar(jogo.rng)
@@ -60,4 +54,3 @@ class DadoDeVinteLados(ArmaDeDisparo):
             self.lancar(jogo, DadoArremessado(dono.posicao, direcao * self.VELOCIDADE,
                                               self.dano_da_rolagem(numero, dono), numero))
         Recursos.tocar("disparo", 0.12)
-        return True

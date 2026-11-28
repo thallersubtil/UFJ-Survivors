@@ -6,6 +6,7 @@ import pygame
 
 from jogo.config import Cor
 from jogo.nucleo.colisao import Colisao
+from jogo.nucleo.desenho import desenhar_sprite
 from jogo.nucleo.entidade import Entidade
 from jogo.nucleo.recursos import Recursos
 
@@ -85,6 +86,83 @@ class TextoFlutuante(Efeito):
         alfa = 255 if self.fracao < 0.6 else int(255 * (1 - self.fracao) / 0.4)
         self.imagem.set_alpha(alfa)
         tela.blit(self.imagem, self.imagem.get_rect(center=(round(p.x), round(p.y))))
+
+
+class NumeroDeDano(TextoFlutuante):
+    """O número de dano: salta para cima, cai com gravidade e se apaga. O crítico sai maior, amarelo e com "!"."""
+
+    SALTO = 150                   # px/s para cima no começo
+    GRAVIDADE = 520               # px/s² puxando para baixo
+    COR_CRITICO = (255, 225, 60)
+
+    def __init__(self, dano, posicao, critico=False, forte=False, lado=0.0):
+        if critico:
+            super().__init__(f"{dano}!", posicao, self.COR_CRITICO, 28, duracao=0.75, subida=0)
+        else:
+            super().__init__(str(dano), posicao, Cor.DANO_FORTE if forte else Cor.DANO, 22 if forte else 16,
+                             duracao=0.6, subida=0)
+        self.lado = lado          # px/s para o lado, para os números não caírem empilhados
+
+    @property
+    def deslocamento(self):
+        t = self.tempo
+        return pygame.Vector2(self.lado * t, -self.SALTO * t + self.GRAVIDADE * t * t / 2)
+
+    def desenhar(self, tela, camera):
+        p = camera.para_tela(self.posicao) + self.deslocamento
+        alfa = 255 if self.fracao < 0.6 else int(255 * (1 - self.fracao) / 0.4)
+        self.imagem.set_alpha(alfa)
+        tela.blit(self.imagem, self.imagem.get_rect(center=(round(p.x), round(p.y))))
+
+
+class CorpoCaindo(Efeito):
+    """O inimigo que acabou de morrer: um quadro de silhueta branca, depois a imagem dele apagando enquanto
+    escorrega para trás (para onde o golpe empurrou), achata um pouco e solta poeira. É só desenho: o inimigo já
+    saiu do jogo."""
+
+    camada = 1
+    OPACIDADE = 0.75
+    QUADRO_BRANCO = 1 / 30        # o primeiro instante: a silhueta acende
+    ACHATAR = (1.15, 0.85)        # largura e altura no fim
+    _cores = {}                   # cor média de cada imagem, para a poeira
+
+    def __init__(self, imagem, posicao, direcao, espelhar=False, duracao=0.3, deslize=35, tremida=0.0,
+                 particulas=4, rng=None):
+        super().__init__(pygame.Vector2(posicao), duracao)
+        self.imagem = imagem
+        self.direcao = pygame.Vector2(direcao)
+        if self.direcao.length_squared() > 0:
+            self.direcao.normalize_ip()
+        self.espelhar = espelhar
+        self.deslize = deslize
+        self.tremida = tremida
+        cor = self.cor_media(imagem)
+        sorteio = rng.uniform if rng is not None else (lambda a, b: (a + b) / 2)
+        self.poeira = [(pygame.Vector2(sorteio(-1, 1), sorteio(-1.2, -0.2)) * sorteio(40, 110), sorteio(2, 4), cor)
+                       for _ in range(particulas)]
+
+    @classmethod
+    def cor_media(cls, imagem):
+        chave = id(imagem)
+        if chave not in cls._cores:
+            r, g, b, _ = pygame.transform.average_color(imagem)
+            cls._cores[chave] = (r, g, b)
+        return cls._cores[chave]
+
+    def desenhar(self, tela, camera):
+        f = self.fracao
+        posicao = self.posicao + self.direcao * self.deslize * f * f            # escorrega acelerando
+        if self.tremida:
+            posicao += (math.sin(self.tempo * 90) * self.tremida, 0)
+        escala = (1 + (self.ACHATAR[0] - 1) * f, 1 + (self.ACHATAR[1] - 1) * f)
+        branco = self.tempo < self.QUADRO_BRANCO
+        alfa = 255 if branco else int(255 * self.OPACIDADE * (1 - f))
+        desenhar_sprite(tela, camera, self.imagem, posicao, espelhar=self.espelhar, piscar=branco, escala=escala,
+                        sombra=False, alfa=alfa)
+        base = camera.para_tela(self.posicao)
+        for velocidade, raio, cor in self.poeira:
+            ponto = base + velocidade * self.tempo + pygame.Vector2(0, 160 * self.tempo * self.tempo)
+            pygame.draw.circle(tela, cor, (round(ponto.x), round(ponto.y)), max(1, round(raio * (1 - f))))
 
 
 class FaiscaExplosao(Efeito):

@@ -155,6 +155,21 @@ Especificação escrita pela sessão revisora (Windows, com o HoloCure decompila
 - Reta final: às 15:00 a dificuldade está em 6 e chega a 9,1 às 15:59, 27,9 às 17:59 e 70 às 18:59, com o 3º chefe chegando às 15:00. Se "loja cheia vence os três em >= 85%" não fechar, suavizar primeiro 15:00 a 18:00 (fator menor, ou a reta final começando quando o 3º chefe cai, com teto às 16:30). Não mexer na vida do chefe.
 - Bigorna: saem 11 por partida (uma por mini-chefe) contra 12 carimbos possíveis (4 armas x 3). Conferir se isso não deixa carimbar tudo sempre.
 
+## M6. Reformulação: kits do HoloCure com os nossos temas (aprovada pelo Thaller em 28/11, no semestre-m5)
+
+Pedido do Thaller: manter os kits dos personagens originais do HoloCure (mecânica e números) e mudar só o tema; armas que nunca param; mobs desde o primeiro segundo; visuais de todos os ataques refeitos. Só as mecânicas vêm de lá: nomes, personagens e arte continuam nossos. A Virada de Noite volta a atirar só enquanto Espaço está apertado (decisão dele em 28/11).
+
+- **Passo 1 (correções rápidas):**
+  - Mira automática no inimigo mais perto da tela inteira; sem ninguém, fica a última direção.
+  - As armas de disparo nunca param: sem inimigo no alcance, atacam na direção da mira (`Arma.rumo_do_ataque`). Saem o `ESPERA_SEM_ALVO` e o retorno de `disparar`. Vale para Teclado, Caneta, Régua, Dado, Lightstick, Pequi, ChatGPT, Corrente (o raio se perde na mira) e Mapa (os alfinetes caem à frente).
+  - Golpes corpo a corpo nascem `AVANCO_DO_GOLPE` (40 px) à frente do corpo: o arco é uma faixa curva até o alcance, e a caneta sai dali.
+  - Inimigos nascem 60 px fora da borda da tela (`FORA_DA_TELA`), e uma turma de 10 do primeiro lacaio nasce no primeiro instante (`TURMA_INICIAL`).
+  - Morte: `Inimigo.criar_corpo` devolve um `CorpoCaindo` (um quadro de silhueta branca, depois a imagem a 75% apagando em 0,3 s, escorregando 35 px para onde o golpe empurrou, achatando e soltando poeira). Mini-chefes caem em 0,8 s, tremendo, com mais poeira; quebráveis não deixam corpo.
+  - Dano: piscada branca de 2 quadros; o número (`NumeroDeDano`) salta e cai com gravidade; o crítico sai maior, amarelo e com "!"; mini-chefes e gigantes tremem 2 px no golpe.
+  - Para o M5: o robô demora mais para encher o círculo com a turma do começo em volta (o teste do simulador limpa a turma antes).
+- **Passo 2:** um commit por classe com o kit do personagem do HoloCure correspondente.
+- **Passo 3:** visuais de todos os ataques e habilidades, com a arte aprovada pelo Thaller em `nova_arte/`.
+
 ## Arte para gerar (no estilo atual)
 
 Ícones das 21 habilidades e dos especiais novos (Calourada, Tela Azul); SSJ2 e SSJ3 (variações de cor ou aura); armas novas (Dado de 20 Lados, Régua de 1 Metro com golpe e suprema, Corrente de WhatsApp, colab Fake News; do M4b: Lightstick, Teclado Mecânico, Caneta de Correção, Mapa do Campus, Gabarito e as colabs Aula Expositiva, Caramelo 5G e Catapulta do Cerrado); ícones dos itens novos e refeitos; animação "atacar" dos 3 professores e dos mini-chefes, aura da fase 2 e ilustração de apresentação para quem não tem; cor e símbolo da matéria nova de Cálculo; telas de fim "Fim do semestre com honras!" e "Reprovado: o semestre acabou".

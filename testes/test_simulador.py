@@ -46,6 +46,8 @@ def test_loja_nada_metade_e_cheia():
 def jogo_de_teste(classe=Otaku):
     from jogo.jogo import Jogo
     jogo = Jogo(classe, semente=5)
+    jogo.fase.atualizar(0.0, jogo)               # solta a turma do começo agora, para o campo começar vazio
+    jogo._incorporar_novas()
     for e in jogo.inimigos + jogo.grupos["invocacao"] + jogo.grupos["quebravel"]:
         e.remover()
     jogo._limpar()

@@ -52,6 +52,10 @@ class ObjetoQuebravel(Inimigo, ABC):
     def balanco(self):
         return 0
 
+    def criar_corpo(self, jogo):
+        """Objeto quebrado não deixa corpo: ele já se desfaz no próprio efeito."""
+        return None
+
     def ao_morrer(self, jogo):
         """Quebrou: solta uma poção de vida ou um punhado de moedas."""
         if jogo.rng.random() < self.CHANCE_DE_CURA:

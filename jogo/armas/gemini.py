@@ -35,4 +35,3 @@ class Gemini(ArmaDeDisparo):
             self.lancar(jogo, (EstrelaSupernova if self.no_maximo else EstrelaGemini)(dono.posicao, direcao * self.VELOCIDADE,
                                          self.valor("dano") * dono.multiplicador_dano, geracoes=self.valor("geracoes")))
         Recursos.tocar("disparo", 0.12)
-        return True
