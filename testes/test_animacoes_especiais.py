@@ -708,8 +708,8 @@ def test_na_segunda_fase_aparece_a_aura_na_cor_do_mini_chefe(jogo_limpo):
     assert antes.get_at(canto) != depois.get_at(canto)
 
 
-@pytest.mark.parametrize("nivel", (1, 6, 14))
-def test_derrubar_um_mini_chefe_vale_de_2_a_3_niveis(jogo_limpo, nivel):
+@pytest.mark.parametrize("nivel", (1, 6, 14, 20))
+def test_derrubar_um_mini_chefe_vale_4_niveis_em_qualquer_nivel(jogo_limpo, nivel):
     from jogo.coletaveis.coletaveis import Nota
     jogo = jogo_limpo()
     heroi = jogo.jogador
@@ -721,4 +721,4 @@ def test_derrubar_um_mini_chefe_vale_de_2_a_3_niveis(jogo_limpo, nivel):
     jogo._incorporar_novas()
     experiencia = sum(e.valor for e in jogo.entidades if isinstance(e, Nota))
     subiu = heroi.ganhar_experiencia(experiencia)
-    assert 2 <= subiu <= 3
+    assert subiu == 4 and heroi.experiencia < heroi.experiencia_necessaria

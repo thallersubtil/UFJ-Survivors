@@ -89,7 +89,7 @@ docs/                  entregas, diagrama, registro de uso de IA, guia do códig
 
 ## Receitas
 
-**Inimigo novo** (é o "requisito surpresa" mais provável na apresentação): um arquivo novo em `jogo/inimigos/` com uma classe que herda de `Inimigo`, decorada com `@FabricaDeInimigos.registrar("nome")` e implementando `mover()`. O pacote importa todos os arquivos da pasta sozinho; **nenhuma classe existente muda**. Para aparecer, acrescente `(segundos, "nome")` em `APRESENTACOES` do `Semestre` em `jogo/fase.py`. Exemplo completo no `README.md`.
+**Inimigo novo** (é o "requisito surpresa" mais provável na apresentação): um arquivo novo em `jogo/inimigos/` com uma classe que herda de `Inimigo`, decorada com `@FabricaDeInimigos.registrar("nome")` e implementando `mover()`. O pacote importa todos os arquivos da pasta sozinho; **nenhuma classe existente muda**. Para aparecer, acrescente `(segundos, "nome")` em `APRESENTACOES` do `Semestre` em `jogo/fase.py`. Exemplo completo no `README.md`. O `DANO` escrito na classe não é o dano que ele dá: o encostão vale `DANO x FRACAO_DO_DANO` da família (lacaios 0,6, mini-chefes 0,7, professores 1), e a vida de um mini-chefe vale `VIDA x MiniChefe.FRACAO_DA_VIDA` (0,5). São os fatores de calibração do M5; para um inimigo mais forte ou mais fraco, mude o `DANO` e a `VIDA` dele, não o fator da família.
 
 **Matéria ou chefe novo**: uma classe que herda de `Materia` em `jogo/inimigos/materias/` com `ataques()` combinando os ataques prontos (`leque`, `anel`, `rajada`, `chamada`, `chefe.investir`); o chefe é uma classe que herda de `ChefePossuido`, registrada na fábrica, com `MATERIAS = (...)` na ordem das fases. Exemplo no `README.md`.
 

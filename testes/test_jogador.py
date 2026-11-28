@@ -81,6 +81,30 @@ def test_mira_segue_movimento_ou_mouse():
     assert j.direcao_mira.y == pytest.approx(1)
 
 
+def test_curva_de_experiencia_igual_ate_o_nivel_10_e_bem_mais_cara_depois():
+    """Até o nível 10 os níveis vêm só das notas, como antes; depois disso o custo cresce em cubo, e
+    quem quer passar muito do 15 tem de caçar mini-chefes."""
+    def quadratica(nivel):
+        n = nivel - 1
+        return round(Jogador.XP_BASE + Jogador.XP_LINEAR * n + Jogador.XP_QUADRATICO * n * n)
+    for nivel in range(1, Jogador.NIVEL_DA_VIRADA + 1):
+        assert Jogador.experiencia_do_nivel(nivel) == quadratica(nivel)
+    for nivel in (11, 15, 20, 30):
+        extra = Jogador.XP_CUBICO * (nivel - Jogador.NIVEL_DA_VIRADA) ** 3
+        assert Jogador.experiencia_do_nivel(nivel) == round(quadratica(nivel) + extra)
+    assert Jogador.NIVEL_DA_VIRADA == 10 and Jogador.XP_CUBICO == 10
+    assert Jogador.experiencia_do_nivel(20) > 2 * quadratica(20)
+
+
+@pytest.mark.parametrize("nivel", (3, 9, 12, 18))
+def test_experiencia_para_subir_quatro_niveis_e_a_soma_dos_quatro_seguintes(nivel):
+    j = Programador((0, 0))
+    j.nivel, j.experiencia = nivel, 0
+    assert j.experiencia_para_subir(4) == sum(Jogador.experiencia_do_nivel(nivel + i) for i in range(4))
+    j.experiencia = 30
+    assert j.experiencia_para_subir(4) == sum(Jogador.experiencia_do_nivel(nivel + i) for i in range(4)) - 30
+
+
 def test_experiencia_sobe_varios_niveis_de_uma_vez():
     j = Programador((0, 0))
     necessario = j.experiencia_necessaria

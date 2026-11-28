@@ -61,7 +61,7 @@ py -3.12 -m venv .venv
 - **Greve:** às 7:30, por 30 s não chega ninguém novo, os inimigos em campo se assustam e chovem notas em volta do aluno.
 - **Formações e gigantes:** um cerco ou uma parede a cada ~90 s, com aviso; três lacaios gigantes com hora marcada (3:00, 8:00 e 13:00).
 - **Reta final:** das 15:00 em diante a dificuldade multiplica a cada 15 s (mais depressa depois das 18:00), com cercos a cada 45 s e um gigante por minuto. Aos 19:30 aparece "Faltam 30 s para o fim do semestre!"; depois dos 20:00 os inimigos ficam mais rápidos e o encostão passa da vida de qualquer aluno.
-- **Mini-chefes do mapa (opcionais):** desde o começo da partida há um círculo de invocação de cada um pelo campus, com o rosto do mini-chefe em cima. Quem nunca foi invocado é um mistério: o círculo, o mini-mapa e a seta mostram um "?" e o nome "Mini-boss misterioso"; invocado uma vez, ele fica revelado em todas as partidas (salvo no progresso). Ficar dentro do círculo por 2,5 s invoca (sair esvazia): a partida para, ele é apresentado com ilustração própria, como os chefes, e entra andando pela borda da tela; os lacaios comuns em volta do aluno saem, como na chegada de um chefe, e enquanto ele está vivo nascem menos lacaios. O primeiro que o aluno enfrenta vem na força base, a qualquer hora; cada mini-chefe derrotado deixa o próximo mais forte (+50% da vida base por mini-chefe já vencido). Chefes e mini-chefes não são puxados, atrasados nem empurrados. Cada um guarda o seu lugar (segue o aluno só até certa distância e se recupera se ele fugir), traz os próprios lacaios, é forte para quem não tem melhorias e deixa um **baú garantido** e moedas. O tom é de piada interna:
+- **Mini-chefes do mapa (opcionais):** desde o começo da partida há um círculo de invocação de cada um pelo campus, com o rosto do mini-chefe em cima. Quem nunca foi invocado é um mistério: o círculo, o mini-mapa e a seta mostram um "?" e o nome "Mini-boss misterioso"; invocado uma vez, ele fica revelado em todas as partidas (salvo no progresso). Ficar dentro do círculo por 2,5 s invoca (sair esvazia): a partida para, ele é apresentado com ilustração própria, como os chefes, e entra andando pela borda da tela; os lacaios comuns em volta do aluno saem, como na chegada de um chefe, e enquanto ele está vivo nascem menos lacaios. O primeiro que o aluno enfrenta vem na força base, a qualquer hora; cada mini-chefe derrotado deixa o próximo mais forte (+50% da vida base por mini-chefe já vencido) e vale 4 níveis do aluno. Chefes e mini-chefes não são puxados, atrasados nem empurrados. Cada um guarda o seu lugar (segue o aluno só até certa distância e se recupera se ele fugir), traz os próprios lacaios, é forte para quem não tem melhorias e deixa um **baú garantido** e moedas. O tom é de piada interna:
 
   | Mini-chefe | Onde | Como ataca | Lacaios |
   |---|---|---|---|
@@ -202,7 +202,7 @@ class CafeFrio(Inimigo):
         self.ir_em_direcao(jogo.jogador.posicao, dt)
 ```
 
-Para ele aparecer, acrescente `(tempo_em_segundos, "cafe_frio")` em `APRESENTACOES` do `Semestre` (`jogo/fase.py`).
+Para ele aparecer, acrescente `(tempo_em_segundos, "cafe_frio")` em `APRESENTACOES` do `Semestre` (`jogo/fase.py`). Sem `DANO`, ele herda o de `Inimigo` (5); o encostão de verdade é `DANO x FRACAO_DO_DANO` (0,6 para lacaios, 0,7 para mini-chefes, 1 para os professores), o fator de calibração de cada família.
 
 ## Como criar uma matéria (ou um chefe) novo
 

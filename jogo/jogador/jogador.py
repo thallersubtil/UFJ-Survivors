@@ -30,12 +30,16 @@ class Jogador(SerVivo, ABC):
     RAIO = 22
     MAX_ARMAS = 4                # habilidades ativas; no limite, só melhorias (uma colab libera vaga)
     DURACAO_DA_CARETA = 0.45
-    # Custo do nível n: BASE + LINEAR*(n-1) + QUADRATICO*(n-1)². Os primeiros níveis vêm rápido e os
-    # últimos custam caro: só com as notas chega-se perto dos níveis 7, 11 e 14 nos três chefes. Quem quer
-    # ficar mais forte que isso vai atrás dos mini-chefes do mapa (baú garantido) e das melhorias da loja.
+    # Custo do nível n: BASE + LINEAR*(n-1) + QUADRATICO*(n-1)², mais CUBICO*(n-VIRADA)³ depois do
+    # NIVEL_DA_VIRADA.
+    # Até o nível 10 tudo vem das notas; depois o custo dispara: só com as notas chega-se perto dos níveis
+    # 10, 14 e 17 nos três chefes. Quem quer ficar mais forte vai atrás dos mini-chefes do mapa (cada um
+    # vale 4 níveis, o baú e a bigorna) e das melhorias da loja.
     XP_BASE = 18
     XP_LINEAR = 10
     XP_QUADRATICO = 3.4
+    NIVEL_DA_VIRADA = 10
+    XP_CUBICO = 10
     MAX_ITENS = 4                # itens passivos (as habilidades da classe não ocupam vaga)
     ALCANCE_COLETA_BASE = 90
     MULT_CRITICO = 2.0           # quanto o acerto crítico multiplica o dano
@@ -253,7 +257,9 @@ class Jogador(SerVivo, ABC):
     def experiencia_do_nivel(cls, nivel):
         """Quanto custa passar do `nivel` para o seguinte."""
         n = nivel - 1
-        return round(cls.XP_BASE + cls.XP_LINEAR * n + cls.XP_QUADRATICO * n * n)
+        depois_da_virada = max(0, nivel - cls.NIVEL_DA_VIRADA)
+        return round(cls.XP_BASE + cls.XP_LINEAR * n + cls.XP_QUADRATICO * n * n
+                     + cls.XP_CUBICO * depois_da_virada ** 3)
 
     def experiencia_para_subir(self, niveis):
         """Quanto falta para subir `niveis` níveis a partir de agora (aceita fração: 2,5 = dois níveis e meio)."""

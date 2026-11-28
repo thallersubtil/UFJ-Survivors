@@ -307,7 +307,7 @@ class MiniChefe(Inimigo):
     SIMBOLO = "!"                # o que aparece no projétil se faltar a arte dele
     RAIO = 30
     PONTOS = 500
-    NIVEIS_DE_EXPERIENCIA = 2.5  # derrubado, vale tantos níveis do aluno (a conta é feita na hora, pelo nível dele)
+    NIVEIS_DE_EXPERIENCIA = 4    # derrubado, vale tantos níveis do aluno (a conta é feita na hora, pelo nível dele)
     MOEDAS = 30
     INTERVALO_ATAQUE = 2.4
     GUARDA = 780                 # até onde ele segue o aluno, contado do posto
@@ -531,7 +531,7 @@ class MiniChefe(Inimigo):
         """Nem é empurrado."""
 
     def ao_morrer(self, jogo):
-        """Solta a experiência de 2 a 3 níveis do aluno (acompanha qualquer curva de experiência), o baú, as
+        """Solta a experiência de 4 níveis do aluno (acompanha qualquer curva de experiência), o baú, as
         moedas e a bigorna."""
         self.experiencia_ao_morrer = jogo.jogador.experiencia_para_subir(self.NIVEIS_DE_EXPERIENCIA)
         super().ao_morrer(jogo)
