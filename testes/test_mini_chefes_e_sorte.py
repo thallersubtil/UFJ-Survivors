@@ -423,6 +423,7 @@ def test_fracoes_de_dano_e_vida_por_familia_de_inimigo():
     assert bug.dano_de_contato == pytest.approx(Bug.DANO * Bug.FRACAO_DO_DANO) and 0 < Bug.FRACAO_DO_DANO < 1
     vigilante = Vigilante((0, 0))
     assert vigilante.vida_maxima == pytest.approx(Vigilante.VIDA * MiniChefe.FRACAO_DA_VIDA)
+    assert MiniChefe.FRACAO_DA_VIDA == 1 and vigilante.vida_maxima == Vigilante.VIDA     # o 1º da caçada: a VIDA da ficha
     assert vigilante.dano_de_contato == pytest.approx(Vigilante.DANO * MiniChefe.FRACAO_DO_DANO)
     assert Chefe.FRACAO_DO_DANO == 1
     professor = FabricaDeInimigos.criar("chefe_calculo", (0, 0))

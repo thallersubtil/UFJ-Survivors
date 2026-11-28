@@ -317,7 +317,7 @@ class MiniChefe(Inimigo):
     TENACIDADE = 1.0             # nada puxa, atrasa ou prende um mini-chefe no meio do ataque
     CHEFE = True
     ALIVIO_NO_CAMPO = 0.3        # na luta com ele também nascem menos lacaios: o aluno perdia para o campo, não para ele
-    FRACAO_DA_VIDA = 0.5         # calibração do M5: a VIDA de cada um vale esta fração (o primeiro, vencível no nível 6)
+    FRACAO_DA_VIDA = 1.0         # calibração do M5: a VIDA de cada um vale esta fração (Thaller: vida cheia de volta)
     FRACAO_DO_DANO = 0.7         # e o dano (encostão e golpes) esta
 
     SEGUNDA_FASE_ABAIXO_DE = 0.0             # fração da vida em que entra na segunda fase (0: não tem)
